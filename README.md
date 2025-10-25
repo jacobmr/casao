@@ -1,23 +1,40 @@
-# Casa Vistas (casao)
+# Casa Vistas - Direct Booking Website
 
-Vercel-ready Next.js site for a single property with direct bookings via Guesty. Content is Markdown-first; images live in `content/images` and are synced to `public/` for serving.
+Next.js website for Casa Vistas vacation rental with **real-time booking** via Guesty Booking Engine API.
 
-## Quick Start
+## 🎯 What This Does
 
-- Install: `npm install`
-- Import images (already done here) or run `node scripts/import_images.js --src "/path/to/images" --slug <slug>`
-- Sync to public: `npm run sync-images`
-- Dev: `npm run dev` then open http://localhost:3000
+Complete direct booking system where guests can:
+1. View real availability from Guesty calendar
+2. Select dates and see live pricing
+3. Enter guest information
+4. Pay securely via Stripe
+5. Create instant reservation in Guesty
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Visit booking page
+open http://localhost:3002/book
+```
 
 ## Deploy to Vercel
 
 1) Push this repo to GitHub as `casao` (or let me do it via GitHub CLI).
 2) Create a new Vercel project from that repo.
 3) Set Environment Variables in Vercel Project Settings:
-   - `GUESTY_API_KEY` – your Guesty API key
-   - `GUESTY_API_SECRET` – your Guesty API secret
-   - `GUESTY_PROPERTY_ID` – optional, for availability/price lookups
-   - `GUESTY_BOOKING_URL` – optional, direct booking link
+   - `GUESTY_BASE_URL` – default: https://booking-api.guesty.com/v1
+   - `GUESTY_CLIENT_ID` – your Guesty OAuth client id
+   - `GUESTY_CLIENT_SECRET` – your Guesty OAuth client secret
+   - `GUESTY_OAUTH_TOKEN_URL` – Okta token endpoint for client-credentials
+   - `GUESTY_PROPERTY_ID` – optional listing id
+   - `GUESTY_BOOKING_URL` – optional direct booking link
 4) Build command: `npm run build` (copies images then builds).
 5) After deploy, your property page is at `/properties/<slug>`.
 
@@ -28,11 +45,28 @@ Vercel-ready Next.js site for a single property with direct bookings via Guesty.
   - Body: Rich description.
 - `content/images/<slug>/...` (source) → copied to `public/images/<slug>/...` on build.
 
-## Guesty Integration
+## 🔐 Token Management
 
-- Booking CTA: Uses `booking_url` from frontmatter or falls back to `source_url`.
-- API Stub: `app/api/availability/route.js` reads Vercel env (`GUESTY_API_*`) and returns a placeholder until wired to Guesty.
-- To finalize: implement `fetchAvailability()` in `lib/guesty.js` to call Guesty APIs with proper authentication.
+**IMPORTANT**: All code uses the centralized token service (`lib/token-service.js`).
+
+- ✅ Tokens cached in `.cache/guesty-token.json`
+- ✅ Valid for 24 hours
+- ✅ Automatic refresh when expired
+- ✅ Rate limit protection (max 3 requests per 24 hours)
+- ⚠️ **NEVER fetch tokens directly** - always use `getCachedToken()`
+
+```javascript
+import { getCachedToken } from './lib/token-service';
+
+const token = await getCachedToken(); // Always use this!
+```
+
+## 🔌 Guesty Integration
+
+- **Calendar API**: Real-time availability via `/api/calendar`
+- **Quotes API**: Live pricing via `/api/quotes`
+- **Booking API**: Instant reservations (coming soon)
+- **Token Service**: Centralized OAuth token management
 
 ## Scripts
 
@@ -57,10 +91,12 @@ See `docs/PRD.md` for full details.
 Use `.env` locally or set the same vars in Vercel:
 
 ```
-GUESTY_API_KEY=...
-GUESTY_API_SECRET=...
-GUESTY_PROPERTY_ID=...
-GUESTY_BOOKING_URL=...
+GUESTY_BASE_URL=https://booking-api.guesty.com/v1
+GUESTY_CLIENT_ID=...your_client_id...
+GUESTY_CLIENT_SECRET=...your_client_secret...
+GUESTY_OAUTH_TOKEN_URL=...https://<your-okta-domain>/oauth2/<auth-server-id>/v1/token...
+GUESTY_PROPERTY_ID=...optional_listing_id...
+GUESTY_BOOKING_URL=...optional_booking_link...
 ```
 
 `.env.example` is included as a reference. Do not commit real secrets.

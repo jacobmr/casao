@@ -10,3 +10,6 @@ salida.out
 
 .env
 .env.*
+
+.cache
+.cache/*

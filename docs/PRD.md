@@ -47,11 +47,28 @@ Build a standalone marketing and booking website for Casa Vistas (vacation home)
 - Analytics
   - Plausible (privacy‑friendly) or Google Analytics 4; cookie banner only if required.
 
-## 9. Booking Flow
-- From property pages, user clicks Book Now.
-- Display an inline booking widget or modal powered by Guesty (preferred: modal to keep context). Alternative: dedicated `/book` page to embed Guesty checkout.
-- Prepopulate dates if selected from calendar; validate min nights/occupancy.
-- Confirm booking and show success page with summary.
+## 9. Booking Flow (CRITICAL - THIS IS THE CORE FEATURE)
+**User Journey:**
+1. User visits Casa Vistas website
+2. User sees beautiful property page with photos/description
+3. User clicks "Book Now" → goes to `/book` page
+4. **Interactive Calendar** shows real availability from Guesty API:
+   - Blocked dates = existing reservations (fetched from Guesty)
+   - Available dates = can be booked
+5. User selects check-in and check-out dates
+6. System fetches **real-time quote** from Guesty API with pricing
+7. User enters guest information
+8. User enters payment information (Stripe)
+9. System creates **instant reservation** via Guesty Booking Engine API
+10. Confirmation page shows booking details
+
+**Technical Implementation:**
+- `/book` page with interactive calendar component
+- Calendar fetches availability by testing quote creation with Guesty API
+- Quote API returns pricing breakdown (nightly rate + fees + taxes)
+- Payment collected via Stripe, token passed to Guesty
+- Guesty API creates actual reservation in their system
+- Confirmation sent to guest
 
 ## 10. SEO & Content
 - Descriptive meta tags, Open Graph/Twitter cards.
