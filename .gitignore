@@ -1,0 +1,12 @@
+node_modules
+.next
+.vercel
+public/images
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+content/raw
+salida.out
+
+.env
+.env.*

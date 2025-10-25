@@ -1,0 +1,29 @@
+{
+  "name": "casavistas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "next dev",
+    "build": "node scripts/sync_public_images.js && next build",
+    "start": "next start",
+    "sync-images": "node scripts/sync_public_images.js",
+    "scrape": "node scripts/scrape_guesty.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "gray-matter": "^4.0.3",
+    "marked": "^16.4.1",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sanitize-filename": "^1.6.3"
+  }
+}
