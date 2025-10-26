@@ -86,19 +86,28 @@ export function AvailabilityCalendar() {
     const fetchPricing = async () => {
       setLoadingPrice(true)
       try {
+        const checkInStr = checkIn.toISOString().split('T')[0]
+        const checkOutStr = checkOut.toISOString().split('T')[0]
+        
+        console.log(`💰 Requesting quote: ${checkInStr} to ${checkOutStr}, ${guests} guests`)
+        
         const response = await fetch('/api/quotes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            checkIn: checkIn.toISOString().split('T')[0],
-            checkOut: checkOut.toISOString().split('T')[0],
+            checkIn: checkInStr,
+            checkOut: checkOutStr,
             guests
           })
         })
 
         if (response.ok) {
           const data = await response.json()
+          console.log('💵 Quote response:', data)
           setPricing(data)
+        } else {
+          const errorText = await response.text()
+          console.error('❌ Quote API error:', response.status, errorText)
         }
       } catch (error) {
         console.error('Error fetching pricing:', error)
@@ -232,7 +241,9 @@ export function AvailabilityCalendar() {
 
         // All dates still available - proceed to Guesty
         console.log('✅ Dates verified available - redirecting to Guesty')
-        const guestyUrl = `https://booking.guesty.com/properties/688a8aae483ff0001243e891?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
+        // Use Guesty's booking engine URL format
+        const guestyUrl = `https://casavistas.guestybookings.com/properties/688a8aae483ff0001243e891?checkInDate=${checkInStr}&checkOutDate=${checkOutStr}&adults=${guests}`
+        console.log('🔗 Redirect URL:', guestyUrl)
         window.location.href = guestyUrl
         
       } else {
@@ -423,29 +434,42 @@ export function AvailabilityCalendar() {
                   </div>
                 ) : pricing ? (
                   <div className="space-y-3 mb-6 pb-6 border-b">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        ${Math.round((pricing.money?.hostPayout || 0) / nights)} × {nights} {nights === 1 ? 'night' : 'nights'}
-                      </span>
-                      <span className="font-medium">${pricing.money?.hostPayout?.toFixed(2) || '0.00'}</span>
-                    </div>
-                    
-                    {/* Show weekly discount if 7+ nights */}
-                    {nights >= 7 && pricing.money?.discount && pricing.money.discount > 0 && (
-                      <div className="flex items-center justify-between text-sm text-green-600">
-                        <span>Weekly discount</span>
-                        <span className="font-medium">-${pricing.money.discount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Taxes & Fees</span>
-                      <span className="font-medium">${(pricing.money?.totalTaxes || 0).toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-lg font-bold pt-3 border-t">
-                      <span>Total</span>
-                      <span className="text-primary">${pricing.money?.totalPrice?.toFixed(2) || '0.00'}</span>
-                    </div>
+                    {(() => {
+                      // Extract pricing from Guesty's nested structure
+                      const money = pricing.rates?.ratePlans?.[0]?.money || pricing.money
+                      const accommodation = money?.fareAccommodation || money?.hostPayout || 0
+                      const taxes = money?.fareTaxes || money?.totalTaxes || 0
+                      const total = money?.fareTotal || money?.totalPrice || 0
+                      const avgNightly = accommodation / nights
+                      
+                      return (
+                        <>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">
+                              ${Math.round(avgNightly)} × {nights} {nights === 1 ? 'night' : 'nights'}
+                            </span>
+                            <span className="font-medium">${accommodation.toFixed(2)}</span>
+                          </div>
+                          
+                          {/* Show weekly discount if 7+ nights */}
+                          {nights >= 7 && money?.discount && money.discount > 0 && (
+                            <div className="flex items-center justify-between text-sm text-green-600">
+                              <span>Weekly discount</span>
+                              <span className="font-medium">-${money.discount.toFixed(2)}</span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Taxes & Fees</span>
+                            <span className="font-medium">${taxes.toFixed(2)}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-lg font-bold pt-3 border-t">
+                            <span>Total</span>
+                            <span className="text-primary">${total.toFixed(2)}</span>
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
                 ) : null}
 
