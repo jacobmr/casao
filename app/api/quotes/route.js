@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getCachedToken } from '../../../lib/token-service';
-import { getCachedPricing, setCachedPricing } from '../../../lib/pricing-cache';
+import { getCachedToken } from '../../../lib/token-service-kv';
+import { getCachedPricing, setCachedPricing } from '../../../lib/kv-cache';
 
 export async function POST(request) {
   try {
