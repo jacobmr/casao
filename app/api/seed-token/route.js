@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
+
+// Parse REDIS_URL
+function parseRedisUrl(url) {
+  if (!url) return null;
+  const match = url.match(/redis:\/\/([^:]+):([^@]+)@([^:]+):(\d+)/);
+  if (!match) return null;
+  const [, username, password, host, port] = match;
+  return { url: `https://${host}`, token: password };
+}
+
+const redisConfig = parseRedisUrl(process.env.REDIS_URL);
+const kv = redisConfig ? new Redis(redisConfig) : Redis.fromEnv();
 
 /**
  * One-time endpoint to seed the existing valid token into KV
