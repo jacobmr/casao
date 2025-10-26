@@ -12,7 +12,7 @@
 - [x] Production deployment on Vercel
 - [x] Comprehensive documentation
 
-**Status:** 🚀 LIVE at https://casao.vercel.app
+**Status:** 🚀 LIVE at https://www.casavistas.net (and https://casao.vercel.app)
 
 ---
 
@@ -64,11 +64,11 @@
 - Easier to see availability at a glance
 
 ### Domain Setup
-- [ ] Purchase/configure custom domain (e.g., casao.com)
-- [ ] Update Vercel project with custom domain
-- [ ] Configure DNS records
-- [ ] SSL certificate (automatic via Vercel)
-- [ ] Update booking redirect URLs
+- [x] Purchase/configure custom domain (casavistas.net)
+- [x] Update Vercel project with custom domain
+- [x] Configure DNS records
+- [x] SSL certificate (automatic via Vercel)
+- [ ] Update booking redirect URLs (if needed)
 
 ### Favicon & Branding
 - [ ] Design/source favicon (16x16, 32x32, 180x180)
