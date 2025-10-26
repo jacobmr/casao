@@ -259,10 +259,10 @@ export function AvailabilityCalendar() {
           return
         }
 
-        // All dates still available - proceed to Guesty
-        console.log('✅ Dates verified available - redirecting to Guesty')
-        // Use Guesty's official booking engine URL format
-        const guestyUrl = `https://booking.guesty.com/properties/688a8aae483ff0001243e891?checkInDateLocalized=${checkInStr}&checkOutDateLocalized=${checkOutStr}&adults=${guests}`
+        // All dates still available - redirect to PM's Guesty booking page
+        console.log('✅ Dates verified available - redirecting to booking')
+        // Use PM's Guesty booking URL with pre-filled data
+        const guestyUrl = `https://bluezoneexperience.guestybookings.com/en/properties/688a8aae483ff0001243e891/checkout?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
         console.log('🔗 Redirect URL:', guestyUrl)
         window.location.href = guestyUrl
         
