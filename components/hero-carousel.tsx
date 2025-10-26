@@ -49,7 +49,7 @@ export function HeroCarousel() {
             )}
           >
             <img
-              src={`/images/en-properties-688a8aae483ff0001243e891/${String(index + 1).padStart(3, "0")}.jpg`}
+              src={`/images/property/${String(index + 1).padStart(3, "0")}.jpg`}
               alt={`Casa Vistas - View ${index + 1}`}
               className="h-full w-full object-cover"
             />

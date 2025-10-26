@@ -22,6 +22,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Utility scripts (not part of app)
+scripts/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
