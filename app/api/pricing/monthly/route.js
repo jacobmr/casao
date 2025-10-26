@@ -42,21 +42,30 @@ export async function POST(request) {
     // Fetch pricing for available dates
     const pricingData = await getMonthlyPricingData(avail);
     
-    // Cache the pricing data
-    const cacheKey = `monthly_pricing_${year}_${month}`;
-    const filePath = path.join(CACHE_DIR, `${cacheKey}.json`);
+    // Cache the pricing data in the consolidated pricing.json file
+    const CACHE_FILE = path.join(CACHE_DIR, 'pricing.json');
     
-    const cacheEntry = {
-      data: pricingData,
-      timestamp: new Date().toISOString(),
-    };
+    // Load existing cache
+    let cache = { data: {}, timestamp: new Date().toISOString() };
+    if (fs.existsSync(CACHE_FILE)) {
+      try {
+        cache = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
+      } catch (error) {
+        console.error('Error reading pricing cache:', error);
+      }
+    }
+    
+    // Add monthly pricing to cache
+    const monthKey = `monthly_${year}_${month}`;
+    cache.data[monthKey] = pricingData;
+    cache.timestamp = new Date().toISOString();
     
     if (!fs.existsSync(CACHE_DIR)) {
       fs.mkdirSync(CACHE_DIR, { recursive: true });
     }
     
-    fs.writeFileSync(filePath, JSON.stringify(cacheEntry, null, 2), 'utf8');
-    console.log(`💾 Cached monthly pricing for ${year}-${month + 1} to file`);
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2), 'utf8');
+    console.log(`💾 Cached monthly pricing for ${year}-${month + 1}`);
     
     return NextResponse.json({
       success: true,
