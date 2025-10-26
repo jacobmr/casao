@@ -22,8 +22,10 @@ yarn-error.log*
 # vercel
 .vercel
 
-# cache
-.cache
+# cache (data only - keep token cache!)
+.cache/availability.json
+.cache/pricing.json
+.cache/.warmup-in-progress
 
 # Utility scripts (not part of app)
 scripts/
