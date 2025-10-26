@@ -16,7 +16,7 @@
 
 ---
 
-## 📋 PHASE 2: Branding & Polish (Tomorrow - Oct 26)
+## 📋 PHASE 2: Branding & Polish (Oct 26)
 
 ### 🔧 BUG FIX: Calendar Pricing (PRIORITY)
 - [ ] Fix per-day pricing display on production
@@ -27,6 +27,38 @@
 **Issue:** Pricing worked locally but not on production
 **Root cause:** Warmup only caches availability, not pricing
 **Fix:** Update warmup-cache to also populate monthly pricing cache
+
+### 🔄 Branded Checkout Handoff (NEW)
+- [ ] Create `/api/handoff` endpoint
+- [ ] Generate unique UUID for each booking
+- [ ] Build branded interstitial page
+- [ ] Redirect to Blue Zone Guesty checkout
+- [ ] Log handoff events (UUID, dates, property)
+- [ ] Add Casa O branding to interstitial
+- [ ] Update "Book This!" button to use handoff
+
+**Benefits:**
+- ✅ Casa O branding throughout journey
+- ✅ No GuestyPay credentials needed
+- ✅ Blue Zone keeps their Stripe + contracts
+- ✅ Trackable with UUID references
+- ✅ Professional handoff experience
+- ✅ Zero PM lift required
+
+**Flow:**
+```
+Guest selects dates on casavistas.net
+  ↓
+Clicks "Book This!"
+  ↓
+Sees Casa O branded "Secure Checkout" page
+  ↓
+Redirects to Blue Zone Guesty (pre-filled)
+  ↓
+Blue Zone handles payment + contract
+  ↓
+Guest receives Blue Zone confirmation
+```
 
 ### 📝 Content Updates: Footer & Contact Info
 - [ ] **Remove incorrect phone number**
