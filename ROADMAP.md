@@ -28,6 +28,20 @@
 **Root cause:** Warmup only caches availability, not pricing
 **Fix:** Update warmup-cache to also populate monthly pricing cache
 
+### 🎨 UX Improvements: Calendar & Booking Flow
+- [ ] **Modal for availability** - Calendar opens in modal instead of pushing content down
+- [ ] **Smaller calendar** - Reduce size since it's in a modal
+- [ ] **Better visual indicators:**
+  - [ ] Darker pink for booked dates (more obvious)
+  - [ ] Green border outline for available dates (clearer availability)
+  - [ ] Improve contrast and readability
+
+**Benefits:**
+- Cleaner page layout (property info stays visible)
+- Better mobile experience
+- More professional booking flow
+- Easier to see availability at a glance
+
 ### Domain Setup
 - [ ] Purchase/configure custom domain (e.g., casao.com)
 - [ ] Update Vercel project with custom domain
