@@ -32,45 +32,21 @@ export function AvailabilityCalendar() {
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
 
-  // Fetch availability and pricing for current month (cached server-side)
+  // Fetch availability for current month (cached server-side)
+  // Pricing will show when user selects dates
   useEffect(() => {
-    const fetchAvailabilityWithPricing = async () => {
+    const fetchAvailability = async () => {
       setLoading(true)
       try {
         const from = new Date(year, month, 1).toISOString().split("T")[0]
         const to = new Date(year, month + 1, 0).toISOString().split("T")[0]
 
-        // Fetch both availability and pricing for the month
-        const [availResponse, priceResponse] = await Promise.all([
-          fetch(`/api/calendar?from=${from}&to=${to}`),
-          fetch('/api/quotes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              checkIn: from,
-              checkOut: to,
-              guests: 2
-            })
-          })
-        ])
+        // Fetch availability (cached)
+        const response = await fetch(`/api/calendar?from=${from}&to=${to}`)
 
-        if (availResponse.ok) {
-          const availData = await availResponse.json()
+        if (response.ok) {
+          const availData = await response.json()
           console.log('📅 Availability Response (cached):', availData)
-          
-          // Get per-day pricing from quote
-          const pricingByDate = new Map<string, number>()
-          if (priceResponse.ok) {
-            const priceData = await priceResponse.json()
-            const days = priceData.rates?.ratePlans?.[0]?.days || []
-            console.log('💰 Raw pricing days:', days)
-            days.forEach((day: any) => {
-              console.log(`  Setting price for ${day.date}: $${day.price}`)
-              pricingByDate.set(day.date, day.price)
-            })
-            console.log('💰 Per-day pricing loaded:', pricingByDate.size, 'days')
-            console.log('💰 Pricing map:', Array.from(pricingByDate.entries()))
-          }
           
           const availMap = new Map<string, DayAvailability>()
           const days = Array.isArray(availData) ? availData : availData.days || []
@@ -80,7 +56,7 @@ export function AvailabilityCalendar() {
               const dayData: DayAvailability = {
                 date: day.date,
                 status: day.status === 'available' ? 'available' : 'booked',
-                price: pricingByDate.get(day.date) // Add per-day pricing
+                price: undefined // Pricing shown when dates selected
               }
               availMap.set(dayData.date, dayData)
             })
@@ -89,7 +65,7 @@ export function AvailabilityCalendar() {
           console.log('📊 Total days loaded:', availMap.size)
           setAvailability(availMap)
         } else {
-          console.error('API Error:', availResponse.status, await availResponse.text())
+          console.error('API Error:', response.status, await response.text())
         }
       } catch (error) {
         console.error('Error fetching availability:', error)
@@ -98,7 +74,7 @@ export function AvailabilityCalendar() {
       }
     }
 
-    fetchAvailabilityWithPricing()
+    fetchAvailability()
   }, [year, month])
 
   // Fetch pricing when dates are selected
@@ -269,8 +245,8 @@ export function AvailabilityCalendar() {
 
         // All dates still available - proceed to Guesty
         console.log('✅ Dates verified available - redirecting to Guesty')
-        // Use Guesty's direct booking URL
-        const guestyUrl = `https://book.hospitable.com/widget/688a8aae483ff0001243e891?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
+        // Use Guesty's official booking engine URL format
+        const guestyUrl = `https://booking.guesty.com/properties/688a8aae483ff0001243e891?checkInDateLocalized=${checkInStr}&checkOutDateLocalized=${checkOutStr}&adults=${guests}`
         console.log('🔗 Redirect URL:', guestyUrl)
         window.location.href = guestyUrl
         
