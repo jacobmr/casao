@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCachedToken } from '../../../lib/token-service';
+import { getCachedPricing, setCachedPricing } from '../../../lib/pricing-cache';
 
 export async function POST(request) {
   try {
@@ -12,6 +13,12 @@ export async function POST(request) {
         { error: 'checkIn and checkOut are required' },
         { status: 400 }
       );
+    }
+    
+    // Check cache first
+    const cached = getCachedPricing(checkIn, checkOut, guests);
+    if (cached) {
+      return NextResponse.json(cached);
     }
     
     console.log(`💰 Fetching quote for ${checkIn} to ${checkOut}, ${guests} guests`);
@@ -47,7 +54,18 @@ export async function POST(request) {
     }
     
     const data = await response.json();
-    console.log('✅ Quote received:', data.money?.totalPrice);
+    
+    // Log the full structure to debug pricing
+    console.log('✅ Quote received - Full response:');
+    console.log(JSON.stringify(data, null, 2));
+    
+    // Log specific pricing paths
+    console.log('📊 Pricing breakdown:');
+    console.log('  - rates.ratePlans[0].money:', data.rates?.ratePlans?.[0]?.money);
+    console.log('  - money (top level):', data.money);
+    
+    // Cache the result
+    setCachedPricing(checkIn, checkOut, guests, data);
     
     return NextResponse.json(data);
     

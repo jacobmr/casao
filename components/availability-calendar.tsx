@@ -32,20 +32,42 @@ export function AvailabilityCalendar() {
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
 
-  // Fetch availability for current month (cached server-side)
+  // Fetch availability and pricing for current month (cached server-side)
   useEffect(() => {
-    const fetchAvailability = async () => {
+    const fetchAvailabilityWithPricing = async () => {
       setLoading(true)
       try {
         const from = new Date(year, month, 1).toISOString().split("T")[0]
         const to = new Date(year, month + 1, 0).toISOString().split("T")[0]
 
-        // Fetch availability (will use server-side cache)
-        const response = await fetch(`/api/calendar?from=${from}&to=${to}`)
+        // Fetch both availability and pricing for the month
+        const [availResponse, priceResponse] = await Promise.all([
+          fetch(`/api/calendar?from=${from}&to=${to}`),
+          fetch('/api/quotes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              checkIn: from,
+              checkOut: to,
+              guests: 2
+            })
+          })
+        ])
 
-        if (response.ok) {
-          const availData = await response.json()
+        if (availResponse.ok) {
+          const availData = await availResponse.json()
           console.log('📅 Availability Response (cached):', availData)
+          
+          // Get per-day pricing from quote
+          const pricingByDate = new Map<string, number>()
+          if (priceResponse.ok) {
+            const priceData = await priceResponse.json()
+            const days = priceData.rates?.ratePlans?.[0]?.days || []
+            days.forEach((day: any) => {
+              pricingByDate.set(day.date, day.price)
+            })
+            console.log('💰 Per-day pricing loaded:', pricingByDate.size, 'days')
+          }
           
           const availMap = new Map<string, DayAvailability>()
           const days = Array.isArray(availData) ? availData : availData.days || []
@@ -55,7 +77,7 @@ export function AvailabilityCalendar() {
               const dayData: DayAvailability = {
                 date: day.date,
                 status: day.status === 'available' ? 'available' : 'booked',
-                price: undefined // No per-day pricing - only show when dates selected
+                price: pricingByDate.get(day.date) // Add per-day pricing
               }
               availMap.set(dayData.date, dayData)
             })
@@ -64,7 +86,7 @@ export function AvailabilityCalendar() {
           console.log('📊 Total days loaded:', availMap.size)
           setAvailability(availMap)
         } else {
-          console.error('API Error:', response.status, await response.text())
+          console.error('API Error:', availResponse.status, await availResponse.text())
         }
       } catch (error) {
         console.error('Error fetching availability:', error)
@@ -73,7 +95,7 @@ export function AvailabilityCalendar() {
       }
     }
 
-    fetchAvailability()
+    fetchAvailabilityWithPricing()
   }, [year, month])
 
   // Fetch pricing when dates are selected
@@ -104,6 +126,9 @@ export function AvailabilityCalendar() {
         if (response.ok) {
           const data = await response.json()
           console.log('💵 Quote response:', data)
+          console.log('💵 Money object:', data.rates?.ratePlans?.[0]?.money)
+          console.log('💵 Accommodation:', data.rates?.ratePlans?.[0]?.money?.fareAccommodation)
+          console.log('💵 Total:', data.rates?.ratePlans?.[0]?.money?.fareTotal)
           setPricing(data)
         } else {
           const errorText = await response.text()
@@ -436,10 +461,10 @@ export function AvailabilityCalendar() {
                   <div className="space-y-3 mb-6 pb-6 border-b">
                     {(() => {
                       // Extract pricing from Guesty's nested structure
-                      const money = pricing.rates?.ratePlans?.[0]?.money || pricing.money
-                      const accommodation = money?.fareAccommodation || money?.hostPayout || 0
-                      const taxes = money?.fareTaxes || money?.totalTaxes || 0
-                      const total = money?.fareTotal || money?.totalPrice || 0
+                      const money = pricing.rates?.ratePlans?.[0]?.ratePlan?.money || pricing.money
+                      const accommodation = money?.fareAccommodation || 0
+                      const taxes = money?.totalTaxes || 0
+                      const total = money?.hostPayout || 0
                       const avgNightly = accommodation / nights
                       
                       return (
