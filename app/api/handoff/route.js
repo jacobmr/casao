@@ -235,21 +235,6 @@ export async function GET(request) {
       <strong>Blue Zone Experience</strong>.
     </p>
     
-    <div style="margin: 1.5rem 0; padding: 1rem; background: #dbeafe; border: 2px solid #3b82f6; border-radius: 12px;">
-      <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-        <svg style="width: 20px; height: 20px; stroke: #3b82f6; fill: none;" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-        </svg>
-        <strong style="color: #1e40af; font-size: 0.95rem;">Have a Discount Code?</strong>
-      </div>
-      <p style="color: #1e40af; font-size: 0.875rem; margin: 0;">
-        Enter your discount code on the next page to save on your booking!
-      </p>
-      <p style="color: #60a5fa; font-size: 0.75rem; margin: 0.5rem 0 0 0;">
-        Active codes: <strong>CasaO20</strong>, <strong>CasaO30</strong>, <strong>CasaO40</strong>, <strong>CasaO50</strong>
-      </p>
-    </div>
-    
     <a class="button" href="${blueZoneURL}">
       Continue to Secure Checkout →
     </a>
