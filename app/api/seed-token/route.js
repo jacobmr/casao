@@ -1,17 +1,24 @@
 import { NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
+import { createClient } from 'redis';
 
-// Parse REDIS_URL
-function parseRedisUrl(url) {
-  if (!url) return null;
-  const match = url.match(/redis:\/\/([^:]+):([^@]+)@([^:]+):(\d+)/);
-  if (!match) return null;
-  const [, username, password, host, port] = match;
-  return { url: `https://${host}`, token: password };
+let redisClient = null;
+
+async function getRedisClient() {
+  if (redisClient && redisClient.isOpen) {
+    return redisClient;
+  }
+  
+  if (!redisClient) {
+    redisClient = createClient({ url: process.env.REDIS_URL });
+    redisClient.on('error', (err) => console.error('Redis Error:', err));
+  }
+  
+  if (!redisClient.isOpen) {
+    await redisClient.connect();
+  }
+  
+  return redisClient;
 }
-
-const redisConfig = parseRedisUrl(process.env.REDIS_URL);
-const kv = redisConfig ? new Redis(redisConfig) : Redis.fromEnv();
 
 /**
  * One-time endpoint to seed the existing valid token into KV
@@ -38,12 +45,13 @@ export async function POST(request) {
       );
     }
     
-    await kv.set('guesty:token', {
+    const redis = await getRedisClient();
+    await redis.set('guesty:token', JSON.stringify({
       access_token,
       expires_at,
       cached_at: Math.floor(Date.now() / 1000),
       expires_in_hours: Math.round(ttl / 3600)
-    }, { ex: ttl });
+    }), { EX: ttl });
     
     console.log(`✅ Token seeded into KV, expires in ${Math.round(ttl / 3600)} hours`);
     
