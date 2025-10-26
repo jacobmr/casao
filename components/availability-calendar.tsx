@@ -32,7 +32,7 @@ export function AvailabilityCalendar() {
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
 
-  // Fetch availability for current month
+  // Fetch availability for current month (cached server-side)
   useEffect(() => {
     const fetchAvailability = async () => {
       setLoading(true)
@@ -40,33 +40,25 @@ export function AvailabilityCalendar() {
         const from = new Date(year, month, 1).toISOString().split("T")[0]
         const to = new Date(year, month + 1, 0).toISOString().split("T")[0]
 
+        // Fetch availability (will use server-side cache)
         const response = await fetch(`/api/calendar?from=${from}&to=${to}`)
 
         if (response.ok) {
-          const data = await response.json()
-          console.log('📅 Calendar API Response:', data)
-          console.log('📅 Response type:', Array.isArray(data) ? 'Array' : 'Object')
-          console.log('📅 First item:', data[0] || data.days?.[0])
+          const availData = await response.json()
+          console.log('📅 Availability Response (cached):', availData)
           
           const availMap = new Map<string, DayAvailability>()
-          
-          // Handle both array and object responses
-          const days = Array.isArray(data) ? data : data.days
+          const days = Array.isArray(availData) ? availData : availData.days || []
           
           if (days && days.length > 0) {
             days.forEach((day: any) => {
-              // Guesty returns price in different possible fields
-              const price = day.price || day.basePrice || day.nightlyRate
               const dayData: DayAvailability = {
                 date: day.date,
-                status: day.status,
-                price: price
+                status: day.status === 'available' ? 'available' : 'booked',
+                price: undefined // No per-day pricing - only show when dates selected
               }
-              console.log(`  ${dayData.date}: ${dayData.status}`, price ? `$${price}` : 'no price', day)
               availMap.set(dayData.date, dayData)
             })
-          } else {
-            console.error('❌ No days found in response')
           }
 
           console.log('📊 Total days loaded:', availMap.size)

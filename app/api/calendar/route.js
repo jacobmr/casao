@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCachedToken } from '../../../lib/token-service';
+import { getCachedAvailability, setCachedAvailability } from '../../../lib/availability-cache';
 
 export async function GET(request) {
   try {
@@ -15,6 +16,19 @@ export async function GET(request) {
       );
     }
     
+    // Extract year and month for cache key
+    const fromDate = new Date(from);
+    const year = fromDate.getFullYear();
+    const month = fromDate.getMonth();
+    
+    // Check cache first
+    const cached = getCachedAvailability(year, month);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+    
+    // Cache miss - fetch from Guesty
+    console.log(`🌐 Fetching from Guesty API: ${from} to ${to}`);
     const token = await getCachedToken();
     
     const url = `https://booking.guesty.com/api/listings/${listingId}/calendar?from=${from}&to=${to}`;
@@ -35,6 +49,10 @@ export async function GET(request) {
     }
     
     const data = await response.json();
+    
+    // Cache the result
+    setCachedAvailability(year, month, data);
+    
     return NextResponse.json(data);
     
   } catch (error) {
