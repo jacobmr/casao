@@ -23,12 +23,28 @@ const MONTHS = [
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-export function BookingCalendar() {
+interface BookingCalendarProps {
+  initialCheckIn?: Date | null
+  initialCheckOut?: Date | null
+  onDatesChange?: (checkIn: Date | null, checkOut: Date | null) => void
+}
+
+export function BookingCalendar({ 
+  initialCheckIn = null, 
+  initialCheckOut = null,
+  onDatesChange 
+}: BookingCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [checkIn, setCheckIn] = useState<Date | null>(null)
-  const [checkOut, setCheckOut] = useState<Date | null>(null)
+  const [checkIn, setCheckIn] = useState<Date | null>(initialCheckIn)
+  const [checkOut, setCheckOut] = useState<Date | null>(initialCheckOut)
   const [bookedDates, setBookedDates] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
+
+  // Update local state when props change
+  useEffect(() => {
+    if (initialCheckIn) setCheckIn(initialCheckIn)
+    if (initialCheckOut) setCheckOut(initialCheckOut)
+  }, [initialCheckIn, initialCheckOut])
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -106,7 +122,12 @@ export function BookingCalendar() {
 
     if (isDateInPast(selectedDate) || isDateBooked(selectedDate)) return
 
+    let newCheckIn: Date | null = checkIn
+    let newCheckOut: Date | null = checkOut
+
     if (!checkIn || (checkIn && checkOut)) {
+      newCheckIn = selectedDate
+      newCheckOut = null
       setCheckIn(selectedDate)
       setCheckOut(null)
     } else if (selectedDate > checkIn) {
@@ -122,14 +143,24 @@ export function BookingCalendar() {
       }
 
       if (hasBookedDate) {
+        newCheckIn = selectedDate
+        newCheckOut = null
         setCheckIn(selectedDate)
         setCheckOut(null)
       } else {
+        newCheckOut = selectedDate
         setCheckOut(selectedDate)
       }
     } else {
+      newCheckIn = selectedDate
+      newCheckOut = null
       setCheckIn(selectedDate)
       setCheckOut(null)
+    }
+
+    // Notify parent component of date changes
+    if (onDatesChange) {
+      onDatesChange(newCheckIn, newCheckOut)
     }
   }
 
