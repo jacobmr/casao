@@ -54,14 +54,22 @@ export function AvailabilityCalendar() {
             if (pricingResponse.ok) {
               const pricingData = await pricingResponse.json()
               if (pricingData.success && pricingData.data) {
-                pricingData.data.forEach((item: any) => {
-                  pricingByDate.set(item.date, item.price)
-                })
+                // Handle both array format [{date, price}] and object format {date: price}
+                if (Array.isArray(pricingData.data)) {
+                  pricingData.data.forEach((item: any) => {
+                    pricingByDate.set(item.date, item.price)
+                  })
+                } else {
+                  // Object format from Redis: {"2026-02-01": 922, ...}
+                  Object.entries(pricingData.data).forEach(([date, price]) => {
+                    pricingByDate.set(date, price as number)
+                  })
+                }
                 console.log('💰 Loaded pricing for', pricingByDate.size, 'days')
               }
             }
           } catch (e) {
-            console.log('💰 No cached pricing available')
+            console.log('💰 No cached pricing available', e)
           }
           
           const availMap = new Map<string, DayAvailability>()
