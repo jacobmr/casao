@@ -8,11 +8,11 @@
 - ✅ Uses centralized token service
 - ✅ Tested with curl - returns correct data
 
-### Task 1.2: Update Calendar Component 🚧 NEXT
-- [ ] Remove quote-testing availability logic
-- [ ] Add `fetchMonthAvailability()` using calendar API
-- [ ] Update blocked dates from API response
-- [ ] Test calendar shows correct availability
+### Task 1.2: Update Calendar Component ✅ DONE
+- ✅ Removed quote-testing availability logic
+- ✅ Added `fetchMonthAvailability()` using calendar API
+- ✅ Updates blocked dates from API response
+- ✅ Calendar now shows real Guesty availability
 
 ### Task 1.3: Archive Unused Files ✅ DONE
 - ✅ Deep archive pass - moved all unused files
@@ -52,6 +52,27 @@
 
 ---
 
-## Next: Task 1.2 - Update Calendar Component
+---
+
+## Sprint 2: Payment Page 🚧 IN PROGRESS
+
+### Task 2.1: Create Payment Page ✅ DONE
+- ✅ Created `/app/book/payment/page.jsx`
+- ✅ Guest information form (firstName, lastName, email, phone)
+- ✅ Discount code input field (ready for when codes are activated)
+- ✅ Booking summary sidebar
+- ✅ Terms & conditions checkbox
+- ✅ Payment placeholder (Stripe integration next)
+- ✅ Updated calendar to link to payment page
+
+### Task 2.2: Stripe Integration 🚧 NEXT
+- [ ] Install Stripe packages
+- [ ] Add Stripe Elements
+- [ ] Create payment method
+- [ ] Handle payment errors
+
+---
+
+## Next: Task 2.2 - Stripe Integration
 
 Ready to continue!

@@ -38,30 +38,28 @@ Complete the booking flow, clean up the codebase, and deploy v0 to Vercel for UX
 
 ## Sprint 2: Payment Page (2 hours)
 
-### Task 2.1: Setup Stripe
-- [ ] Install Stripe packages: `npm install @stripe/stripe-js @stripe/react-stripe-js`
-- [ ] Add Stripe publishable key to `.env`
-- [ ] Create Stripe provider wrapper
+### Task 2.1: Create Payment Page ✅ DONE
+- [x] Create `/app/book/payment/page.jsx`
+- [x] Accept `quoteId` from URL params
+- [x] Show booking summary (dates, guests, price)
+- [x] Guest information form (firstName, lastName, email, phone)
+- [x] Discount code field
+- [x] Terms & conditions checkbox
+- [x] Update calendar to link to payment page
 
-### Task 2.2: Create Payment Page
-- [ ] Create `/app/book/payment/page.jsx`
-- [ ] Accept `quoteId` from URL params
-- [ ] Fetch and display quote details
-- [ ] Show booking summary (dates, guests, price)
+### Task 2.2: Setup GuestyPay SDK
+- [ ] Install GuestyPay SDK: `npm install @guestyorg/tokenization-js`
+- [ ] Get payment provider ID from Guesty
+- [ ] Initialize GuestyPay SDK in payment page
+- [ ] Add credit card form using SDK
 
-### Task 2.3: Guest Information Form
-- [ ] Add form fields: firstName, lastName, email, phone
-- [ ] Add form validation
-- [ ] Add terms & conditions checkbox
-- [ ] Style with Tailwind
-
-### Task 2.4: Stripe Payment Form
-- [ ] Add Stripe Elements provider
-- [ ] Add CardElement component
-- [ ] Handle payment method creation
+### Task 2.3: Payment Tokenization
+- [ ] Integrate GuestyPay tokenization
+- [ ] Handle card validation
+- [ ] Get payment token from SDK
 - [ ] Show loading states and errors
 
-**Deliverable**: Complete payment page with guest form and Stripe integration
+**Deliverable**: Complete payment page with GuestyPay integration
 
 ---
 
@@ -199,7 +197,7 @@ GUESTY_CLIENT_SECRET=Za1CCofPzDMsOrTuuoU76hwxoYZHNDMpP1-zw7prUuLE8OxTOLhk4Vutea9
 GUESTY_OAUTH_TOKEN_URL=https://booking.guesty.com/oauth2/token
 GUESTY_PROPERTY_ID=688a8aae483ff0001243e891
 GUESTY_OAUTH_SCOPE=booking_engine:api
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+# No Stripe needed - Guesty handles all payments via GuestyPay
 ```
 
 ### Production (Vercel)

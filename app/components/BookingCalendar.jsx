@@ -9,13 +9,13 @@ import { useState, useEffect } from 'react';
  * - Fetches real-time availability from Guesty
  * - Enforces minimum night requirements
  */
-export default function BookingCalendar({ listingId, minNights = 7, maxGuests = 4, initialBlockedDates = [] }) {
+export default function BookingCalendar({ listingId, minNights = 7, maxGuests = 4 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [checkIn, setCheckIn] = useState(null);
   const [checkOut, setCheckOut] = useState(null);
   const [guests, setGuests] = useState(2);
   const [hoveredDate, setHoveredDate] = useState(null);
-  const [blockedDates, setBlockedDates] = useState(new Set(initialBlockedDates));
+  const [blockedDates, setBlockedDates] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [quote, setQuote] = useState(null);
@@ -141,62 +141,50 @@ export default function BookingCalendar({ listingId, minNights = 7, maxGuests = 
     }
   }, [checkIn, checkOut, guests]);
 
-  // Fetch availability for the current month by testing quotes
+  // Fetch availability using Guesty calendar API
   const fetchMonthAvailability = async () => {
     setLoadingAvailability(true);
+    
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
     
-    // Test availability in chunks (every 7 days) to avoid too many API calls
-    const testDates = [];
-    for (let day = 1; day <= daysInMonth; day += 7) {
-      const checkInDate = new Date(year, month, day);
-      const checkOutDate = new Date(year, month, Math.min(day + 7, daysInMonth));
-      
-      // Skip past dates
-      if (checkInDate < new Date()) continue;
-      
-      testDates.push({
-        checkIn: formatDate(checkInDate),
-        checkOut: formatDate(checkOutDate),
-      });
-    }
-
-    // Test each date range
-    const newBlockedDates = new Set(initialBlockedDates);
+    // Get first and last day of current month
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
     
-    for (const { checkIn: testCheckIn, checkOut: testCheckOut } of testDates) {
-      try {
-        const response = await fetch('/api/quotes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            listingId,
-            checkInDateLocalized: testCheckIn,
-            checkOutDateLocalized: testCheckOut,
-            adults: 2,
-            children: 0,
-            currency: 'USD',
-          }),
-        });
-
-        if (!response.ok) {
-          // If quote fails, mark these dates as potentially blocked
-          const start = new Date(testCheckIn);
-          const end = new Date(testCheckOut);
-          for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-            newBlockedDates.add(formatDate(d));
-          }
-        }
-      } catch (err) {
-        // On error, assume dates might be blocked
-        console.warn('Error checking availability:', err);
+    const fromDate = formatDate(firstDay);
+    const toDate = formatDate(lastDay);
+    
+    try {
+      const response = await fetch(
+        `/api/calendar?listingId=${listingId}&from=${fromDate}&to=${toDate}`
+      );
+      
+      if (!response.ok) {
+        console.error('Failed to fetch calendar:', response.status);
+        setLoadingAvailability(false);
+        return;
       }
+      
+      const calendarData = await response.json();
+      
+      // Build set of blocked dates from calendar response
+      const newBlockedDates = new Set();
+      
+      calendarData.forEach(day => {
+        // Block if status is not "available"
+        if (day.status !== 'available') {
+          newBlockedDates.add(day.date);
+        }
+      });
+      
+      setBlockedDates(newBlockedDates);
+      
+    } catch (err) {
+      console.error('Error fetching availability:', err);
+    } finally {
+      setLoadingAvailability(false);
     }
-
-    setBlockedDates(newBlockedDates);
-    setLoadingAvailability(false);
   };
 
   const fetchQuote = async () => {
@@ -451,10 +439,10 @@ export default function BookingCalendar({ listingId, minNights = 7, maxGuests = 
                 </div>
               </div>
               <button
-                onClick={() => window.location.href = `/book?quoteId=${quote._id}`}
+                onClick={() => window.location.href = `/book/payment?quoteId=${quote._id}`}
                 className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
-                Continue to Booking
+                Continue to Payment
               </button>
             </div>
           )}
