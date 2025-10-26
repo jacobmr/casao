@@ -177,11 +177,74 @@ export function AvailabilityCalendar() {
     }
   }
 
-  const handleBookNow = () => {
+  const handleBookNow = async () => {
     if (!checkIn || !checkOut) return
 
-    const guestyUrl = `https://booking.guesty.com/properties/688a8aae483ff0001243e891?checkIn=${checkIn.toISOString().split('T')[0]}&checkOut=${checkOut.toISOString().split('T')[0]}&adults=${guests}`
-    window.location.href = guestyUrl
+    // Show loading state
+    setLoadingPrice(true)
+
+    try {
+      // CRITICAL: Verify availability in real-time before redirecting
+      const checkInStr = checkIn.toISOString().split('T')[0]
+      const checkOutStr = checkOut.toISOString().split('T')[0]
+      
+      console.log('🔍 Verifying real-time availability...')
+      
+      // Force fresh data by calling API directly (bypass cache)
+      const verifyResponse = await fetch(
+        `/api/calendar?from=${checkInStr}&to=${checkOutStr}&skipCache=true`
+      )
+
+      if (verifyResponse.ok) {
+        const verifyData = await verifyResponse.json()
+        const days = Array.isArray(verifyData) ? verifyData : verifyData.days || []
+        
+        // Check if any selected dates became unavailable
+        const current = new Date(checkIn)
+        const unavailableDates = []
+        
+        while (current < checkOut) {
+          const dateStr = current.toISOString().split('T')[0]
+          const dayInfo = days.find((d: any) => d.date === dateStr)
+          
+          if (!dayInfo || dayInfo.status !== 'available') {
+            unavailableDates.push(dateStr)
+          }
+          
+          current.setDate(current.getDate() + 1)
+        }
+
+        if (unavailableDates.length > 0) {
+          // Dates became unavailable!
+          alert(
+            `We're so sorry! These dates were just booked by another guest:\n\n${unavailableDates.join(', ')}\n\nPlease select different dates.`
+          )
+          
+          // Clear selection and refresh calendar
+          setCheckIn(null)
+          setCheckOut(null)
+          setPricing(null)
+          
+          // Force refresh availability
+          window.location.reload()
+          return
+        }
+
+        // All dates still available - proceed to Guesty
+        console.log('✅ Dates verified available - redirecting to Guesty')
+        const guestyUrl = `https://booking.guesty.com/properties/688a8aae483ff0001243e891?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
+        window.location.href = guestyUrl
+        
+      } else {
+        throw new Error('Failed to verify availability')
+      }
+      
+    } catch (error) {
+      console.error('Error verifying availability:', error)
+      alert('Unable to verify availability. Please try again or contact us directly.')
+    } finally {
+      setLoadingPrice(false)
+    }
   }
 
   const renderCalendar = () => {
@@ -393,12 +456,19 @@ export function AvailabilityCalendar() {
                   size="lg"
                   className="w-full"
                 >
-                  {loadingPrice ? 'Loading...' : 'Book Now with Guesty'}
+                  {loadingPrice ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Verifying availability...
+                    </span>
+                  ) : (
+                    'Book Now with Guesty'
+                  )}
                 </Button>
 
-                {checkIn && checkOut && (
+                {checkIn && checkOut && !loadingPrice && (
                   <p className="text-xs text-muted-foreground text-center mt-4">
-                    You'll be redirected to Guesty's secure booking page
+                    We'll verify availability before redirecting to Guesty's secure booking page
                   </p>
                 )}
               </Card>

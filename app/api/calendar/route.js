@@ -21,13 +21,21 @@ export async function GET(request) {
     const year = fromDate.getFullYear();
     const month = fromDate.getMonth();
     
-    // Check cache first
-    const cached = getCachedAvailability(year, month);
-    if (cached) {
-      return NextResponse.json(cached);
+    // Check if we should skip cache (for real-time verification)
+    const skipCache = searchParams.get('skipCache') === 'true';
+    
+    // Check cache first (unless skipCache is true)
+    if (!skipCache) {
+      const cached = getCachedAvailability(year, month);
+      if (cached) {
+        console.log(`✅ Returning cached data for ${year}-${month}`);
+        return NextResponse.json(cached);
+      }
+    } else {
+      console.log(`🔍 Cache bypass requested - fetching fresh data`);
     }
     
-    // Cache miss - fetch from Guesty
+    // Cache miss or bypass - fetch from Guesty
     console.log(`🌐 Fetching from Guesty API: ${from} to ${to}`);
     const token = await getCachedToken();
     
