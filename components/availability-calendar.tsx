@@ -32,10 +32,9 @@ export function AvailabilityCalendar() {
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
 
-  // Fetch availability for current month (cached server-side)
-  // Pricing will show when user selects dates
+  // Fetch availability and pricing for current month (cached server-side)
   useEffect(() => {
-    const fetchAvailability = async () => {
+    const fetchAvailabilityAndPricing = async () => {
       setLoading(true)
       try {
         const from = new Date(year, month, 1).toISOString().split("T")[0]
@@ -48,6 +47,23 @@ export function AvailabilityCalendar() {
           const availData = await response.json()
           console.log('📅 Availability Response (cached):', availData)
           
+          // Load monthly pricing from cache
+          const pricingByDate = new Map<string, number>()
+          try {
+            const pricingResponse = await fetch(`/api/pricing/monthly-cached?year=${year}&month=${month}`)
+            if (pricingResponse.ok) {
+              const pricingData = await pricingResponse.json()
+              if (pricingData.success && pricingData.data) {
+                pricingData.data.forEach((item: any) => {
+                  pricingByDate.set(item.date, item.price)
+                })
+                console.log('💰 Loaded pricing for', pricingByDate.size, 'days')
+              }
+            }
+          } catch (e) {
+            console.log('💰 No cached pricing available')
+          }
+          
           const availMap = new Map<string, DayAvailability>()
           const days = Array.isArray(availData) ? availData : availData.days || []
           
@@ -56,7 +72,7 @@ export function AvailabilityCalendar() {
               const dayData: DayAvailability = {
                 date: day.date,
                 status: day.status === 'available' ? 'available' : 'booked',
-                price: undefined // Pricing shown when dates selected
+                price: pricingByDate.get(day.date) // Add per-day pricing from cache
               }
               availMap.set(dayData.date, dayData)
             })
@@ -74,7 +90,7 @@ export function AvailabilityCalendar() {
       }
     }
 
-    fetchAvailability()
+    fetchAvailabilityAndPricing()
   }, [year, month])
 
   // Fetch pricing when dates are selected
