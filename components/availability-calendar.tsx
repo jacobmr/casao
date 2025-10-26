@@ -63,10 +63,13 @@ export function AvailabilityCalendar() {
           if (priceResponse.ok) {
             const priceData = await priceResponse.json()
             const days = priceData.rates?.ratePlans?.[0]?.days || []
+            console.log('💰 Raw pricing days:', days)
             days.forEach((day: any) => {
+              console.log(`  Setting price for ${day.date}: $${day.price}`)
               pricingByDate.set(day.date, day.price)
             })
             console.log('💰 Per-day pricing loaded:', pricingByDate.size, 'days')
+            console.log('💰 Pricing map:', Array.from(pricingByDate.entries()))
           }
           
           const availMap = new Map<string, DayAvailability>()
@@ -266,8 +269,8 @@ export function AvailabilityCalendar() {
 
         // All dates still available - proceed to Guesty
         console.log('✅ Dates verified available - redirecting to Guesty')
-        // Use Guesty's booking engine URL format
-        const guestyUrl = `https://casavistas.guestybookings.com/properties/688a8aae483ff0001243e891?checkInDate=${checkInStr}&checkOutDate=${checkOutStr}&adults=${guests}`
+        // Use Guesty's direct booking URL
+        const guestyUrl = `https://book.hospitable.com/widget/688a8aae483ff0001243e891?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
         console.log('🔗 Redirect URL:', guestyUrl)
         window.location.href = guestyUrl
         
@@ -321,7 +324,7 @@ export function AvailabilityCalendar() {
         >
           <span className={cn("font-medium", isAvailable && "text-foreground")}>{day}</span>
           {isAvailable && dayInfo?.price && (
-            <span className="text-[10px] font-semibold text-foreground/70 mt-0.5">
+            <span className="text-sm font-medium text-foreground mt-1">
               ${Math.round(dayInfo.price)}
             </span>
           )}
@@ -511,7 +514,7 @@ export function AvailabilityCalendar() {
                       Verifying availability...
                     </span>
                   ) : (
-                    'Book Now with Guesty'
+                    'Book This!'
                   )}
                 </Button>
 

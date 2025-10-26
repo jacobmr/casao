@@ -22,6 +22,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cache
+.cache
+
 # Utility scripts (not part of app)
 scripts/
 
