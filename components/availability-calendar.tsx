@@ -259,12 +259,12 @@ export function AvailabilityCalendar() {
           return
         }
 
-        // All dates still available - redirect to PM's Guesty booking page
-        console.log('✅ Dates verified available - redirecting to booking')
-        // Use PM's Guesty booking URL with pre-filled data
-        const guestyUrl = `https://bluezoneexperience.guestybookings.com/en/properties/688a8aae483ff0001243e891/checkout?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
-        console.log('🔗 Redirect URL:', guestyUrl)
-        window.location.href = guestyUrl
+        // All dates still available - redirect to branded handoff page
+        console.log('✅ Dates verified available - redirecting to checkout')
+        // Use Casa O branded handoff endpoint
+        const handoffUrl = `/api/handoff?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
+        console.log('🔗 Handoff URL:', handoffUrl)
+        window.location.href = handoffUrl
         
       } else {
         throw new Error('Failed to verify availability')
