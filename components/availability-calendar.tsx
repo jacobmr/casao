@@ -310,7 +310,8 @@ export function AvailabilityCalendar() {
             "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent",
             isSelected && "bg-primary/20 text-primary",
             (isCheckInDate || isCheckOutDate) && "bg-primary text-primary-foreground hover:bg-primary/90 font-bold",
-            !isAvailable && !isPast && "bg-destructive/10 text-destructive",
+            !isAvailable && !isPast && "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+            isAvailable && !isSelected && !isCheckInDate && !isCheckOutDate && "border-2 border-green-500 hover:border-green-600",
             isPast && "text-muted-foreground",
           )}
         >
@@ -388,11 +389,11 @@ export function AvailabilityCalendar() {
                   <span className="text-muted-foreground">Selected</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded bg-background border-2" />
+                  <div className="h-4 w-4 rounded bg-background border-2 border-green-500" />
                   <span className="text-muted-foreground">Available</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded bg-destructive/10" />
+                  <div className="h-4 w-4 rounded bg-red-100 dark:bg-red-900/30" />
                   <span className="text-muted-foreground">Booked</span>
                 </div>
               </div>
