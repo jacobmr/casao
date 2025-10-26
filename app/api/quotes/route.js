@@ -16,7 +16,7 @@ export async function POST(request) {
     }
     
     // Check cache first
-    const cached = getCachedPricing(checkIn, checkOut, guests);
+    const cached = await getCachedPricing(checkIn, checkOut, guests);
     if (cached) {
       return NextResponse.json(cached);
     }
@@ -65,7 +65,7 @@ export async function POST(request) {
     console.log('  - money (top level):', data.money);
     
     // Cache the result
-    setCachedPricing(checkIn, checkOut, guests, data);
+    await setCachedPricing(checkIn, checkOut, guests, data);
     
     return NextResponse.json(data);
     

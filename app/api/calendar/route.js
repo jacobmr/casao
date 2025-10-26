@@ -26,7 +26,7 @@ export async function GET(request) {
     
     // Check cache first (unless skipCache is true)
     if (!skipCache) {
-      const cached = getCachedAvailability(year, month);
+      const cached = await getCachedAvailability(year, month);
       if (cached) {
         console.log(`✅ Returning cached data for ${year}-${month}`);
         return NextResponse.json(cached);
@@ -59,9 +59,9 @@ export async function GET(request) {
     const data = await response.json();
     
     // Cache the result
-    setCachedAvailability(year, month, data);
+    await setCachedAvailability(year, month, data.days || data);
     
-    return NextResponse.json(data);
+    return NextResponse.json(data.days || data);
     
   } catch (error) {
     console.error('Calendar API error:', error);
