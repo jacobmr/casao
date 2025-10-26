@@ -28,6 +28,27 @@
 **Root cause:** Warmup only caches availability, not pricing
 **Fix:** Update warmup-cache to also populate monthly pricing cache
 
+### 📝 Content Updates: Footer & Contact Info
+- [ ] **Remove incorrect phone number**
+- [ ] **Update email:** info@casavistas.net
+- [ ] **Remove:** "Book Now" and "Contact Us" buttons
+- [ ] **Update address:** Brasilito, Costa Rica
+- [ ] Clean up footer layout
+
+**File to update:** `/components/footer.tsx` or similar
+
+### ⚡ Performance: Hero Image Loading
+- [ ] **Optimize first image load** - Currently very slow
+- [ ] Implement image optimization strategies:
+  - [ ] Use Next.js Image component with priority
+  - [ ] Add blur placeholder
+  - [ ] Optimize image size/format (WebP)
+  - [ ] Consider CDN for images
+  - [ ] Lazy load other images
+
+**Current issue:** Hero image loads slowly on initial page load
+**Target:** < 1 second for hero image
+
 ### 🎨 UX Improvements: Calendar & Booking Flow
 - [ ] **Modal for availability** - Calendar opens in modal instead of pushing content down
 - [ ] **Smaller calendar** - Reduce size since it's in a modal
