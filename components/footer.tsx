@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin } from "lucide-react"
+import { Mail, MapPin } from "lucide-react"
 import Link from "next/link"
 
 export function Footer() {
@@ -20,23 +20,18 @@ export function Footer() {
             <h4 className="font-semibold text-lg mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/booking" className="text-background/80 hover:text-background transition-colors">
-                  Book Now
-                </Link>
-              </li>
-              <li>
                 <Link href="#amenities" className="text-background/80 hover:text-background transition-colors">
                   Amenities
                 </Link>
               </li>
               <li>
-                <Link href="#reviews" className="text-background/80 hover:text-background transition-colors">
-                  Reviews
+                <Link href="#availability" className="text-background/80 hover:text-background transition-colors">
+                  Availability
                 </Link>
               </li>
               <li>
-                <Link href="#contact" className="text-background/80 hover:text-background transition-colors">
-                  Contact Us
+                <Link href="#reviews" className="text-background/80 hover:text-background transition-colors">
+                  Reviews
                 </Link>
               </li>
             </ul>
@@ -49,21 +44,15 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <Mail className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <a
-                  href="mailto:info@casavistas.com"
+                  href="mailto:info@casavistas.net"
                   className="text-background/80 hover:text-background transition-colors"
                 >
-                  info@casavistas.com
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <Phone className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                <a href="tel:+15551234567" className="text-background/80 hover:text-background transition-colors">
-                  +1 (555) 123-4567
+                  info@casavistas.net
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                <span className="text-background/80">Guanacaste Province, Costa Rica</span>
+                <span className="text-background/80">Brasilito, Costa Rica</span>
               </li>
             </ul>
           </div>
