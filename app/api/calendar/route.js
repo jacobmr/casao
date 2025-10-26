@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getCachedToken } from '../../../lib/token-service';
 import { getCachedAvailability, setCachedAvailability } from '../../../lib/availability-cache';
+import { ensureCacheWarmedUp } from '../../../lib/cache-warmup';
 
 export async function GET(request) {
+  // Trigger cache warmup if needed (runs in background)
+  ensureCacheWarmedUp();
   try {
     const { searchParams } = new URL(request.url);
     const listingId = searchParams.get('listingId') || process.env.GUESTY_PROPERTY_ID;
