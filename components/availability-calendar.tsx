@@ -37,20 +37,42 @@ export function AvailabilityCalendar() {
     const fetchAvailability = async () => {
       setLoading(true)
       try {
-        const startDate = new Date(year, month, 1).toISOString().split("T")[0]
-        const endDate = new Date(year, month + 1, 0).toISOString().split("T")[0]
+        const from = new Date(year, month, 1).toISOString().split("T")[0]
+        const to = new Date(year, month + 1, 0).toISOString().split("T")[0]
 
-        const response = await fetch(`/api/availability?startDate=${startDate}&endDate=${endDate}`)
+        const response = await fetch(`/api/calendar?from=${from}&to=${to}`)
 
         if (response.ok) {
           const data = await response.json()
+          console.log('📅 Calendar API Response:', data)
+          console.log('📅 Response type:', Array.isArray(data) ? 'Array' : 'Object')
+          console.log('📅 First item:', data[0] || data.days?.[0])
+          
           const availMap = new Map<string, DayAvailability>()
           
-          data.data?.forEach((day: DayAvailability) => {
-            availMap.set(day.date, day)
-          })
+          // Handle both array and object responses
+          const days = Array.isArray(data) ? data : data.days
+          
+          if (days && days.length > 0) {
+            days.forEach((day: any) => {
+              // Guesty returns price in different possible fields
+              const price = day.price || day.basePrice || day.nightlyRate
+              const dayData: DayAvailability = {
+                date: day.date,
+                status: day.status,
+                price: price
+              }
+              console.log(`  ${dayData.date}: ${dayData.status}`, price ? `$${price}` : 'no price', day)
+              availMap.set(dayData.date, dayData)
+            })
+          } else {
+            console.error('❌ No days found in response')
+          }
 
+          console.log('📊 Total days loaded:', availMap.size)
           setAvailability(availMap)
+        } else {
+          console.error('API Error:', response.status, await response.text())
         }
       } catch (error) {
         console.error('Error fetching availability:', error)
@@ -206,10 +228,10 @@ export function AvailabilityCalendar() {
             isPast && "text-muted-foreground",
           )}
         >
-          <span className="font-medium">{day}</span>
+          <span className={cn("font-medium", isAvailable && "text-foreground")}>{day}</span>
           {isAvailable && dayInfo?.price && (
-            <span className="text-xs text-muted-foreground mt-0.5">
-              ${dayInfo.price}
+            <span className="text-[10px] font-semibold text-foreground/70 mt-0.5">
+              ${Math.round(dayInfo.price)}
             </span>
           )}
         </button>,
@@ -347,9 +369,20 @@ export function AvailabilityCalendar() {
                 ) : pricing ? (
                   <div className="space-y-3 mb-6 pb-6 border-b">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Accommodation</span>
+                      <span className="text-muted-foreground">
+                        ${Math.round((pricing.money?.hostPayout || 0) / nights)} × {nights} {nights === 1 ? 'night' : 'nights'}
+                      </span>
                       <span className="font-medium">${pricing.money?.hostPayout?.toFixed(2) || '0.00'}</span>
                     </div>
+                    
+                    {/* Show weekly discount if 7+ nights */}
+                    {nights >= 7 && pricing.money?.discount && pricing.money.discount > 0 && (
+                      <div className="flex items-center justify-between text-sm text-green-600">
+                        <span>Weekly discount</span>
+                        <span className="font-medium">-${pricing.money.discount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Taxes & Fees</span>
                       <span className="font-medium">${(pricing.money?.totalTaxes || 0).toFixed(2)}</span>
