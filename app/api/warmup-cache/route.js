@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCachedToken } from '../../../lib/token-service-kv';
 import { setCachedAvailability, setMonthlyPricing } from '../../../lib/kv-cache';
+import { fetchMonthlyPricing } from '../../../lib/pricing-fetcher';
 
 /**
  * Manual cache warmup endpoint
@@ -39,33 +40,29 @@ export async function GET(request) {
           const data = await response.json();
           const days = data.days || data;
           
-          // Cache availability data
+          // Step 1: Cache availability data
           await setCachedAvailability(year, month, days);
+          console.log(`  ✅ Cached availability for ${year}-${month + 1}`);
           
-          // Extract and cache pricing data
+          // Step 2: Fetch and cache pricing for available dates
+          console.log(`  💰 Fetching pricing for available dates...`);
+          const pricingMap = await fetchMonthlyPricing(days);
+          
+          // Convert Map to object for Redis storage
           const pricingByDate = {};
-          if (Array.isArray(days)) {
-            days.forEach(day => {
-              if (day.date && day.price !== undefined) {
-                pricingByDate[day.date] = {
-                  price: day.price,
-                  currency: day.currency || 'USD',
-                  minNights: day.minNights || 1
-                };
-              }
-            });
-          }
+          pricingMap.forEach((price, date) => {
+            pricingByDate[date] = price;
+          });
           
-          // Cache monthly pricing
           await setMonthlyPricing(year, month, pricingByDate);
+          console.log(`  ✅ Cached pricing for ${year}-${month + 1} (${pricingMap.size} prices)`);
           
           results.push({ 
             month: `${year}-${month}`, 
             status: 'success',
             daysCount: Array.isArray(days) ? days.length : 0,
-            pricesCount: Object.keys(pricingByDate).length
+            pricesCount: pricingMap.size
           });
-          console.log(`✅ Cached ${year}-${month + 1} (${Object.keys(pricingByDate).length} prices)`);
         } else {
           results.push({ month: `${year}-${month}`, status: 'failed', error: response.status });
         }
