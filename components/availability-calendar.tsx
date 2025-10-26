@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users, Loader2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users, Loader2, Tag, CheckCircle2, XCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const MONTHS = [
@@ -28,6 +29,9 @@ export function AvailabilityCalendar() {
   const [loading, setLoading] = useState(false)
   const [pricing, setPricing] = useState<any>(null)
   const [loadingPrice, setLoadingPrice] = useState(false)
+  const [discountCode, setDiscountCode] = useState('')
+  const [appliedDiscount, setAppliedDiscount] = useState<any>(null)
+  const [discountError, setDiscountError] = useState('')
 
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
@@ -122,8 +126,9 @@ export function AvailabilityCalendar() {
           body: JSON.stringify({
             checkIn: checkInStr,
             checkOut: checkOutStr,
-            guests
-          })
+            guests,
+            coupon: discountCode || undefined,
+          }),
         })
 
         if (response.ok) {
@@ -133,6 +138,19 @@ export function AvailabilityCalendar() {
           console.log('💵 Accommodation:', data.rates?.ratePlans?.[0]?.money?.fareAccommodation)
           console.log('💵 Total:', data.rates?.ratePlans?.[0]?.money?.fareTotal)
           setPricing(data)
+          
+          // Check if discount was applied
+          if (discountCode && data.coupons && data.coupons.length > 0) {
+            setAppliedDiscount(data.coupons[0])
+            setDiscountError('')
+          } else if (discountCode) {
+            // Code was entered but not applied (invalid)
+            setAppliedDiscount(null)
+            setDiscountError('Invalid discount code')
+          } else {
+            setAppliedDiscount(null)
+            setDiscountError('')
+          }
         } else {
           const errorText = await response.text()
           console.error('❌ Quote API error:', response.status, errorText)
@@ -145,7 +163,7 @@ export function AvailabilityCalendar() {
     }
 
     fetchPricing()
-  }, [checkIn, checkOut, guests])
+  }, [checkIn, checkOut, guests, discountCode])
 
   const goToPreviousMonth = () => {
     setCurrentMonth(new Date(year, month - 1, 1))
@@ -270,7 +288,7 @@ export function AvailabilityCalendar() {
         // All dates still available - redirect to branded handoff page
         console.log('✅ Dates verified available - redirecting to checkout')
         // Use Casa O branded handoff endpoint
-        const handoffUrl = `/api/handoff?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
+        const handoffUrl = `/api/handoff?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}${discountCode ? `&coupon=${encodeURIComponent(discountCode)}` : ''}`
         console.log('🔗 Handoff URL:', handoffUrl)
         window.location.href = handoffUrl
         
@@ -456,6 +474,51 @@ export function AvailabilityCalendar() {
                   </div>
                 )}
 
+                {/* Discount Code Input */}
+                {checkIn && checkOut && (
+                  <div className="mb-6 space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <Tag className="h-4 w-4" />
+                      Discount Code (Optional)
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={discountCode}
+                        onChange={(e) => {
+                          setDiscountCode(e.target.value.toUpperCase())
+                          setDiscountError('')
+                        }}
+                        placeholder="Enter code (e.g., CASAO20)"
+                        className="flex-1"
+                        maxLength={20}
+                      />
+                    </div>
+                    
+                    {/* Discount Applied Success */}
+                    {appliedDiscount && (
+                      <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-green-900">
+                            {appliedDiscount.name || 'Discount'} Applied!
+                          </p>
+                          <p className="text-sm text-green-700">
+                            Save {appliedDiscount.type === 'percentage' ? `${appliedDiscount.adjustment}%` : `$${Math.abs(appliedDiscount.adjustment)}`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Discount Error */}
+                    {discountError && !appliedDiscount && (
+                      <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <XCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                        <p className="text-sm text-red-700">{discountError}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Pricing Breakdown */}
                 {loadingPrice ? (
                   <div className="flex items-center justify-center py-8">
@@ -485,6 +548,17 @@ export function AvailabilityCalendar() {
                             <div className="flex items-center justify-between text-sm text-green-600">
                               <span>Weekly discount</span>
                               <span className="font-medium">-${money.discount.toFixed(2)}</span>
+                            </div>
+                          )}
+                          
+                          {/* Show coupon discount */}
+                          {appliedDiscount && appliedDiscount.adjustment && (
+                            <div className="flex items-center justify-between text-sm text-green-600 font-medium">
+                              <span className="flex items-center gap-1">
+                                <Tag className="h-4 w-4" />
+                                {appliedDiscount.name || 'Discount'}
+                              </span>
+                              <span>-${Math.abs(appliedDiscount.adjustment).toFixed(2)}</span>
                             </div>
                           )}
                           

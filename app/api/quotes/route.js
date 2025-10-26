@@ -5,7 +5,7 @@ import { getCachedPricing, setCachedPricing } from '../../../lib/kv-cache';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { checkIn, checkOut, guests = 2 } = body;
+    const { checkIn, checkOut, guests = 2, coupon } = body;
     const listingId = process.env.GUESTY_PROPERTY_ID;
     
     if (!checkIn || !checkOut) {
@@ -15,18 +15,34 @@ export async function POST(request) {
       );
     }
     
-    // Check cache first
-    const cached = await getCachedPricing(checkIn, checkOut, guests);
-    if (cached) {
-      return NextResponse.json(cached);
+    // Don't cache if coupon is provided (need fresh pricing with discount)
+    if (!coupon) {
+      const cached = await getCachedPricing(checkIn, checkOut, guests);
+      if (cached) {
+        return NextResponse.json(cached);
+      }
     }
     
-    console.log(`💰 Fetching quote for ${checkIn} to ${checkOut}, ${guests} guests`);
+    console.log(`💰 Fetching quote for ${checkIn} to ${checkOut}, ${guests} guests${coupon ? ` with coupon: ${coupon}` : ''}`);
     
     const token = await getCachedToken();
     
     // Use Guesty's quotes endpoint
     const url = 'https://booking.guesty.com/api/reservations/quotes';
+    
+    const requestBody = {
+      listingId,
+      checkInDateLocalized: checkIn,
+      checkOutDateLocalized: checkOut,
+      adults: guests,
+      children: 0,
+      currency: 'USD',
+    };
+    
+    // Add coupon if provided
+    if (coupon && coupon.trim()) {
+      requestBody.coupons = coupon.trim().toUpperCase();
+    }
     
     const response = await fetch(url, {
       method: 'POST',
@@ -34,14 +50,7 @@ export async function POST(request) {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        listingId,
-        checkInDateLocalized: checkIn,
-        checkOutDateLocalized: checkOut,
-        adults: guests,
-        children: 0,
-        currency: 'USD',
-      }),
+      body: JSON.stringify(requestBody),
     });
     
     if (!response.ok) {
