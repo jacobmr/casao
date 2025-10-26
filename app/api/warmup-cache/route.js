@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getCachedToken } from '../../../lib/token-service-kv';
-import { setCachedAvailability } from '../../../lib/kv-cache';
+import { setCachedAvailability, setMonthlyPricing } from '../../../lib/kv-cache';
 
 /**
  * Manual cache warmup endpoint
- * Pre-populates KV cache with 6 months of availability data
+ * Pre-populates KV cache with 6 months of availability AND pricing data
  */
 export async function GET(request) {
   try {
@@ -37,9 +37,35 @@ export async function GET(request) {
         
         if (response.ok) {
           const data = await response.json();
-          await setCachedAvailability(year, month, data.days || data);
-          results.push({ month: `${year}-${month}`, status: 'success' });
-          console.log(`✅ Cached ${year}-${month + 1}`);
+          const days = data.days || data;
+          
+          // Cache availability data
+          await setCachedAvailability(year, month, days);
+          
+          // Extract and cache pricing data
+          const pricingByDate = {};
+          if (Array.isArray(days)) {
+            days.forEach(day => {
+              if (day.date && day.price !== undefined) {
+                pricingByDate[day.date] = {
+                  price: day.price,
+                  currency: day.currency || 'USD',
+                  minNights: day.minNights || 1
+                };
+              }
+            });
+          }
+          
+          // Cache monthly pricing
+          await setMonthlyPricing(year, month, pricingByDate);
+          
+          results.push({ 
+            month: `${year}-${month}`, 
+            status: 'success',
+            daysCount: Array.isArray(days) ? days.length : 0,
+            pricesCount: Object.keys(pricingByDate).length
+          });
+          console.log(`✅ Cached ${year}-${month + 1} (${Object.keys(pricingByDate).length} prices)`);
         } else {
           results.push({ month: `${year}-${month}`, status: 'failed', error: response.status });
         }
