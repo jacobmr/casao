@@ -41,26 +41,37 @@ export function HeroCarousel() {
     <section className="relative h-[60vh] md:h-[75vh] lg:h-[85vh] w-full overflow-hidden bg-muted">
       {/* Hero Images */}
       <div className="relative h-full w-full">
-        {Array.from({ length: TOTAL_IMAGES }).map((_, index) => (
-          <div
-            key={index}
-            className={cn(
-              "absolute inset-0 transition-opacity duration-1000",
-              currentIndex === index ? "opacity-100" : "opacity-0",
-            )}
-          >
-            <Image
-              src={`/images/property/${String(index + 1).padStart(3, "0")}.jpg`}
-              alt={`Casa Vistas - View ${index + 1}`}
-              fill
-              className="object-cover"
-              priority={index < 3}
-              quality={85}
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          </div>
-        ))}
+        {Array.from({ length: TOTAL_IMAGES }).map((_, index) => {
+          // Only render current image and adjacent images (prev/next) for performance
+          const isPrevious = index === (currentIndex - 1 + TOTAL_IMAGES) % TOTAL_IMAGES
+          const isCurrent = index === currentIndex
+          const isNext = index === (currentIndex + 1) % TOTAL_IMAGES
+          const shouldRender = isPrevious || isCurrent || isNext
+          
+          if (!shouldRender) return null
+          
+          return (
+            <div
+              key={index}
+              className={cn(
+                "absolute inset-0 transition-opacity duration-1000",
+                currentIndex === index ? "opacity-100" : "opacity-0",
+              )}
+            >
+              <Image
+                src={`/images/property/${String(index + 1).padStart(3, "0")}.jpg`}
+                alt={`Casa Vistas - View ${index + 1}`}
+                fill
+                className="object-cover"
+                priority={index === 0}
+                quality={85}
+                sizes="100vw"
+                loading={index === 0 ? "eager" : "lazy"}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            </div>
+          )
+        })}
       </div>
 
       {/* Hero Content */}
