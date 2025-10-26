@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -48,10 +49,14 @@ export function HeroCarousel() {
               currentIndex === index ? "opacity-100" : "opacity-0",
             )}
           >
-            <img
+            <Image
               src={`/images/property/${String(index + 1).padStart(3, "0")}.jpg`}
               alt={`Casa Vistas - View ${index + 1}`}
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
+              priority={index < 3}
+              quality={85}
+              sizes="100vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           </div>
@@ -66,7 +71,7 @@ export function HeroCarousel() {
         <p className="text-lg md:text-xl lg:text-2xl text-white/95 max-w-3xl mb-8 text-balance">
           Luxury ocean-view vacation rental with private infinity-edge pool
         </p>
-        <a href="#booking-widget">
+        <a href="#availability">
           <Button
             size="lg"
             className="bg-primary hover:bg-primary/90 text-primary-foreground text-base md:text-lg px-8 py-6 rounded-xl shadow-2xl"
