@@ -17,10 +17,38 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Casa Vistas - Luxury Vacation Rental in Costa Rica",
+  title: "Casa Vistas at Mar Vista | Luxury Ocean-View Rental in Brasilito, Costa Rica",
   description:
-    "Experience paradise at Casa Vistas, a stunning luxury vacation rental in Costa Rica with breathtaking ocean views and world-class amenities.",
-  generator: "v0.app",
+    "Experience paradise at Casa Vistas, a stunning luxury vacation rental in Brasilito, Costa Rica with breathtaking ocean views, private infinity pool, and world-class amenities. Book your dream getaway today.",
+  keywords: ["Costa Rica vacation rental", "Brasilito luxury villa", "ocean view rental", "infinity pool", "Guanacaste", "Mar Vista"],
+  authors: [{ name: "Casa Vistas" }],
+  creator: "Casa Vistas",
+  publisher: "Casa Vistas",
+  metadataBase: new URL('https://www.casavistas.net'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "Casa Vistas at Mar Vista | Luxury Ocean-View Rental",
+    description: "Experience paradise at Casa Vistas with breathtaking ocean views, private infinity pool, and world-class amenities in Brasilito, Costa Rica.",
+    url: 'https://www.casavistas.net',
+    siteName: 'Casa Vistas',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Casa Vistas at Mar Vista | Luxury Ocean-View Rental",
+    description: "Experience paradise at Casa Vistas with breathtaking ocean views and private infinity pool in Costa Rica.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
 }
 
 export default function RootLayout({
