@@ -18,6 +18,16 @@
 
 ## 📋 PHASE 2: Branding & Polish (Tomorrow - Oct 26)
 
+### 🔧 BUG FIX: Calendar Pricing (PRIORITY)
+- [ ] Fix per-day pricing display on production
+- [ ] Update warmup to cache monthly pricing
+- [ ] Extract pricing from availability data
+- [ ] Test on production site
+
+**Issue:** Pricing worked locally but not on production
+**Root cause:** Warmup only caches availability, not pricing
+**Fix:** Update warmup-cache to also populate monthly pricing cache
+
 ### Domain Setup
 - [ ] Purchase/configure custom domain (e.g., casao.com)
 - [ ] Update Vercel project with custom domain
