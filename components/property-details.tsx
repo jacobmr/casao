@@ -12,19 +12,13 @@ export function PropertyDetails() {
           <Card className="p-8 md:p-12 mb-8">
             <div className="prose prose-lg max-w-none">
               <p className="text-foreground leading-relaxed mb-6">
-                Casa Vistas is a breathtaking luxury villa perched on the hills of Costa Rica, offering panoramic ocean
-                views that will take your breath away. This stunning 5-bedroom estate combines modern elegance with
-                tropical charm, creating the perfect sanctuary for your Costa Rican getaway.
+                Experience the total luxury and comfort of this house perched 300 feet above the Pacific Ocean with beautiful ocean and mountain views! Casa Vistas features a spacious 2,200 sq. ft. main house with 3 elegantly designed bedrooms and 3.5 bathrooms, complemented by a detached guest house offering an additional 1,400 sq. ft. with 2 bedrooms and 1 bathroom.
               </p>
               <p className="text-foreground leading-relaxed mb-6">
-                Wake up to the sound of waves and howler monkeys, spend your days lounging by the infinity pool, and
-                watch spectacular sunsets from your private terrace. Whether you're seeking adventure or relaxation,
-                Casa Vistas provides the perfect base for exploring Costa Rica's natural wonders.
+                The stunning infinity-edge pool is your personal oasis, offering the best sunset views along the coast. The great room boasts 20-foot ceilings, oversized glass sliding doors, and a gourmet kitchen with a large island, ideal for entertaining. Unwind on the covered terrace equipped with a gas BBQ, mini-fridge, lounge furniture, and outdoor dining.
               </p>
               <p className="text-foreground leading-relaxed">
-                Our dedicated concierge team is available to arrange everything from private chefs and spa services to
-                surf lessons and rainforest tours. Experience the pura vida lifestyle in unparalleled luxury and
-                comfort.
+                Let us help you personalize your stay! From tour reservations and fishing charters to rental car bookings and in-home chef services, we handle it all at no extra charge. Enjoy preferred corporate rates on transportation and tours.
               </p>
             </div>
           </Card>
@@ -35,19 +29,19 @@ export function PropertyDetails() {
               <ul className="space-y-3 text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>5 minutes to pristine beaches</span>
+                  <span>Flamingo Beach - 1.5 miles away</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>15 minutes to downtown restaurants</span>
+                  <span>12 unique beaches within short drive</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>30 minutes to national parks</span>
+                  <span>Mar Vista community amenities included</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>45 minutes to international airport</span>
+                  <span>24/7 gated community security</span>
                 </li>
               </ul>
             </Card>
@@ -61,15 +55,15 @@ export function PropertyDetails() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>Check-out: 11:00 AM</span>
+                  <span>Check-out: 10:00 AM</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>No smoking inside the property</span>
+                  <span>No pets and non-smoking property</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span>Pets considered upon request</span>
+                  <span>$1,000 security deposit required</span>
                 </li>
               </ul>
             </Card>

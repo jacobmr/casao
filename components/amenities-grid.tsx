@@ -15,18 +15,18 @@ import {
 import { Card } from "@/components/ui/card"
 
 const amenities = [
-  { icon: Waves, title: "Infinity Pool", description: "Stunning ocean-view infinity pool" },
-  { icon: Wifi, title: "High-Speed WiFi", description: "Fiber optic internet throughout" },
-  { icon: Wind, title: "Air Conditioning", description: "Climate control in all rooms" },
-  { icon: UtensilsCrossed, title: "Gourmet Kitchen", description: "Fully equipped chef's kitchen" },
-  { icon: Tv, title: "Entertainment", description: "Smart TVs in every bedroom" },
-  { icon: Car, title: "Free Parking", description: "Secure parking for 3 vehicles" },
-  { icon: Dumbbell, title: "Fitness Center", description: "Private gym with ocean views" },
-  { icon: Palmtree, title: "Tropical Gardens", description: "Lush landscaped grounds" },
-  { icon: Coffee, title: "Espresso Bar", description: "Premium coffee station" },
-  { icon: Sparkles, title: "Daily Housekeeping", description: "Professional cleaning service" },
-  { icon: Shield, title: "24/7 Security", description: "Gated community with security" },
-  { icon: Baby, title: "Family Friendly", description: "Cribs and high chairs available" },
+  { icon: Waves, title: "Infinity Pool", description: "Private infinity-edge pool with ocean views" },
+  { icon: Wifi, title: "High-Speed WiFi", description: "Fiber optic with Starlink backup" },
+  { icon: UtensilsCrossed, title: "Gourmet Kitchen", description: "Large island, modern appliances" },
+  { icon: Tv, title: "Digital Cable TV", description: "Entertainment in living areas" },
+  { icon: Wind, title: "Covered Terrace", description: "Gas BBQ, mini-fridge, outdoor dining" },
+  { icon: Coffee, title: "Coffee & Basics", description: "Coffee, spices, cooking oil included" },
+  { icon: Sparkles, title: "Beach Amenities", description: "Towels, chairs, coolers provided" },
+  { icon: Shield, title: "24/7 Security", description: "Gated Mar Vista community" },
+  { icon: Baby, title: "Family Friendly", description: "Travel cribs available on request" },
+  { icon: Palmtree, title: "Private Gardens", description: "Yoga area & breakfast nook" },
+  { icon: Dumbbell, title: "Community Gym", description: "Access to Mar Vista fitness center" },
+  { icon: Car, title: "Tennis & Pickleball", description: "Community courts available" },
 ]
 
 export function AmenitiesGrid() {

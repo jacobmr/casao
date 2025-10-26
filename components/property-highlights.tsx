@@ -1,10 +1,10 @@
 import { Home, Users, Bed, Bath } from "lucide-react"
 
 const highlights = [
-  { icon: Home, label: "Luxury Villa", value: "4,500 sq ft" },
-  { icon: Users, label: "Sleeps", value: "Up to 10 guests" },
-  { icon: Bed, label: "Bedrooms", value: "5 spacious rooms" },
-  { icon: Bath, label: "Bathrooms", value: "5.5 bathrooms" },
+  { icon: Home, label: "Luxury Villa", value: "3,600 sq ft" },
+  { icon: Users, label: "Sleeps", value: "Up to 11 guests" },
+  { icon: Bed, label: "Bedrooms", value: "5 bedrooms" },
+  { icon: Bath, label: "Bathrooms", value: "4.5 bathrooms" },
 ]
 
 export function PropertyHighlights() {

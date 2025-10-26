@@ -61,17 +61,19 @@ export function HeroCarousel() {
       {/* Hero Content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
         <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 text-balance">
-          Casa Vistas
+          Casa Vistas at Mar Vista
         </h1>
-        <p className="text-lg md:text-xl lg:text-2xl text-white/95 max-w-2xl mb-8 text-balance">
-          Your Private Paradise in Costa Rica
+        <p className="text-lg md:text-xl lg:text-2xl text-white/95 max-w-3xl mb-8 text-balance">
+          Luxury ocean-view vacation rental with private infinity-edge pool
         </p>
-        <Button
-          size="lg"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground text-base md:text-lg px-8 py-6 rounded-xl shadow-2xl"
-        >
-          Check Availability
-        </Button>
+        <a href="#booking-widget">
+          <Button
+            size="lg"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground text-base md:text-lg px-8 py-6 rounded-xl shadow-2xl"
+          >
+            Check Availability
+          </Button>
+        </a>
       </div>
 
       {/* Navigation Arrows */}
