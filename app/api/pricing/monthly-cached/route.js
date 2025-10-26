@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
-
-const fs = require('fs');
-const path = require('path');
-
-const CACHE_FILE = path.join(process.cwd(), '.cache', 'pricing.json');
+import { getMonthlyPricing } from '../../../../lib/kv-cache';
 
 /**
- * Get cached monthly pricing (read-only, fast)
+ * Get cached monthly pricing from Redis
  * GET /api/pricing/monthly-cached?year=2025&month=10
+ * 
+ * Returns per-day pricing for the calendar display
  */
 export async function GET(request) {
   try {
@@ -22,31 +20,25 @@ export async function GET(request) {
       );
     }
     
-    // Read from cache file
-    if (!fs.existsSync(CACHE_FILE)) {
-      return NextResponse.json({
-        success: false,
-        message: 'No pricing cache available'
-      });
-    }
+    console.log(`📊 Fetching monthly pricing for ${year}-${month}`);
     
-    const cacheContent = fs.readFileSync(CACHE_FILE, 'utf8');
-    const cache = JSON.parse(cacheContent);
-    
-    const monthKey = `monthly_${year}_${month}`;
-    const data = cache.data[monthKey];
+    // Read from Redis cache
+    const data = await getMonthlyPricing(year, month);
     
     if (!data) {
+      console.log(`❌ No pricing cached for ${year}-${month}`);
       return NextResponse.json({
         success: false,
         message: `No pricing cached for ${year}-${month}`
       });
     }
     
+    console.log(`✅ Found pricing for ${year}-${month}:`, Object.keys(data).length, 'days');
+    
     return NextResponse.json({
       success: true,
       data,
-      count: data.length
+      count: Object.keys(data).length
     });
     
   } catch (error) {
