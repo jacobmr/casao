@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -20,6 +21,7 @@ interface DayAvailability {
 }
 
 export function AvailabilityCalendar() {
+  const [isOpen, setIsOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [checkIn, setCheckIn] = useState<Date | null>(null)
   const [checkOut, setCheckOut] = useState<Date | null>(null)
@@ -267,12 +269,12 @@ export function AvailabilityCalendar() {
           return
         }
 
-        // All dates still available - redirect to branded handoff page
-        console.log('✅ Dates verified available - redirecting to checkout')
-        // Use Casa O branded handoff endpoint
-        const handoffUrl = `/api/handoff?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
-        console.log('🔗 Handoff URL:', handoffUrl)
-        window.location.href = handoffUrl
+        // All dates still available - redirect to enhance page to select experiences
+        console.log('✅ Dates verified available - redirecting to enhance page')
+        // Redirect to enhance page with booking details
+        const enhanceUrl = `/enhance?checkIn=${checkInStr}&checkOut=${checkOutStr}&guests=${guests}`
+        console.log('🔗 Enhance URL:', enhanceUrl)
+        window.location.href = enhanceUrl
         
       } else {
         throw new Error('Failed to verify availability')
@@ -318,7 +320,7 @@ export function AvailabilityCalendar() {
             "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent",
             isSelected && "bg-primary/20 text-primary",
             (isCheckInDate || isCheckOutDate) && "bg-primary text-primary-foreground hover:bg-primary/90 font-bold",
-            !isAvailable && !isPast && "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+            !isAvailable && !isPast && "bg-pink-200 text-pink-900 dark:bg-pink-900/50 dark:text-pink-100 font-semibold",
             isAvailable && !isSelected && !isCheckInDate && !isCheckOutDate && "border-2 border-green-500 hover:border-green-600",
             isPast && "text-muted-foreground",
           )}
@@ -347,15 +349,28 @@ export function AvailabilityCalendar() {
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             Check Availability & Pricing
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
             Select your dates to see real-time availability and pricing
           </p>
-        </div>
+          
+          {/* Trigger Button */}
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="gap-2">
+                <CalendarIcon className="h-5 w-5" />
+                Check Availability
+              </Button>
+            </DialogTrigger>
+            
+            <DialogContent className="max-w-[95vw] sm:max-w-4xl lg:max-w-6xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+              <DialogHeader>
+                <DialogTitle className="text-xl sm:text-2xl font-serif">Select Your Dates</DialogTitle>
+              </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-4">
           {/* Calendar */}
           <div className="lg:col-span-2">
-            <Card className="p-6">
+            <Card className="p-3 sm:p-6">
               {/* Calendar Header */}
               <div className="flex items-center justify-between mb-6">
                 <Button variant="outline" size="icon" onClick={goToPreviousMonth} disabled={loading}>
@@ -401,7 +416,7 @@ export function AvailabilityCalendar() {
                   <span className="text-muted-foreground">Available</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded bg-red-100 dark:bg-red-900/30" />
+                  <div className="h-4 w-4 rounded bg-pink-200 dark:bg-pink-900/50" />
                   <span className="text-muted-foreground">Booked</span>
                 </div>
               </div>
@@ -411,7 +426,7 @@ export function AvailabilityCalendar() {
           {/* Booking Summary - Sticky */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-24">
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6">
                 <h3 className="text-xl font-semibold text-foreground mb-4">Booking Summary</h3>
 
                 {/* Guest Selector */}
@@ -527,6 +542,9 @@ export function AvailabilityCalendar() {
               </Card>
             </div>
           </div>
+        </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </section>

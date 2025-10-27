@@ -1,32 +1,42 @@
-Below is a Product Requirements Document (PRD) outlining how to incorporate the experiences from the Flipsnack tour book and the additional concierge services into a “choose your experiences” page within the booking flow. The page will display each experience/service with a short summary and a checkbox to capture interest. At least two selections trigger a 5 % discount on the lodging reservation. The page will also include compelling calls‑to‑action (CTAs) to encourage engagement.
+Below is a Product Requirements Document (PRD) outlining how to position experiences and concierge services as a PRIMARY conversion driver for Casa O bookings. This dual-approach strategy includes both a public-facing experiences showcase page AND an in-booking enhancement page with selection capabilities and discount incentives.
 
 ---
 
 ## 1. Overview
 
-**Goal:** Provide guests with a unified, engaging way to add tours and concierge services to their reservation while incentivizing them with an extra discount when selecting two or more offerings.
+**Goal:** Position Casa O as a complete vacation package provider by showcasing curated experiences BEFORE and DURING the booking process, driving higher conversion rates and perceived value.
 
-**Problem Statement:** The current process for booking tours is separate from lodging reservations. Guests may overlook available experiences, and the property manager must manually cross‑reference interest. A streamlined page that summarizes all tours and services and captures interest will increase upsell opportunities and improve guest satisfaction.
+**Strategic Shift:** Experiences are not add-ons—they are core to the value proposition. Guests should discover amazing adventures and services early in their journey, building excitement and mental commitment before they even select dates.
+
+**Problem Statement:** Traditional vacation rentals compete solely on lodging features and price. By prominently featuring curated experiences (tours, wellness, concierge services), Casa O differentiates itself and creates a "complete vacation package" perception that increases booking intent and average transaction value.
 
 **Target Audience:** Guests booking vacation rentals through Bluezone Experience who are interested in customizing their stay with tours and concierge services.
 
 ## 2. Scope
 
-This PRD covers:
+This PRD covers TWO interconnected pages:
 
-* Listing all tour offerings (as per the Flipsnack tour book and the drop‑down options on the tours page).
-* Listing additional concierge services (airport transfer, rentals, babysitting, etc.).
-* Displaying concise summaries for each item.
-* Providing checkboxes to capture guest interest.
-* Indicating that selected items will be added to their booking request.
-* Applying a 5 % discount to the lodging portion if guests select at least two items.
-* Integrating the selection into the reservation flow, similar to long‑scroll “buy a book” landing pages with compelling CTAs.
+### **A. Public Experiences Page (/experiences)**
+* Showcase all 16 tours and 13 concierge services with beautiful imagery
+* Categorize by type: Adventures, Water Activities, Nature, Wellness, Concierge
+* Provide detailed descriptions, durations, and highlights
+* Include "Book Your Stay" CTAs that open the booking calendar
+* Serve as a primary conversion and discovery tool
+* Accessible via main navigation and homepage teasers
 
-Out of scope:
+### **B. In-Booking Enhancement Page (/enhance)**
+* Display same experiences in compact, selectable format
+* Provide checkboxes to capture specific guest selections
+* Apply 5% discount to lodging when 2+ experiences selected
+* Show real-time discount notification as selections change
+* Integrate seamlessly into booking flow (after date selection, before checkout)
+* Pass selections to handoff/checkout for PM follow-up
 
-* Implementing payment processing for tours (capturing interest only).
-* Pricing details (to be added separately once available).
-* Complex bundling logic beyond the simple “two items = 5 % off” rule.
+### Out of scope:
+* Payment processing for experiences (interest capture only)
+* Real-time pricing for experiences (to be added when available)
+* Complex bundling beyond "2+ items = 5% off lodging"
+* Inventory management for experiences (PM handles manually)
 
 ## 3. Requirements
 

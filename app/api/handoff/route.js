@@ -28,6 +28,7 @@ export async function GET(request) {
     const checkOut = searchParams.get('checkOut');
     const adults = searchParams.get('adults') || '2';
     const propertyId = searchParams.get('propertyId') || process.env.GUESTY_PROPERTY_ID;
+    const experiences = searchParams.get('experiences'); // Comma-separated experience IDs
 
     // Validate required parameters
     if (!checkIn || !checkOut) {
@@ -47,12 +48,19 @@ export async function GET(request) {
     // Generate unique reference ID for tracking
     const uuid = randomUUID();
     
+    // Parse experience selections
+    const selectedExperiences = experiences ? experiences.split(',').filter(Boolean) : [];
+    const hasDiscount = selectedExperiences.length >= 2;
+    
     // Log handoff for analytics
     console.log(`🔄 Handoff created: ${uuid}`, {
       checkIn,
       checkOut,
       adults,
       propertyId,
+      experiences: selectedExperiences,
+      experienceCount: selectedExperiences.length,
+      discountApplied: hasDiscount,
       timestamp: new Date().toISOString()
     });
 
@@ -234,6 +242,25 @@ export async function GET(request) {
       Your booking will be finalized securely through our property management partner, 
       <strong>Blue Zone Experience</strong>.
     </p>
+    
+    ${selectedExperiences.length > 0 ? `
+    <div style="background: #f3f4f6; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; text-align: left;">
+      <div style="font-weight: 600; color: #111827; margin-bottom: 0.75rem;">
+        ✨ Your Selected Experiences (${selectedExperiences.length})
+      </div>
+      <div style="font-size: 0.875rem; color: #6b7280; line-height: 1.6;">
+        ${selectedExperiences.map(id => `• ${id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`).join('<br>')}
+      </div>
+      ${hasDiscount ? `
+      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; font-size: 0.875rem; color: #059669; font-weight: 600;">
+        🎉 5% discount applied to your lodging!
+      </div>
+      ` : ''}
+      <div style="margin-top: 1rem; font-size: 0.75rem; color: #9ca3af;">
+        Our concierge team will contact you to confirm availability and pricing for your selected experiences.
+      </div>
+    </div>
+    ` : ''}
     
     <a class="button" href="${blueZoneURL}">
       Continue to Secure Checkout →
