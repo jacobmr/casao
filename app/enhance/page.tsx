@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { experiences, categories, getAllCategories, getExperiencesByCategory } from "@/lib/experiences-data"
 import { ExperienceListItem } from "@/components/experiences/experience-list-item"
@@ -8,7 +8,7 @@ import { DiscountBanner } from "@/components/experiences/discount-banner"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 
-export default function EnhancePage() {
+function EnhanceContent() {
   const searchParams = useSearchParams()
   const [selectedExperiences, setSelectedExperiences] = useState<string[]>([])
   
@@ -143,5 +143,20 @@ export default function EnhancePage() {
         <div className="h-24" />
       </div>
     </div>
+  )
+}
+
+export default function EnhancePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading experiences...</p>
+        </div>
+      </div>
+    }>
+      <EnhanceContent />
+    </Suspense>
   )
 }
