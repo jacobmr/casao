@@ -16,19 +16,10 @@ export function ExperienceCard({ experience, onBookClick }: ExperienceCardProps)
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
       {/* Image */}
-      <div className="relative h-48 w-full bg-muted">
-        {experience.image ? (
-          <Image 
-            src={experience.image}
-            alt={experience.name}
-            fill
-            className="object-cover"
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center text-6xl">
-            {experience.icon}
-          </div>
-        )}
+      <div className="relative h-48 w-full bg-gradient-to-br from-blue-500 to-green-500">
+        <div className="h-full w-full flex items-center justify-center text-6xl bg-black/20">
+          {experience.icon}
+        </div>
         {experience.seasonal && (
           <Badge className="absolute top-2 right-2 bg-amber-500 hover:bg-amber-600">
             Seasonal

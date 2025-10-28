@@ -18,7 +18,7 @@ export default function ExperiencesPage() {
   }
   
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-16">
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center bg-gradient-to-br from-blue-600 to-green-600">
         <div className="absolute inset-0 bg-black/30" />

@@ -55,7 +55,7 @@ function EnhanceContent() {
   }
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl">
         {/* Header */}
         <div className="text-center mb-8">
