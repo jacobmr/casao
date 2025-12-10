@@ -42,15 +42,16 @@ export default function FriendsPage() {
 
           <p>
             <strong className="text-neutral-900">
-              That means there's availability from now through Easter
+              Our scheduling error is your gain.
             </strong>{" "}
-            at our place in Costa Rica, during what's typically the most
-            sought-after (and most expensive) time of year.
+            There's availability from now through Easter at our place in
+            Brasilito, during what's typically the most sought-after
+            (and most expensive) time of year.
           </p>
 
           <p>
             Because this is last-minute, and because you're getting this
-            message, we can offer something we couldn't offer elsewhere:
+            message, I can offer something I couldn't offer elsewhere:
           </p>
 
           {/* Special offer box */}
@@ -108,6 +109,38 @@ export default function FriendsPage() {
             who'll handle everything once you book. But for friends and family,
             I wanted you to hear it from me first.
           </p>
+
+          {/* Transparency section */}
+          <div className="my-10 p-6 border border-neutral-200 bg-neutral-50/50 rounded">
+            <p className="font-mono text-xs tracking-[0.2em] text-neutral-400 uppercase mb-3">
+              For Transparency
+            </p>
+            <p className="text-sm text-neutral-600 mb-4">
+              You can find this same property on the major booking sites —
+              but at full price. I'm including these links so you can see
+              the reviews and compare:
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="https://www.airbnb.com/rooms/47159132"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs font-mono text-neutral-500 hover:text-neutral-800 transition-colors"
+              >
+                <span className="w-4 h-4 rounded bg-[#FF5A5F] flex items-center justify-center text-white text-[10px] font-bold">A</span>
+                Airbnb Listing →
+              </a>
+              <a
+                href="https://www.vrbo.com/en-ca/cottage-rental/p3030912vb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs font-mono text-neutral-500 hover:text-neutral-800 transition-colors"
+              >
+                <span className="w-4 h-4 rounded bg-[#3B5998] flex items-center justify-center text-white text-[10px] font-bold">V</span>
+                VRBO Listing →
+              </a>
+            </div>
+          </div>
 
           <p className="pt-4">
             Pura vida,<br />
