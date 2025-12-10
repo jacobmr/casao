@@ -95,9 +95,14 @@ export default function ExperiencesPage() {
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light text-foreground mb-4">
             Curated <span className="italic">Experiences</span>
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Make your stay unforgettable with our hand-picked local experiences.
-            Select what interests you and we'll handle the rest.
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-4">
+            Enhance your stay at Casa Vistas with our hand-picked local experiences.
+            Select what interests you and we'll coordinate everything for your visit.
+          </p>
+          <p className="text-sm text-muted-foreground/70 max-w-xl mx-auto">
+            This concierge service is exclusively for Casa Vistas guests.
+            Already booked or planning to book? Let us know what experiences you'd like
+            and we'll arrange them during your stay.
           </p>
         </div>
 
