@@ -269,12 +269,12 @@ export function AvailabilityCalendar() {
           return
         }
 
-        // All dates still available - redirect to enhance page to select experiences
-        console.log('✅ Dates verified available - redirecting to enhance page')
-        // Redirect to enhance page with booking details
-        const enhanceUrl = `/enhance?checkIn=${checkInStr}&checkOut=${checkOutStr}&guests=${guests}`
-        console.log('🔗 Enhance URL:', enhanceUrl)
-        window.location.href = enhanceUrl
+        // All dates still available - redirect directly to handoff (checkout)
+        console.log('✅ Dates verified available - redirecting to checkout')
+        // Redirect directly to handoff (skipping enhance page)
+        const handoffUrl = `/api/handoff?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
+        console.log('🔗 Handoff URL:', handoffUrl)
+        window.location.href = handoffUrl
         
       } else {
         throw new Error('Failed to verify availability')

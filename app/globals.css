@@ -3,81 +3,102 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Casa Vistas Design System
+ * Aesthetic: "Golden Hour Tropics" - warm sunset tones meeting deep ocean
+ *
+ * Inspired by: Costa Rican sunsets, jungle canopy shadows,
+ * Pacific Ocean depths, weathered teak wood, and volcanic sand
+ */
+
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/fraunces/v31/6NUh8FyLNQOQZAnv9bYEvDiIdE9Ea92uemAk_WBq8U_9v0c2Wa0K7iN7hzFUPJH58nib14cyOBiMO-7fUM4.woff2') format('woff2');
+}
+
 :root {
-  /* Premium vacation rental color palette with ocean blues and warm terracotta tones */
-  --background: oklch(0.99 0.005 85);
-  --foreground: oklch(0.25 0.02 30);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.02 30);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.02 30);
-  --primary: oklch(0.55 0.15 230);
-  --primary-foreground: oklch(0.99 0.005 85);
-  --secondary: oklch(0.65 0.12 45);
-  --secondary-foreground: oklch(0.99 0.005 85);
-  --muted: oklch(0.95 0.01 85);
-  --muted-foreground: oklch(0.5 0.02 30);
-  --accent: oklch(0.92 0.02 85);
-  --accent-foreground: oklch(0.25 0.02 30);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.99 0.005 85);
-  --border: oklch(0.9 0.01 85);
-  --input: oklch(0.9 0.01 85);
-  --ring: oklch(0.55 0.15 230);
-  --chart-1: oklch(0.55 0.15 230);
-  --chart-2: oklch(0.65 0.12 45);
-  --chart-3: oklch(0.7 0.1 180);
-  --chart-4: oklch(0.6 0.08 280);
-  --chart-5: oklch(0.75 0.08 120);
-  --radius: 0.75rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Core palette - warm golden tones with deep ocean accents */
+  --background: oklch(0.98 0.008 75);
+  --foreground: oklch(0.22 0.03 45);
+
+  /* Cards have a slight warmth */
+  --card: oklch(0.995 0.005 75);
+  --card-foreground: oklch(0.22 0.03 45);
+
+  --popover: oklch(0.995 0.005 75);
+  --popover-foreground: oklch(0.22 0.03 45);
+
+  /* Primary: Deep teal - like the Pacific at sunset */
+  --primary: oklch(0.45 0.12 195);
+  --primary-foreground: oklch(0.98 0.005 75);
+
+  /* Secondary: Warm terracotta - volcanic earth */
+  --secondary: oklch(0.58 0.14 45);
+  --secondary-foreground: oklch(0.98 0.005 75);
+
+  /* Accent: Golden sand */
+  --accent: oklch(0.92 0.04 85);
+  --accent-foreground: oklch(0.22 0.03 45);
+
+  /* Muted: Soft driftwood */
+  --muted: oklch(0.94 0.015 75);
+  --muted-foreground: oklch(0.45 0.02 45);
+
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0.005 75);
+
+  --border: oklch(0.88 0.02 75);
+  --input: oklch(0.88 0.02 75);
+  --ring: oklch(0.45 0.12 195);
+
+  /* Charts - tropical palette */
+  --chart-1: oklch(0.45 0.12 195);
+  --chart-2: oklch(0.58 0.14 45);
+  --chart-3: oklch(0.65 0.15 145);
+  --chart-4: oklch(0.55 0.12 280);
+  --chart-5: oklch(0.70 0.12 85);
+
+  --radius: 0.625rem;
+
+  /* Custom properties for unique design elements */
+  --gradient-sunset: linear-gradient(135deg, oklch(0.65 0.18 45) 0%, oklch(0.55 0.15 25) 50%, oklch(0.45 0.12 195) 100%);
+  --gradient-ocean: linear-gradient(180deg, oklch(0.45 0.12 195) 0%, oklch(0.35 0.10 210) 100%);
+  --gradient-sand: linear-gradient(180deg, oklch(0.95 0.03 85) 0%, oklch(0.92 0.04 75) 100%);
+
+  /* Texture overlays */
+  --noise-opacity: 0.03;
+  --grain-size: 100px;
 }
 
 .dark {
-  --background: oklch(0.15 0.02 30);
-  --foreground: oklch(0.99 0.005 85);
-  --card: oklch(0.2 0.02 30);
-  --card-foreground: oklch(0.99 0.005 85);
-  --popover: oklch(0.2 0.02 30);
-  --popover-foreground: oklch(0.99 0.005 85);
-  --primary: oklch(0.65 0.15 230);
-  --primary-foreground: oklch(0.99 0.005 85);
-  --secondary: oklch(0.7 0.12 45);
-  --secondary-foreground: oklch(0.15 0.02 30);
-  --muted: oklch(0.25 0.02 30);
-  --muted-foreground: oklch(0.7 0.02 85);
-  --accent: oklch(0.3 0.02 30);
-  --accent-foreground: oklch(0.99 0.005 85);
-  --destructive: oklch(0.6 0.245 27.325);
-  --destructive-foreground: oklch(0.99 0.005 85);
-  --border: oklch(0.3 0.02 30);
-  --input: oklch(0.3 0.02 30);
-  --ring: oklch(0.65 0.15 230);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --background: oklch(0.14 0.02 45);
+  --foreground: oklch(0.95 0.01 75);
+  --card: oklch(0.18 0.02 45);
+  --card-foreground: oklch(0.95 0.01 75);
+  --popover: oklch(0.18 0.02 45);
+  --popover-foreground: oklch(0.95 0.01 75);
+  --primary: oklch(0.60 0.14 195);
+  --primary-foreground: oklch(0.14 0.02 45);
+  --secondary: oklch(0.65 0.14 45);
+  --secondary-foreground: oklch(0.14 0.02 45);
+  --muted: oklch(0.22 0.02 45);
+  --muted-foreground: oklch(0.65 0.02 75);
+  --accent: oklch(0.25 0.03 45);
+  --accent-foreground: oklch(0.95 0.01 75);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0.005 75);
+  --border: oklch(0.28 0.02 45);
+  --input: oklch(0.28 0.02 45);
+  --ring: oklch(0.60 0.14 195);
 }
 
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -106,21 +127,152 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+  }
+
+  /* Elegant text selection */
+  ::selection {
+    background: oklch(0.45 0.12 195 / 0.25);
+  }
+}
+
+@layer components {
+  /* Noise texture overlay */
+  .texture-noise {
+    position: relative;
+  }
+
+  .texture-noise::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: var(--noise-opacity);
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+
+  /* Gradient text */
+  .text-gradient-sunset {
+    background: var(--gradient-sunset);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Decorative line */
+  .decorative-line {
+    width: 60px;
+    height: 3px;
+    background: var(--gradient-sunset);
+    border-radius: 2px;
+  }
+
+  /* Editorial-style large quote */
+  .editorial-quote {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--muted-foreground);
+  }
+
+  /* Asymmetric card hover */
+  .card-hover-lift {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+  }
+
+  .card-hover-lift:hover {
+    transform: translateY(-8px) rotate(-0.5deg);
+    box-shadow:
+      0 20px 40px -12px oklch(0.22 0.03 45 / 0.15),
+      0 8px 16px -8px oklch(0.22 0.03 45 / 0.1);
+  }
+
+  /* Staggered animation helpers */
+  .stagger-1 { animation-delay: 0.1s; }
+  .stagger-2 { animation-delay: 0.2s; }
+  .stagger-3 { animation-delay: 0.3s; }
+  .stagger-4 { animation-delay: 0.4s; }
+  .stagger-5 { animation-delay: 0.5s; }
+  .stagger-6 { animation-delay: 0.6s; }
+}
+
+@layer utilities {
+  /* Smooth fade in animation */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  /* Gentle float animation */
+  @keyframes gentle-float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-gentle-float {
+    animation: gentle-float 6s ease-in-out infinite;
+  }
+
+  /* Shimmer effect for loading states */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      oklch(0.94 0.015 75) 0%,
+      oklch(0.98 0.008 75) 50%,
+      oklch(0.94 0.015 75) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Text balance for headings */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Optical margin adjustment for large text */
+  .optical-margin {
+    margin-left: -0.05em;
   }
 }
