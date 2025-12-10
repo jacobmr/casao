@@ -4,8 +4,10 @@ import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users, Loader2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users, Loader2, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { usePromo } from "@/components/promo-provider"
+import { calculateDiscountedPrice } from "@/lib/promo-codes"
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -30,6 +32,7 @@ export function AvailabilityCalendar() {
   const [loading, setLoading] = useState(false)
   const [pricing, setPricing] = useState<any>(null)
   const [loadingPrice, setLoadingPrice] = useState(false)
+  const { promo } = usePromo()
 
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
@@ -272,7 +275,11 @@ export function AvailabilityCalendar() {
         // All dates still available - redirect directly to handoff (checkout)
         console.log('✅ Dates verified available - redirecting to checkout')
         // Redirect directly to handoff (skipping enhance page)
-        const handoffUrl = `/api/handoff?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
+        let handoffUrl = `/api/handoff?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
+        // Pass promo code if active
+        if (promo) {
+          handoffUrl += `&promo=${encodeURIComponent(promo.code)}`
+        }
         console.log('🔗 Handoff URL:', handoffUrl)
         window.location.href = handoffUrl
         
@@ -327,9 +334,19 @@ export function AvailabilityCalendar() {
         >
           <span className={cn("font-medium", isAvailable && "text-foreground")}>{day}</span>
           {isAvailable && dayInfo?.price && (
-            <span className="text-sm font-medium text-foreground mt-1">
-              ${Math.round(dayInfo.price)}
-            </span>
+            <div className="flex flex-col items-center leading-none">
+              {promo && (
+                <span className="text-[9px] text-red-500 line-through">
+                  ${Math.round(dayInfo.price)}
+                </span>
+              )}
+              <span className={cn(
+                "text-[10px] font-medium",
+                promo ? "text-green-600 dark:text-green-400" : "text-muted-foreground"
+              )}>
+                ${Math.round(calculateDiscountedPrice(dayInfo.price, promo))}
+              </span>
+            </div>
           )}
         </button>,
       )
@@ -485,16 +502,39 @@ export function AvailabilityCalendar() {
                       const taxes = money?.totalTaxes || 0
                       const total = money?.hostPayout || 0
                       const avgNightly = accommodation / nights
-                      
+
+                      // Calculate discounted prices if promo is active
+                      const discountedAccommodation = calculateDiscountedPrice(accommodation, promo)
+                      const promoSavings = accommodation - discountedAccommodation
+                      const discountedTaxes = calculateDiscountedPrice(taxes, promo)
+                      const discountedTotal = calculateDiscountedPrice(total, promo)
+                      const discountedAvgNightly = discountedAccommodation / nights
+
                       return (
                         <>
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">
-                              ${Math.round(avgNightly)} × {nights} {nights === 1 ? 'night' : 'nights'}
+                              ${Math.round(promo ? discountedAvgNightly : avgNightly)} × {nights} {nights === 1 ? 'night' : 'nights'}
                             </span>
-                            <span className="font-medium">${accommodation.toFixed(2)}</span>
+                            <span className="font-medium">
+                              {promo && (
+                                <span className="text-muted-foreground line-through mr-2">${accommodation.toFixed(2)}</span>
+                              )}
+                              ${(promo ? discountedAccommodation : accommodation).toFixed(2)}
+                            </span>
                           </div>
-                          
+
+                          {/* Show promo discount */}
+                          {promo && promoSavings > 0 && (
+                            <div className="flex items-center justify-between text-sm text-green-600">
+                              <span className="flex items-center gap-1">
+                                <Tag className="h-3 w-3" />
+                                {promo.label}
+                              </span>
+                              <span className="font-medium">-${promoSavings.toFixed(2)}</span>
+                            </div>
+                          )}
+
                           {/* Show weekly discount if 7+ nights */}
                           {nights >= 7 && money?.discount && money.discount > 0 && (
                             <div className="flex items-center justify-between text-sm text-green-600">
@@ -502,15 +542,126 @@ export function AvailabilityCalendar() {
                               <span className="font-medium">-${money.discount.toFixed(2)}</span>
                             </div>
                           )}
-                          
+
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Taxes & Fees</span>
-                            <span className="font-medium">${taxes.toFixed(2)}</span>
+                            <span className="font-medium">${(promo ? discountedTaxes : taxes).toFixed(2)}</span>
                           </div>
                           <div className="flex items-center justify-between text-lg font-bold pt-3 border-t">
                             <span>Total</span>
-                            <span className="text-primary">${total.toFixed(2)}</span>
+                            <span className={promo ? "text-green-600" : "text-primary"}>
+                              ${(promo ? discountedTotal : total).toFixed(2)}
+                            </span>
                           </div>
+
+                          {/* Promo code reminder */}
+                          {promo && (
+                            <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                              <p className="text-xs text-green-700 dark:text-green-300">
+                                <span className="font-semibold">Enter code at checkout:</span>{" "}
+                                <code className="bg-green-100 dark:bg-green-900 px-1.5 py-0.5 rounded font-mono">{promo.code}</code>
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )
+                    })()}
+                  </div>
+                ) : checkIn && checkOut && nights > 0 ? (
+                  // Fallback: estimate from per-day prices when quote API fails
+                  <div className="space-y-3 mb-6 pb-6 border-b">
+                    {(() => {
+                      // Calculate estimated total from daily prices
+                      let estimatedTotal = 0
+                      let daysWithPricing = 0
+                      const current = new Date(checkIn)
+                      while (current < checkOut) {
+                        const dateStr = current.toISOString().split('T')[0]
+                        const dayInfo = availability.get(dateStr)
+                        if (dayInfo?.price) {
+                          estimatedTotal += dayInfo.price
+                          daysWithPricing++
+                        }
+                        current.setDate(current.getDate() + 1)
+                      }
+
+                      // Apply promo discount if active
+                      const discountedTotal = calculateDiscountedPrice(estimatedTotal, promo)
+                      const promoSavings = estimatedTotal - discountedTotal
+                      const avgNightly = (promo ? discountedTotal : estimatedTotal) / nights
+
+                      if (daysWithPricing === 0) {
+                        return (
+                          <p className="text-sm text-muted-foreground">
+                            Pricing unavailable for selected dates
+                          </p>
+                        )
+                      }
+
+                      // Check minimum nights (3 night minimum)
+                      if (nights < 3) {
+                        return (
+                          <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
+                            <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">
+                              3 night minimum required
+                            </p>
+                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                              Please select at least 3 nights to book.
+                            </p>
+                          </div>
+                        )
+                      }
+
+                      return (
+                        <>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">
+                              ~${Math.round(avgNightly)} × {nights} nights
+                            </span>
+                            <span className="font-medium">
+                              {promo && (
+                                <span className="text-muted-foreground line-through mr-2">${estimatedTotal.toLocaleString()}</span>
+                              )}
+                              ${(promo ? discountedTotal : estimatedTotal).toLocaleString()}
+                            </span>
+                          </div>
+
+                          {/* Show promo discount */}
+                          {promo && promoSavings > 0 && (
+                            <div className="flex items-center justify-between text-sm text-green-600">
+                              <span className="flex items-center gap-1">
+                                <Tag className="h-3 w-3" />
+                                {promo.label}
+                              </span>
+                              <span className="font-medium">-${promoSavings.toLocaleString()}</span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Taxes (est. 13%)</span>
+                            <span className="font-medium">~${Math.round((promo ? discountedTotal : estimatedTotal) * 0.13).toLocaleString()}</span>
+                          </div>
+
+                          <div className="flex items-center justify-between text-lg font-bold pt-3 border-t">
+                            <span>Est. Total</span>
+                            <span className={promo ? "text-green-600" : "text-primary"}>
+                              ~${Math.round((promo ? discountedTotal : estimatedTotal) * 1.13).toLocaleString()}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Final price confirmed at checkout
+                          </p>
+
+                          {/* Promo code reminder */}
+                          {promo && (
+                            <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                              <p className="text-xs text-green-700 dark:text-green-300">
+                                <span className="font-semibold">Enter code at checkout:</span>{" "}
+                                <code className="bg-green-100 dark:bg-green-900 px-1.5 py-0.5 rounded font-mono">{promo.code}</code>
+                              </p>
+                            </div>
+                          )}
                         </>
                       )
                     })()}

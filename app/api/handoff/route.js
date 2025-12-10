@@ -29,6 +29,7 @@ export async function GET(request) {
     const adults = searchParams.get('adults') || '2';
     const propertyId = searchParams.get('propertyId') || process.env.GUESTY_PROPERTY_ID;
     const experiences = searchParams.get('experiences'); // Comma-separated experience IDs
+    const promoCode = searchParams.get('promo'); // Promo/discount code
 
     // Validate required parameters
     if (!checkIn || !checkOut) {
@@ -47,11 +48,11 @@ export async function GET(request) {
 
     // Generate unique reference ID for tracking
     const uuid = randomUUID();
-    
+
     // Parse experience selections
     const selectedExperiences = experiences ? experiences.split(',').filter(Boolean) : [];
     const hasDiscount = selectedExperiences.length >= 2;
-    
+
     // Log handoff for analytics
     console.log(`🔄 Handoff created: ${uuid}`, {
       checkIn,
@@ -61,16 +62,17 @@ export async function GET(request) {
       experiences: selectedExperiences,
       experienceCount: selectedExperiences.length,
       discountApplied: hasDiscount,
+      promoCode: promoCode || null,
       timestamp: new Date().toISOString()
     });
 
     // TODO: Store in database/Redis for tracking
     // await logHandoff({ uuid, checkIn, checkOut, adults, propertyId });
 
-    // Build Blue Zone Guesty checkout URL
-    const blueZoneURL = 
-      `https://bluezoneexperience.guestybookings.com/en/properties/${encodeURIComponent(propertyId)}/checkout` +
-      `?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&utm_source=casao&ref=${uuid}`;
+    // Build Blue Zone Guesty property URL (not /checkout - that doesn't exist)
+    const blueZoneURL =
+      `https://bluezoneexperience.guestybookings.com/en/properties/${encodeURIComponent(propertyId)}` +
+      `?minOccupancy=${adults}&checkIn=${checkIn}&checkOut=${checkOut}`;
 
     // Return branded interstitial HTML
     const html = `
@@ -243,6 +245,23 @@ export async function GET(request) {
       <strong>Blue Zone Experience</strong>.
     </p>
     
+    ${promoCode ? `
+    <div style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; text-align: center;">
+      <div style="font-weight: 700; color: #047857; font-size: 1.125rem; margin-bottom: 0.5rem;">
+        🎉 Special Rate Applied!
+      </div>
+      <div style="font-size: 0.875rem; color: #065f46; margin-bottom: 1rem;">
+        Enter this code at checkout to receive your discount:
+      </div>
+      <div style="background: white; border: 2px dashed #10b981; padding: 0.75rem 1.5rem; border-radius: 8px; display: inline-block;">
+        <code style="font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: 700; color: #047857; letter-spacing: 0.05em;">${promoCode}</code>
+      </div>
+      <div style="margin-top: 1rem; font-size: 0.75rem; color: #6b7280;">
+        Copy this code — you'll need it on the next page
+      </div>
+    </div>
+    ` : ''}
+
     ${selectedExperiences.length > 0 ? `
     <div style="background: #f3f4f6; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; text-align: left;">
       <div style="font-weight: 600; color: #111827; margin-bottom: 0.75rem;">

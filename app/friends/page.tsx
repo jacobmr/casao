@@ -59,10 +59,13 @@ export default function FriendsPage() {
               Friends & Family Rate
             </p>
             <p className="font-mono text-2xl md:text-3xl text-neutral-800 mb-4">
-              Special pricing available
+              20% off listed rates
             </p>
-            <p className="font-mono text-sm text-neutral-500">
-              Contact us directly for rates — mention you received this message.
+            <p className="font-mono text-sm text-neutral-600 mb-4">
+              Use code <code className="bg-neutral-100 px-2 py-1 rounded font-mono font-semibold">CasaO20</code> at checkout
+            </p>
+            <p className="font-mono text-xs text-neutral-400">
+              The link below will show you discounted pricing automatically.
             </p>
           </div>
 
@@ -115,19 +118,19 @@ export default function FriendsPage() {
         {/* CTA */}
         <div className="mt-12 md:mt-16 pt-8 border-t border-neutral-200">
           <Link
-            href="/"
+            href="/?promo=FRIENDS20"
             className="group inline-flex items-center gap-3 font-mono text-sm text-neutral-800 hover:text-neutral-600 transition-colors"
           >
-            <span>View Casa Vistas</span>
+            <span>View Casa Vistas (with discount applied)</span>
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
             <Link
-              href="/#availability"
+              href="/?promo=FRIENDS20#availability"
               className="inline-flex items-center justify-center gap-2 bg-neutral-800 text-white px-6 py-3 rounded font-mono text-sm hover:bg-neutral-700 transition-colors"
             >
-              Check Availability
+              Check Availability (20% Off)
             </Link>
             <a
               href="mailto:info@casavistas.net?subject=Friends%20%26%20Family%20Inquiry"

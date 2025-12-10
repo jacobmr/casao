@@ -90,39 +90,33 @@ export function HeroCarousel() {
 
       {/* Content */}
       <div className="relative h-full flex flex-col">
-        {/* Main hero content - positioned lower for editorial feel */}
+        {/* Main hero content - positioned in center-bottom area */}
         <div
           className={cn(
-            "flex-1 flex items-end pb-32 md:pb-40 lg:pb-48 px-6 md:px-12 lg:px-20",
+            "flex-1 flex items-end pb-32 md:pb-40 lg:pb-48 pt-24 px-6 md:px-12 lg:px-20",
             "transition-all duration-1000",
             isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}
         >
           <div className="max-w-4xl">
-            {/* Eyebrow */}
-            <p className="text-white/80 text-sm md:text-base tracking-[0.3em] uppercase mb-4 md:mb-6 font-medium animate-fade-in-up stagger-1">
+            {/* Eyebrow - location */}
+            <p className="text-white/70 text-xs md:text-sm tracking-[0.3em] uppercase mb-6 md:mb-8 font-medium animate-fade-in-up stagger-1">
               Brasilito, Costa Rica
             </p>
 
-            {/* Main heading - editorial typography */}
-            <h1 className="text-white text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-serif font-light leading-[0.9] tracking-tight mb-6 md:mb-8 optical-margin animate-fade-in-up stagger-2">
-              Casa<br />
-              <span className="italic font-normal">Vistas</span>
-            </h1>
-
             {/* Decorative line */}
-            <div className="decorative-line mb-6 md:mb-8 animate-fade-in-up stagger-3" />
+            <div className="decorative-line mb-6 md:mb-8 animate-fade-in-up stagger-2" />
 
             {/* Tagline */}
-            <p className="text-white/90 text-lg md:text-xl lg:text-2xl font-light max-w-xl leading-relaxed animate-fade-in-up stagger-4">
+            <p className="text-white/90 text-xl md:text-2xl lg:text-3xl font-light max-w-xl leading-relaxed animate-fade-in-up stagger-3">
               Where Pacific sunsets meet jungle serenity.
-              <span className="block mt-2 text-white/70">
+              <span className="block mt-3 text-white/70 text-lg md:text-xl lg:text-2xl">
                 Five bedrooms. Infinity pool. Endless horizon.
               </span>
             </p>
 
             {/* CTA */}
-            <div className="mt-8 md:mt-10 animate-fade-in-up stagger-5">
+            <div className="mt-8 md:mt-10 animate-fade-in-up stagger-4">
               <a
                 href="#availability"
                 className="group inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white px-8 py-4 rounded-full transition-all duration-300 hover:gap-5"
