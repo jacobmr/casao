@@ -32,10 +32,10 @@ export default function FriendsPage() {
 
         {/* The letter */}
         <article className="space-y-6 font-mono text-neutral-700 leading-relaxed text-sm md:text-base">
-          <p>Dear friends,</p>
+          <p>Hey there —</p>
 
           <p>
-            I'm writing with an unusual opportunity.
+            If you're seeing this page, you're friends or family (or you know someone who is).
           </p>
 
           <p>
@@ -54,8 +54,8 @@ export default function FriendsPage() {
           </p>
 
           <p>
-            Because this is last-minute, and because you're getting this
-            message, I can offer something I couldn't offer elsewhere:
+            Because this is last-minute, and because you found this page,
+            we can offer something we couldn't offer elsewhere:
           </p>
 
           {/* Special offer box */}
@@ -64,10 +64,10 @@ export default function FriendsPage() {
               Friends & Family Rate
             </p>
             <p className="font-mono text-2xl md:text-3xl text-neutral-800 mb-4">
-              50% off for friends and family
+              50% off for select dates
             </p>
             <p className="font-mono text-sm text-neutral-600">
-              DM, call or text me for the discount code that makes this 50% off.
+              Reach out to us directly for the discount code.
             </p>
           </div>
 
@@ -146,7 +146,7 @@ export default function FriendsPage() {
 
           <p className="pt-4">
             Pura vida,<br />
-            <span className="text-neutral-500">— James</span>
+            <span className="text-neutral-500">— Jacob & Alicia</span>
           </p>
         </article>
 
@@ -160,19 +160,13 @@ export default function FriendsPage() {
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
 
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
+          <div className="mt-8">
             <Link
               href="/#availability"
               className="inline-flex items-center justify-center gap-2 bg-neutral-800 text-white px-6 py-3 rounded font-mono text-sm hover:bg-neutral-700 transition-colors"
             >
               Check Availability
             </Link>
-            <a
-              href="mailto:jacob@reider.us?subject=Casa%20Vistas%20Friends%20%26%20Family%20Inquiry"
-              className="inline-flex items-center justify-center gap-2 border border-neutral-300 text-neutral-700 px-6 py-3 rounded font-mono text-sm hover:bg-neutral-100 transition-colors"
-            >
-              Email Me Directly
-            </a>
           </div>
         </div>
 
