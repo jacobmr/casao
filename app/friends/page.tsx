@@ -35,17 +35,21 @@ export default function FriendsPage() {
           <p>Dear friends,</p>
 
           <p>
-            I'm writing with an unusual opportunity. We've had our Costa Rica
-            villa blocked for personal use this entire high season — but
-            plans have changed, and we've just opened up the calendar.
+            I'm writing with an unusual opportunity.
+          </p>
+
+          <p>
+            We've had our Costa Rica 3 bedroom home (and 2 bedroom casita)
+            blocked for this high season — but plans have changed, and
+            we've opened up the calendar.
           </p>
 
           <p>
             <strong className="text-neutral-900">
               Our scheduling error is your gain.
             </strong>{" "}
-            There's availability from now through Easter at our place in
-            Brasilito, during what's typically the most sought-after
+            There's quite a bit of availability from now through early March
+            at our place, during what's typically the most sought-after
             (and most expensive) time of year.
           </p>
 
@@ -60,20 +64,18 @@ export default function FriendsPage() {
               Friends & Family Rate
             </p>
             <p className="font-mono text-2xl md:text-3xl text-neutral-800 mb-4">
-              20% off listed rates
+              50% off for friends and family
             </p>
-            <p className="font-mono text-sm text-neutral-600 mb-4">
-              Use code <code className="bg-neutral-100 px-2 py-1 rounded font-mono font-semibold">CasaO20</code> at checkout
-            </p>
-            <p className="font-mono text-xs text-neutral-400">
-              The link below will show you discounted pricing automatically.
+            <p className="font-mono text-sm text-neutral-600">
+              DM, call or text me for the discount code that makes this 50% off.
             </p>
           </div>
 
           <p>
-            The property sleeps 11 across 5 bedrooms, has a stunning infinity
-            pool overlooking the Pacific, and sits in a gated community just
-            1.5 miles from Flamingo Beach.
+            The property sleeps 11 across 5 bedrooms (Casa + Casita), has a
+            stunning infinity pool overlooking the Pacific, and sits in a
+            gated community just 1.5 miles from Flamingo Beach, 1 mile from
+            Brasilito Beach and Playa Conchal.
           </p>
 
           <p>Here's what you're looking at:</p>
@@ -151,22 +153,22 @@ export default function FriendsPage() {
         {/* CTA */}
         <div className="mt-12 md:mt-16 pt-8 border-t border-neutral-200">
           <Link
-            href="/?promo=FRIENDS20"
+            href="/"
             className="group inline-flex items-center gap-3 font-mono text-sm text-neutral-800 hover:text-neutral-600 transition-colors"
           >
-            <span>View Casa Vistas (with discount applied)</span>
+            <span>View Casa Vistas</span>
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
             <Link
-              href="/?promo=FRIENDS20#availability"
+              href="/#availability"
               className="inline-flex items-center justify-center gap-2 bg-neutral-800 text-white px-6 py-3 rounded font-mono text-sm hover:bg-neutral-700 transition-colors"
             >
-              Check Availability (20% Off)
+              Check Availability
             </Link>
             <a
-              href="mailto:info@casavistas.net?subject=Friends%20%26%20Family%20Inquiry"
+              href="mailto:jacob@reider.us?subject=Casa%20Vistas%20Friends%20%26%20Family%20Inquiry"
               className="inline-flex items-center justify-center gap-2 border border-neutral-300 text-neutral-700 px-6 py-3 rounded font-mono text-sm hover:bg-neutral-100 transition-colors"
             >
               Email Me Directly
