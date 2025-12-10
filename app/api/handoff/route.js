@@ -66,6 +66,22 @@ export async function GET(request) {
       timestamp: new Date().toISOString()
     });
 
+    // Send push notification via SimplePush
+    const simplePushKey = process.env.SIMPLEPUSH_KEY;
+    if (simplePushKey) {
+      try {
+        const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+        const title = '🏠 Casa Vistas Booking';
+        const message = `${checkIn} → ${checkOut} (${nights} nights, ${adults} guests)${promoCode ? ` [${promoCode}]` : ''}`;
+
+        await fetch(`https://api.simplepush.io/send/${simplePushKey}/${encodeURIComponent(title)}/${encodeURIComponent(message)}`);
+        console.log('📱 Push notification sent');
+      } catch (pushError) {
+        console.error('Push notification failed:', pushError);
+        // Don't block the handoff if push fails
+      }
+    }
+
     // TODO: Store in database/Redis for tracking
     // await logHandoff({ uuid, checkIn, checkOut, adults, propertyId });
 
