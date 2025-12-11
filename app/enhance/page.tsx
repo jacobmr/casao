@@ -7,6 +7,7 @@ import { ExperienceListItem } from "@/components/experiences/experience-list-ite
 import { DiscountBanner } from "@/components/experiences/discount-banner"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
+import { MetaEvents } from "@/components/meta-pixel"
 
 function EnhanceContent() {
   const searchParams = useSearchParams()
@@ -18,25 +19,36 @@ function EnhanceContent() {
   const guests = searchParams.get('guests') || searchParams.get('adults') || '2'
   
   const handleToggle = (id: string) => {
-    setSelectedExperiences(prev => 
-      prev.includes(id) 
+    const experience = experiences.find(e => e.id === id)
+    const isAdding = !selectedExperiences.includes(id)
+
+    // Track AddToCart when selecting an experience
+    if (isAdding && experience) {
+      MetaEvents.addToCart(experience.name, experience.priceFrom)
+    }
+
+    setSelectedExperiences(prev =>
+      prev.includes(id)
         ? prev.filter(expId => expId !== id)
         : [...prev, id]
     )
   }
   
   const handleContinue = () => {
+    // Track InitiateCheckout event
+    MetaEvents.initiateCheckout(undefined, checkIn || undefined, checkOut || undefined)
+
     // Build handoff URL with selections
     const params = new URLSearchParams()
     if (checkIn) params.set('checkIn', checkIn)
     if (checkOut) params.set('checkOut', checkOut)
     params.set('adults', guests)
-    
+
     // Add selected experiences as comma-separated list
     if (selectedExperiences.length > 0) {
       params.set('experiences', selectedExperiences.join(','))
     }
-    
+
     // Redirect to handoff
     window.location.href = `/api/handoff?${params.toString()}`
   }

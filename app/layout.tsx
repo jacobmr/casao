@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { MetaPixel } from "@/components/meta-pixel"
 import { Suspense } from "react"
 import { Navigation } from "@/components/navigation"
 import { PromoProvider, PromoBanner } from "@/components/promo-provider"
@@ -64,6 +65,7 @@ export default function RootLayout({
           </PromoProvider>
         </Suspense>
         <Analytics />
+        <MetaPixel />
       </body>
     </html>
   )

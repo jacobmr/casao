@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users, Loader2, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { usePromo } from "@/components/promo-provider"
+import { MetaEvents } from "@/components/meta-pixel"
 import { calculateDiscountedPrice } from "@/lib/promo-codes"
 
 const MONTHS = [
@@ -274,6 +275,10 @@ export function AvailabilityCalendar() {
 
         // All dates still available - redirect directly to handoff (checkout)
         console.log('✅ Dates verified available - redirecting to checkout')
+
+        // Track InitiateCheckout event
+        const money = pricing?.rates?.ratePlans?.[0]?.ratePlan?.money || pricing?.money
+        MetaEvents.initiateCheckout(money?.hostPayout, checkInStr, checkOutStr)
         // Redirect directly to handoff (skipping enhance page)
         let handoffUrl = `/api/handoff?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests}`
         // Pass promo code if active
