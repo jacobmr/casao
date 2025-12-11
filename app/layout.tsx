@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { MetaPixel } from "@/components/meta-pixel"
+import { GoogleAnalytics } from "@/components/google-analytics"
 import { Suspense } from "react"
 import { Navigation } from "@/components/navigation"
 import { PromoProvider, PromoBanner } from "@/components/promo-provider"
@@ -66,6 +67,7 @@ export default function RootLayout({
         </Suspense>
         <Analytics />
         <MetaPixel />
+        <GoogleAnalytics />
       </body>
     </html>
   )
