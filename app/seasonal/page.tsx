@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Calendar, Users, Shield, Heart, ArrowRight, Loader2, Check } from "lucide-react"
 import Link from "next/link"
 
@@ -28,6 +28,7 @@ export default function SeasonalPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const formSectionRef = useRef<HTMLDivElement>(null)
 
   // Fetch availability
   useEffect(() => {
@@ -73,10 +74,17 @@ export default function SeasonalPage() {
     if (!isDateAvailable(date) || isDateInPast(date)) return
 
     if (!selectedDates.checkIn || (selectedDates.checkIn && selectedDates.checkOut)) {
+      // Starting fresh - selecting check-in
       setSelectedDates({ checkIn: dateStr, checkOut: null })
     } else if (dateStr > selectedDates.checkIn) {
+      // Selecting check-out - scroll to form after both dates selected
       setSelectedDates({ ...selectedDates, checkOut: dateStr })
+      // Delay scroll slightly to let the UI update
+      setTimeout(() => {
+        formSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }, 100)
     } else {
+      // Clicked a date before check-in, reset
       setSelectedDates({ checkIn: dateStr, checkOut: null })
     }
   }
@@ -325,7 +333,7 @@ export default function SeasonalPage() {
           </div>
 
           {/* Guest Info */}
-          <div className="bg-white rounded-2xl border border-neutral-200 p-6">
+          <div ref={formSectionRef} className="bg-white rounded-2xl border border-neutral-200 p-6">
             <h3 className="font-serif text-xl text-neutral-800 mb-4">2. Tell Us About Yourself</h3>
             <p className="text-sm text-neutral-500 mb-6">
               Help us get to know you. The more context you share, the better we can tailor your discount.
