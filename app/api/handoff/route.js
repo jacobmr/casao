@@ -269,11 +269,15 @@ export async function GET(request) {
       <div style="font-size: 0.875rem; color: #065f46; margin-bottom: 1rem;">
         Enter this code at checkout to receive your discount:
       </div>
-      <div style="background: white; border: 2px dashed #10b981; padding: 0.75rem 1.5rem; border-radius: 8px; display: inline-block; margin-bottom: 1rem;">
-        <code style="font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: 700; color: #047857; letter-spacing: 0.05em;">${promoCode}</code>
-      </div>
+      <button onclick="copyCode()" style="background: white; border: 2px dashed #10b981; padding: 0.75rem 1.5rem; border-radius: 8px; display: inline-block; margin-bottom: 1rem; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#ecfdf5'" onmouseout="this.style.background='white'">
+        <code id="promoCode" style="font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: 700; color: #047857; letter-spacing: 0.05em;">${promoCode}</code>
+        <span style="margin-left: 0.5rem; font-size: 0.75rem; color: #6b7280;">📋</span>
+      </button>
       <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem;">
-        Copy this code — you'll need it on the next page
+        Click to copy — you'll need it on the next page
+      </div>
+      <div id="copyToast" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111827; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+        ✓ Copied to clipboard!
       </div>
       <div style="background: #f9fafb; border-radius: 8px; padding: 0.75rem; margin-top: 0.5rem;">
         <div style="font-size: 0.875rem; color: #374151; margin-bottom: 0.5rem; font-weight: 600;">Look for this on the checkout page and paste the code:</div>
@@ -312,10 +316,20 @@ export async function GET(request) {
   </div>
   
   <script>
-    // Auto-redirect after 3 seconds (optional)
-    // setTimeout(() => {
-    //   window.location.href = "${blueZoneURL}";
-    // }, 3000);
+    function copyCode() {
+      const code = document.getElementById('promoCode');
+      if (code) {
+        navigator.clipboard.writeText(code.textContent).then(() => {
+          const toast = document.getElementById('copyToast');
+          if (toast) {
+            toast.style.display = 'block';
+            setTimeout(() => {
+              toast.style.display = 'none';
+            }, 1500);
+          }
+        });
+      }
+    }
   </script>
 </body>
 </html>
