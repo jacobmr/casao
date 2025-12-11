@@ -126,13 +126,15 @@ export async function GET(request: Request) {
       </div>
     `
 
-    await resend.emails.send({
+    console.log(`📧 Sending approval email to ${inquiry.email}...`)
+    const emailResult = await resend.emails.send({
       from: "Casa Vistas <noreply@salundo.com>",
       to: inquiry.email,
-      replyTo: process.env.INQUIRY_EMAIL || "jacob@reider.us",
+      replyTo: "jacob@reider.us",
       subject: `🎉 Your ${discount}% Discount for Casa Vistas is Ready!`,
       html: emailHtml,
     })
+    console.log(`✅ Approval email result:`, emailResult)
 
     // Return success page
     const successHtml = `
