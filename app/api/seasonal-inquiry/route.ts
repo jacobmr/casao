@@ -150,12 +150,17 @@ export async function POST(request: Request) {
       </div>
     `
 
-    await resend.emails.send({
+    const toEmail = process.env.INQUIRY_EMAIL || "jacob@reider.us"
+    console.log(`📧 Sending seasonal inquiry email to ${toEmail}...`)
+
+    const emailResult = await resend.emails.send({
       from: "Casa Vistas <noreply@salundo.com>",
-      to: process.env.INQUIRY_EMAIL || "jacob@reider.us",
+      to: toEmail,
       subject: `🏠 Seasonal Request: ${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)} | ${escapeHtml(data.checkIn)} → ${escapeHtml(data.checkOut)}`,
       html: emailHtml,
     })
+
+    console.log(`✅ Seasonal inquiry email sent:`, emailResult)
 
     return NextResponse.json({ success: true })
   } catch (error) {
