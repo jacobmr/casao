@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { kv } from "@vercel/kv"
+import { getSeasonalCode } from "@/lib/kv-cache"
 
 export async function GET(request: Request) {
   try {
@@ -11,12 +11,10 @@ export async function GET(request: Request) {
     }
 
     // Retrieve the stored inquiry
-    const storedData = await kv.get<string>(`seasonal:${code}`)
-    if (!storedData) {
+    const inquiry = await getSeasonalCode(code)
+    if (!inquiry) {
       return NextResponse.json({ error: "Code not found or expired" }, { status: 404 })
     }
-
-    const inquiry = typeof storedData === "string" ? JSON.parse(storedData) : storedData
 
     // Return the booking data (without sensitive internal fields)
     return NextResponse.json({

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { kv } from "@vercel/kv"
+import { getSeasonalCode, setSeasonalCode } from "@/lib/kv-cache"
 
 export async function POST(request: Request) {
   try {
@@ -11,19 +11,17 @@ export async function POST(request: Request) {
     }
 
     // Retrieve the stored inquiry
-    const storedData = await kv.get<string>(`seasonal:${code}`)
-    if (!storedData) {
+    const inquiry = await getSeasonalCode(code)
+    if (!inquiry) {
       return NextResponse.json({ error: "Code not found or expired" }, { status: 404 })
     }
-
-    const inquiry = typeof storedData === "string" ? JSON.parse(storedData) : storedData
 
     // Mark as used
     inquiry.used = true
     inquiry.usedAt = new Date().toISOString()
 
     // Save back to Redis (keep the same TTL by re-setting with 30 days)
-    await kv.set(`seasonal:${code}`, JSON.stringify(inquiry), { ex: 30 * 24 * 60 * 60 })
+    await setSeasonalCode(code, inquiry)
 
     return NextResponse.json({ success: true })
   } catch (error) {

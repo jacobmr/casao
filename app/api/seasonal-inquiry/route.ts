@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
-import { kv } from "@vercel/kv"
 import { nanoid } from "nanoid"
+import { setSeasonalCode } from "@/lib/kv-cache"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       promoCode: null, // You'll set this when you reply
     }
 
-    await kv.set(`seasonal:${oneTimeCode}`, JSON.stringify(codeData), { ex: 30 * 24 * 60 * 60 }) // 30 days TTL
+    await setSeasonalCode(oneTimeCode, codeData)
 
     // Build approval links for different discount levels
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.casavistas.net"
@@ -159,7 +159,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Seasonal inquiry error:", error)
+    console.error("❌ Seasonal inquiry error:", error)
     return NextResponse.json({ error: "Failed to submit inquiry" }, { status: 500 })
   }
 }

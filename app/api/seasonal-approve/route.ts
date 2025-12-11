@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
-import { kv } from "@vercel/kv"
+import { getSeasonalCode, setSeasonalCode } from "@/lib/kv-cache"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -44,15 +44,13 @@ export async function GET(request: Request) {
     }
 
     // Retrieve the stored inquiry
-    const storedData = await kv.get<string>(`seasonal:${code}`)
-    if (!storedData) {
+    const inquiry = await getSeasonalCode(code)
+    if (!inquiry) {
       return new Response(generateErrorPage("This code has expired or doesn't exist"), {
         status: 404,
         headers: { "Content-Type": "text/html" },
       })
     }
-
-    const inquiry = typeof storedData === "string" ? JSON.parse(storedData) : storedData
 
     // Check if already approved
     if (inquiry.promoCode) {
@@ -71,7 +69,7 @@ export async function GET(request: Request) {
     inquiry.discountPercent = discount
 
     // Save back to Redis (refresh TTL)
-    await kv.set(`seasonal:${code}`, JSON.stringify(inquiry), { ex: 30 * 24 * 60 * 60 })
+    await setSeasonalCode(code, inquiry)
 
     // Build the booking URL they'll use
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.casavistas.net"
