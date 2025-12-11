@@ -150,8 +150,10 @@ export async function POST(request: Request) {
       </div>
     `
 
-    const toEmail = process.env.INQUIRY_EMAIL || "jacob@reider.us"
-    console.log(`📧 Sending seasonal inquiry email to ${toEmail}...`)
+    // Ensure clean email address - trim whitespace and validate format
+    const rawEmail = process.env.INQUIRY_EMAIL || "jacob@reider.us"
+    const toEmail = rawEmail.trim()
+    console.log(`📧 Sending seasonal inquiry email to "${toEmail}" (raw: "${rawEmail}", length: ${rawEmail.length})...`)
 
     const emailResult = await resend.emails.send({
       from: "Casa Vistas <noreply@salundo.com>",
