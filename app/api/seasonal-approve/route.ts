@@ -71,9 +71,9 @@ export async function GET(request: Request) {
     // Save back to Redis (refresh TTL)
     await setSeasonalCode(code, inquiry)
 
-    // Build the booking URL they'll use
+    // Build the booking URL - go directly to handoff page
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.casavistas.net"
-    const bookingUrl = `${baseUrl}/seasonal/book/${code}`
+    const bookingUrl = `${baseUrl}/api/handoff?checkIn=${inquiry.checkIn}&checkOut=${inquiry.checkOut}&adults=${inquiry.guests}&promo=${promoCode}`
 
     // Send approval email to the guest
     const emailHtml = `
