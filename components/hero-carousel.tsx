@@ -88,6 +88,48 @@ export function HeroCarousel() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />
 
+      {/* Social Proof Badge - Top Right */}
+      <div
+        className={cn(
+          "absolute top-20 right-4 md:top-24 md:right-8 lg:right-16 z-20",
+          "backdrop-blur-md bg-white/10 border border-white/30 rounded-xl shadow-lg shadow-black/20",
+          "px-3 py-2.5 md:px-4 md:py-3",
+          "transition-all duration-1000 delay-1000",
+          isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+        )}
+      >
+        <div className="text-white/70 text-[10px] md:text-xs uppercase tracking-widest mb-1.5 font-medium">
+          Verified on
+        </div>
+        <a
+          href="https://www.airbnb.com/rooms/47159132"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 mb-1.5 group transition-colors hover:bg-white/5 rounded px-1 -mx-1 py-0.5"
+        >
+          <div className="flex items-center gap-1">
+            <span className="text-yellow-400 text-xs md:text-sm">★★★★★</span>
+          </div>
+          <span className="text-white text-xs md:text-sm font-semibold">4.94</span>
+          <span className="text-white/60 text-[10px] md:text-xs font-medium">Airbnb</span>
+        </a>
+        <a
+          href="https://www.vrbo.com/en-ca/cottage-rental/p3030912vb"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 mb-1.5 group transition-colors hover:bg-white/5 rounded px-1 -mx-1 py-0.5"
+        >
+          <div className="flex items-center gap-1">
+            <span className="text-yellow-400 text-xs md:text-sm">★★★★★</span>
+          </div>
+          <span className="text-white text-xs md:text-sm font-semibold">4.9</span>
+          <span className="text-white/60 text-[10px] md:text-xs font-medium">VRBO</span>
+        </a>
+        <div className="text-white/50 text-[9px] md:text-[10px] text-center pt-1 border-t border-white/20">
+          50+ verified reviews
+        </div>
+      </div>
+
       {/* Content */}
       <div className="relative h-full flex flex-col">
         {/* Main hero content - positioned in center-bottom area */}

@@ -2,6 +2,274 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 
 /**
+ * Render lead capture form
+ */
+function renderLeadCaptureForm({ checkIn, checkOut, adults, experiences, promoCode }) {
+  const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+
+  return `
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Complete Your Booking – Casa Vistas</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #00785c 0%, #059669 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      color: #1f2937;
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 3rem 2rem;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #00785c;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .booking-summary {
+      background: #f3f4f6;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .booking-summary strong {
+      display: block;
+      color: #00785c;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .booking-summary .dates {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 0.25rem;
+    }
+
+    .booking-summary .details {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.2s;
+      background: white;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #00785c;
+      box-shadow: 0 0 0 3px rgba(0, 120, 92, 0.1);
+    }
+
+    input::placeholder {
+      color: #9ca3af;
+    }
+
+    .button {
+      width: 100%;
+      background: linear-gradient(135deg, #00785c 0%, #059669 100%);
+      color: white;
+      text-decoration: none;
+      padding: 1rem 2.5rem;
+      border-radius: 12px;
+      font-size: 1.125rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0, 120, 92, 0.3);
+      border: none;
+      cursor: pointer;
+      display: block;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 120, 92, 0.4);
+    }
+
+    .button:active {
+      transform: translateY(0);
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .privacy {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 2rem 1.5rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Casa Vistas</div>
+
+    <h1>One Last Step!</h1>
+    <p>Please share your contact info so we can assist with your stay</p>
+
+    <div class="booking-summary">
+      <strong>Your Selected Dates</strong>
+      <div class="dates">${checkIn} → ${checkOut}</div>
+      <div class="details">${nights} nights • ${adults} guests</div>
+    </div>
+
+    <form id="leadForm" onsubmit="submitForm(event)">
+      <div class="form-group">
+        <label for="name">Full Name *</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          required
+          placeholder="John Doe"
+          autocomplete="name"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address *</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          placeholder="john@example.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <button type="submit" class="button" id="submitBtn">
+        Continue to Checkout →
+      </button>
+    </form>
+
+    <div class="privacy">
+      We'll only use this to send booking confirmations and stay details.
+      <br>We never share your info with third parties.
+    </div>
+  </div>
+
+  <script>
+    function submitForm(event) {
+      event.preventDefault();
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Processing...';
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+
+      // Redirect to handoff with name and email
+      const params = new URLSearchParams({
+        checkIn: '${checkIn}',
+        checkOut: '${checkOut}',
+        adults: '${adults}',
+        name: name,
+        email: email
+      });
+
+      ${experiences ? `params.set('experiences', '${experiences}');` : ''}
+      ${promoCode ? `params.set('promo', '${promoCode}');` : ''}
+
+      window.location.href = '/api/handoff?' + params.toString();
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
  * Branded Checkout Handoff Endpoint
  * 
  * Creates a seamless handoff from Casa O to Blue Zone's Guesty checkout
@@ -30,6 +298,8 @@ export async function GET(request) {
     const propertyId = searchParams.get('propertyId') || process.env.GUESTY_PROPERTY_ID;
     const experiences = searchParams.get('experiences'); // Comma-separated experience IDs
     const promoCode = searchParams.get('promo'); // Promo/discount code
+    const guestName = searchParams.get('name');
+    const guestEmail = searchParams.get('email');
 
     // Validate required parameters
     if (!checkIn || !checkOut) {
@@ -63,6 +333,8 @@ export async function GET(request) {
       experienceCount: selectedExperiences.length,
       discountApplied: hasDiscount,
       promoCode: promoCode || null,
+      guestName: guestName || 'Not provided',
+      guestEmail: guestEmail || 'Not provided',
       timestamp: new Date().toISOString()
     });
 
@@ -72,7 +344,10 @@ export async function GET(request) {
       try {
         const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
         const title = '🏠 Casa Vistas Booking';
-        const message = `${checkIn} → ${checkOut} (${nights} nights, ${adults} guests)${promoCode ? ` [${promoCode}]` : ''}`;
+        const guestInfo = (guestName || guestEmail)
+          ? `\n${guestName || 'Guest'} (${guestEmail || 'No email'})`
+          : '';
+        const message = `${checkIn} → ${checkOut} (${nights} nights, ${adults} guests)${promoCode ? ` [${promoCode}]` : ''}${guestInfo}`;
 
         await fetch(`https://api.simplepush.io/send/${simplePushKey}/${encodeURIComponent(title)}/${encodeURIComponent(message)}`);
         console.log('📱 Push notification sent');
@@ -89,6 +364,13 @@ export async function GET(request) {
     const blueZoneURL =
       `https://bluezoneexperience.guestybookings.com/en/properties/${encodeURIComponent(propertyId)}` +
       `?minOccupancy=${adults}&checkIn=${checkIn}&checkOut=${checkOut}`;
+
+    // If name/email not provided, show lead capture form first
+    if (!guestName || !guestEmail) {
+      return new NextResponse(renderLeadCaptureForm({ checkIn, checkOut, adults, experiences, promoCode }), {
+        headers: { 'Content-Type': 'text/html' },
+      });
+    }
 
     // Return branded interstitial HTML
     const html = `
