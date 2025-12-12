@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils"
 
 const TOTAL_IMAGES = 39
 
-// Curated hero images - best shots for first impression
-const HERO_IMAGES = [1, 3, 5, 8, 12, 15, 18, 22, 25, 28, 31, 35]
+// Curated hero images - best shots for first impression (optimal photos first)
+const HERO_IMAGES = [66, 67, 29, 26, 28, 23, 35, 8, 12, 15, 18, 22, 25, 31]
 
 export function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
