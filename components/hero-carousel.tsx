@@ -105,25 +105,35 @@ export function HeroCarousel() {
           href="https://www.airbnb.com/rooms/47159132"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 mb-1.5 group transition-colors hover:bg-white/5 rounded px-1 -mx-1 py-0.5"
+          className="flex items-center gap-2 mb-1.5 group transition-all hover:bg-white/10 rounded px-1.5 -mx-1.5 py-1 cursor-pointer hover:scale-105"
         >
+          <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-[#FF5A5F] flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-[10px] md:text-xs font-bold">A</span>
+          </div>
           <div className="flex items-center gap-1">
             <span className="text-yellow-400 text-xs md:text-sm">★★★★★</span>
           </div>
           <span className="text-white text-xs md:text-sm font-semibold">4.94</span>
-          <span className="text-white/60 text-[10px] md:text-xs font-medium">Airbnb</span>
+          <svg className="w-3 h-3 text-white/60 group-hover:text-white/90 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
         </a>
         <a
           href="https://www.vrbo.com/en-ca/cottage-rental/p3030912vb"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 mb-1.5 group transition-colors hover:bg-white/5 rounded px-1 -mx-1 py-0.5"
+          className="flex items-center gap-2 mb-1.5 group transition-all hover:bg-white/10 rounded px-1.5 -mx-1.5 py-1 cursor-pointer hover:scale-105"
         >
+          <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-[#0066CC] flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-[10px] md:text-xs font-bold">V</span>
+          </div>
           <div className="flex items-center gap-1">
             <span className="text-yellow-400 text-xs md:text-sm">★★★★★</span>
           </div>
           <span className="text-white text-xs md:text-sm font-semibold">4.9</span>
-          <span className="text-white/60 text-[10px] md:text-xs font-medium">VRBO</span>
+          <svg className="w-3 h-3 text-white/60 group-hover:text-white/90 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
         </a>
         <div className="text-white/50 text-[9px] md:text-[10px] text-center pt-1 border-t border-white/20">
           50+ verified reviews
