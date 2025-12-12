@@ -64,7 +64,7 @@ export default function FriendsPage() {
               Friends & Family Rate
             </p>
             <p className="font-mono text-2xl md:text-3xl text-neutral-800 mb-4">
-              50% off for select dates
+              Up to 50% off for select dates
             </p>
             <p className="font-mono text-sm text-neutral-600">
               Reach out to us directly for the discount code.
