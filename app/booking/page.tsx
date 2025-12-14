@@ -68,9 +68,9 @@ function BookingPageContent() {
   const handleBookNow = () => {
     if (!checkIn || !checkOut) return
 
-    // Redirect to Guesty booking page
-    const guestyUrl = `https://booking.guesty.com/properties/688a8aae483ff0001243e891?checkIn=${checkIn.toISOString().split('T')[0]}&checkOut=${checkOut.toISOString().split('T')[0]}&adults=${guests}`
-    window.location.href = guestyUrl
+    // Redirect to handoff endpoint (sends SimplePush notification)
+    const handoffUrl = `/api/handoff?checkIn=${checkIn.toISOString().split('T')[0]}&checkOut=${checkOut.toISOString().split('T')[0]}&adults=${guests}`
+    window.location.href = handoffUrl
   }
 
   const nights = checkIn && checkOut 
@@ -168,16 +168,22 @@ function BookingPageContent() {
                 ) : null}
 
                 {/* Book Now Button */}
-                <Button 
+                <Button
                   onClick={handleBookNow}
-                  disabled={!checkIn || !checkOut || loadingPrice}
+                  disabled={!checkIn || !checkOut || loadingPrice || nights < 3}
                   size="lg"
                   className="w-full"
                 >
                   {loadingPrice ? 'Loading...' : 'Book Now with Guesty'}
                 </Button>
 
-                {checkIn && checkOut && (
+                {checkIn && checkOut && nights < 3 && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 text-center mt-4">
+                    Minimum stay is 3 nights
+                  </p>
+                )}
+
+                {checkIn && checkOut && nights >= 3 && (
                   <p className="text-xs text-muted-foreground text-center mt-4">
                     You'll be redirected to Guesty's secure booking page
                   </p>

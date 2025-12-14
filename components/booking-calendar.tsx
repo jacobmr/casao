@@ -148,6 +148,12 @@ export function BookingCalendar({
         setCheckIn(selectedDate)
         setCheckOut(null)
       } else {
+        // Validate 3-night minimum
+        const nights = Math.ceil((selectedDate.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
+        if (nights < 3) {
+          // Don't set checkout - require at least 3 nights
+          return
+        }
         newCheckOut = selectedDate
         setCheckOut(selectedDate)
       }
@@ -268,7 +274,7 @@ export function BookingCalendar({
               <p className="text-sm text-muted-foreground mb-1">Check-in</p>
               <p className="font-semibold text-foreground">{checkIn.toLocaleDateString()}</p>
             </div>
-            {checkOut && (
+            {checkOut ? (
               <>
                 <div className="hidden md:block text-muted-foreground">→</div>
                 <div>
@@ -282,6 +288,10 @@ export function BookingCalendar({
                   </p>
                 </div>
               </>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                Select checkout date (minimum 3 nights)
+              </div>
             )}
           </div>
         </div>
