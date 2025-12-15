@@ -323,7 +323,19 @@ export async function GET(request) {
     const selectedExperiences = experiences ? experiences.split(',').filter(Boolean) : [];
     const hasDiscount = selectedExperiences.length >= 2;
 
-    // Log handoff for analytics
+    // Build Blue Zone Guesty property URL (not /checkout - that doesn't exist)
+    const blueZoneURL =
+      `https://bluezoneexperience.guestybookings.com/en/properties/${encodeURIComponent(propertyId)}` +
+      `?minOccupancy=${adults}&checkIn=${checkIn}&checkOut=${checkOut}`;
+
+    // If name/email not provided, show lead capture form first (no notification yet)
+    if (!guestName || !guestEmail) {
+      return new NextResponse(renderLeadCaptureForm({ checkIn, checkOut, adults, experiences, promoCode }), {
+        headers: { 'Content-Type': 'text/html' },
+      });
+    }
+
+    // User has completed lead capture - log and notify
     console.log(`🔄 Handoff created: ${uuid}`, {
       checkIn,
       checkOut,
@@ -333,21 +345,19 @@ export async function GET(request) {
       experienceCount: selectedExperiences.length,
       discountApplied: hasDiscount,
       promoCode: promoCode || null,
-      guestName: guestName || 'Not provided',
-      guestEmail: guestEmail || 'Not provided',
+      guestName: guestName,
+      guestEmail: guestEmail,
       timestamp: new Date().toISOString()
     });
 
-    // Send push notification via Pushover (replaced SimplePush Dec 2024)
+    // Send push notification via Pushover (only after lead capture completed)
     const pushoverUserKey = process.env.PUSHOVER_USER_KEY;
     const pushoverApiToken = process.env.PUSHOVER_API_TOKEN;
     if (pushoverUserKey && pushoverApiToken) {
       try {
         const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
         const title = '🏠 Casa Vistas Booking';
-        const guestInfo = (guestName || guestEmail)
-          ? `\n${guestName || 'Guest'} (${guestEmail || 'No email'})`
-          : '';
+        const guestInfo = `\n${guestName} (${guestEmail})`;
         const message = `${checkIn} → ${checkOut} (${nights} nights, ${adults} guests)${promoCode ? ` [${promoCode}]` : ''}${guestInfo}`;
 
         const formData = new URLSearchParams({
@@ -369,18 +379,6 @@ export async function GET(request) {
 
     // TODO: Store in database/Redis for tracking
     // await logHandoff({ uuid, checkIn, checkOut, adults, propertyId });
-
-    // Build Blue Zone Guesty property URL (not /checkout - that doesn't exist)
-    const blueZoneURL =
-      `https://bluezoneexperience.guestybookings.com/en/properties/${encodeURIComponent(propertyId)}` +
-      `?minOccupancy=${adults}&checkIn=${checkIn}&checkOut=${checkOut}`;
-
-    // If name/email not provided, show lead capture form first
-    if (!guestName || !guestEmail) {
-      return new NextResponse(renderLeadCaptureForm({ checkIn, checkOut, adults, experiences, promoCode }), {
-        headers: { 'Content-Type': 'text/html' },
-      });
-    }
 
     // Return branded interstitial HTML
     const html = `
