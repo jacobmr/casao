@@ -4,11 +4,12 @@ import { getCachedAvailability, setCachedAvailability, setMonthlyPricing } from 
 import { fetchMonthlyPricing } from '../../../lib/pricing-fetcher';
 
 /**
- * Send SimplePush notification for new bookings
+ * Send Pushover notification for new bookings (replaced SimplePush Dec 2024)
  */
 async function sendBookingNotification(newBookings) {
-  const simplePushKey = process.env.SIMPLEPUSH_KEY;
-  if (!simplePushKey || newBookings.length === 0) return;
+  const pushoverUserKey = process.env.PUSHOVER_USER_KEY;
+  const pushoverApiToken = process.env.PUSHOVER_API_TOKEN;
+  if (!pushoverUserKey || !pushoverApiToken || newBookings.length === 0) return;
 
   try {
     // Group bookings by date range
@@ -47,7 +48,17 @@ async function sendBookingNotification(newBookings) {
       if (index < ranges.length - 1) message += ' | ';
     });
 
-    await fetch(`https://api.simplepush.io/send/${simplePushKey}/${encodeURIComponent(title)}/${encodeURIComponent(message)}`);
+    // Send via Pushover API
+    const formData = new URLSearchParams({
+      token: pushoverApiToken,
+      user: pushoverUserKey,
+      title: title,
+      message: message,
+    });
+    await fetch('https://api.pushover.net/1/messages.json', {
+      method: 'POST',
+      body: formData,
+    });
     console.log('📱 Booking notification sent:', message);
   } catch (error) {
     console.error('Failed to send booking notification:', error);

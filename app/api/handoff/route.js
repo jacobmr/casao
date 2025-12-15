@@ -338,9 +338,10 @@ export async function GET(request) {
       timestamp: new Date().toISOString()
     });
 
-    // Send push notification via SimplePush
-    const simplePushKey = process.env.SIMPLEPUSH_KEY;
-    if (simplePushKey) {
+    // Send push notification via Pushover (replaced SimplePush Dec 2024)
+    const pushoverUserKey = process.env.PUSHOVER_USER_KEY;
+    const pushoverApiToken = process.env.PUSHOVER_API_TOKEN;
+    if (pushoverUserKey && pushoverApiToken) {
       try {
         const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
         const title = '🏠 Casa Vistas Booking';
@@ -349,7 +350,16 @@ export async function GET(request) {
           : '';
         const message = `${checkIn} → ${checkOut} (${nights} nights, ${adults} guests)${promoCode ? ` [${promoCode}]` : ''}${guestInfo}`;
 
-        await fetch(`https://api.simplepush.io/send/${simplePushKey}/${encodeURIComponent(title)}/${encodeURIComponent(message)}`);
+        const formData = new URLSearchParams({
+          token: pushoverApiToken,
+          user: pushoverUserKey,
+          title: title,
+          message: message,
+        });
+        await fetch('https://api.pushover.net/1/messages.json', {
+          method: 'POST',
+          body: formData,
+        });
         console.log('📱 Push notification sent');
       } catch (pushError) {
         console.error('Push notification failed:', pushError);
