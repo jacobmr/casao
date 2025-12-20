@@ -309,6 +309,18 @@ export async function GET(request) {
       );
     }
 
+    // Validate 3-night minimum
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+
+    if (nights < 3) {
+      return NextResponse.json(
+        { error: 'Minimum stay is 3 nights', nights },
+        { status: 400 }
+      );
+    }
+
     if (!propertyId) {
       return NextResponse.json(
         { error: 'Property ID not configured' },
