@@ -212,6 +212,12 @@ export function AvailabilityCalendar() {
         setCheckIn(selectedDate)
         setCheckOut(null)
       } else {
+        // Validate 3-night minimum
+        const nightsCount = Math.ceil((selectedDate.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
+        if (nightsCount < 3) {
+          // Don't set checkout - require at least 3 nights
+          return
+        }
         setCheckOut(selectedDate)
       }
     } else {
@@ -674,9 +680,9 @@ export function AvailabilityCalendar() {
                 ) : null}
 
                 {/* Book Now Button */}
-                <Button 
+                <Button
                   onClick={handleBookNow}
-                  disabled={!checkIn || !checkOut || loadingPrice}
+                  disabled={!checkIn || !checkOut || loadingPrice || nights < 3}
                   size="lg"
                   className="w-full"
                 >
@@ -690,7 +696,13 @@ export function AvailabilityCalendar() {
                   )}
                 </Button>
 
-                {checkIn && checkOut && !loadingPrice && (
+                {checkIn && checkOut && nights < 3 && !loadingPrice && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 text-center mt-4">
+                    Minimum stay is 3 nights
+                  </p>
+                )}
+
+                {checkIn && checkOut && nights >= 3 && !loadingPrice && (
                   <p className="text-xs text-muted-foreground text-center mt-4">
                     We'll verify availability before redirecting to Guesty's secure booking page
                   </p>
