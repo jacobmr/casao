@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { approveFamilyBooking, getFamilyBooking } from '@/lib/family-kv'
+import { approveBooking } from '@/lib/google-calendar'
 
 /**
  * POST /api/family/admin/approve/[id]
- * Approve a pending booking request
+ * Approve a pending booking by removing "Pending:" prefix from Google Calendar event
  */
 export async function POST(
   request: Request,
@@ -12,31 +12,14 @@ export async function POST(
   try {
     const { id } = await params
 
-    // Get the booking first to verify it exists
-    const booking = await getFamilyBooking(id)
-
-    if (!booking) {
-      return NextResponse.json(
-        { error: 'Booking not found' },
-        { status: 404 }
-      )
-    }
-
-    if (booking.status !== 'pending') {
-      return NextResponse.json(
-        { error: 'Only pending bookings can be approved' },
-        { status: 400 }
-      )
-    }
-
-    // Approve the booking
-    const updated = await approveFamilyBooking(id)
+    // Approve by removing "Pending:" prefix from event title
+    await approveBooking(id)
 
     console.log(`✅ Approved family booking ${id}`)
 
     return NextResponse.json({
       success: true,
-      booking: updated
+      message: 'Booking approved'
     })
   } catch (error) {
     console.error('Error approving booking:', error)

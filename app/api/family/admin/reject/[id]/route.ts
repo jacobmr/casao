@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { rejectFamilyBooking, getFamilyBooking } from '@/lib/family-kv'
+import { deleteBooking } from '@/lib/google-calendar'
 
 /**
  * POST /api/family/admin/reject/[id]
- * Reject a pending booking request
+ * Reject a pending booking by deleting the event from Google Calendar
  */
 export async function POST(
   request: Request,
@@ -12,31 +12,14 @@ export async function POST(
   try {
     const { id } = await params
 
-    // Get the booking first to verify it exists
-    const booking = await getFamilyBooking(id)
-
-    if (!booking) {
-      return NextResponse.json(
-        { error: 'Booking not found' },
-        { status: 404 }
-      )
-    }
-
-    if (booking.status !== 'pending') {
-      return NextResponse.json(
-        { error: 'Only pending bookings can be rejected' },
-        { status: 400 }
-      )
-    }
-
-    // Reject the booking
-    const updated = await rejectFamilyBooking(id)
+    // Delete the event from Google Calendar
+    await deleteBooking(id)
 
     console.log(`❌ Rejected family booking ${id}`)
 
     return NextResponse.json({
       success: true,
-      booking: updated
+      message: 'Booking rejected and removed'
     })
   } catch (error) {
     console.error('Error rejecting booking:', error)

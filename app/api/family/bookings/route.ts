@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server'
-import { getAllFamilyBookings, createFamilyBooking } from '@/lib/family-kv'
+import { getConfirmedBookings, createBookingRequest } from '@/lib/google-calendar'
 
 /**
  * GET /api/family/bookings
- * List all approved family bookings
+ * List all confirmed family bookings from Google Calendar
  */
 export async function GET() {
   try {
-    const bookings = await getAllFamilyBookings('approved')
+    // Get bookings for next 12 months
+    const from = new Date().toISOString().split('T')[0]
+    const to = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+    const bookings = await getConfirmedBookings(from, to)
 
     return NextResponse.json({
       success: true,
@@ -25,7 +29,7 @@ export async function GET() {
 
 /**
  * POST /api/family/bookings
- * Create a new booking request (status: pending)
+ * Create a new booking request (creates "Pending:" event on Google Calendar)
  */
 export async function POST(request: Request) {
   try {
@@ -59,17 +63,17 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check for conflicts with existing approved bookings
-    const existingBookings = await getAllFamilyBookings('approved')
+    // Check for conflicts with existing confirmed bookings in Google Calendar
+    const existingBookings = await getConfirmedBookings(checkIn, checkOut)
     const hasConflict = existingBookings.some(existing => {
-      const existingCheckIn = new Date(existing.checkIn)
-      const existingCheckOut = new Date(existing.checkOut)
+      const existingStart = new Date(existing.start)
+      const existingEnd = new Date(existing.end)
 
       // Check if dates overlap
       return (
-        (checkInDate >= existingCheckIn && checkInDate < existingCheckOut) ||
-        (checkOutDate > existingCheckIn && checkOutDate <= existingCheckOut) ||
-        (checkInDate <= existingCheckIn && checkOutDate >= existingCheckOut)
+        (checkInDate >= existingStart && checkInDate < existingEnd) ||
+        (checkOutDate > existingStart && checkOutDate <= existingEnd) ||
+        (checkInDate <= existingStart && checkOutDate >= existingEnd)
       )
     })
 
@@ -80,14 +84,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create the booking
-    const booking = await createFamilyBooking({
+    // Create the booking on Google Calendar
+    const eventId = await createBookingRequest({
+      guestName,
       checkIn,
       checkOut,
-      guestName,
-      guestEmail,
       guestCount,
-      notes
+      notes: notes ? `${notes}${guestEmail ? `\n\nContact: ${guestEmail}` : ''}` : (guestEmail ? `Contact: ${guestEmail}` : undefined)
     })
 
     // Send Pushover notification to owner
@@ -100,7 +103,7 @@ export async function POST(request: Request) {
           (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
         )
 
-        const message = `New family booking request!\n\n${guestName} (${guestEmail || 'no email'})\n${checkIn} → ${checkOut} (${nights} nights, ${guestCount} guests)\n\n${notes ? `Notes: ${notes}\n\n` : ''}Approve at casavistas.net/family/admin`
+        const message = `New family booking request!\n\n${guestName} (${guestEmail || 'no email'})\n${checkIn} → ${checkOut} (${nights} nights, ${guestCount} guests)\n\n${notes ? `Notes: ${notes}\n\n` : ''}Check Google Calendar to approve (remove "Pending:" prefix)`
 
         const formData = new URLSearchParams({
           token: pushoverApiToken,
@@ -124,7 +127,15 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      booking
+      booking: {
+        id: eventId,
+        checkIn,
+        checkOut,
+        guestName,
+        guestCount,
+        notes,
+        status: 'pending'
+      }
     }, { status: 201 })
 
   } catch (error) {

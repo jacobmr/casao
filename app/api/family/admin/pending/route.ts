@@ -1,21 +1,23 @@
 import { NextResponse } from 'next/server'
-import { getAllFamilyBookings } from '@/lib/family-kv'
+import { getPendingBookings } from '@/lib/google-calendar'
 
 /**
  * GET /api/family/admin/pending
- * List all pending family booking requests
+ * List all pending family booking requests from Google Calendar
+ * (Events with "Pending:" prefix in title)
  */
 export async function GET() {
   try {
-    const pendingBookings = await getAllFamilyBookings('pending')
+    // Get pending bookings for next 12 months
+    const from = new Date().toISOString().split('T')[0]
+    const to = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-    // Sort by creation date (newest first)
-    const sorted = pendingBookings.sort((a, b) => b.createdAt - a.createdAt)
+    const pendingBookings = await getPendingBookings(from, to)
 
     return NextResponse.json({
       success: true,
-      bookings: sorted,
-      count: sorted.length
+      bookings: pendingBookings,
+      count: pendingBookings.length
     })
   } catch (error) {
     console.error('Error fetching pending bookings:', error)

@@ -5,12 +5,20 @@ import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, CheckCircle, XCircle, ArrowLeft, Clock, Users } from "lucide-react"
-import type { FamilyBooking } from "@/lib/family-types"
+import { Loader2, CheckCircle, XCircle, ArrowLeft, Clock, Users, ExternalLink } from "lucide-react"
+
+interface PendingBooking {
+  id: string
+  title: string
+  start: string
+  end: string
+  guestCount?: number
+  notes?: string
+}
 
 export default function FamilyAdminPage() {
   const router = useRouter()
-  const [pendingBookings, setPendingBookings] = useState<FamilyBooking[]>([])
+  const [pendingBookings, setPendingBookings] = useState<PendingBooking[]>([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
 
@@ -58,7 +66,7 @@ export default function FamilyAdminPage() {
   }
 
   const handleReject = async (id: string) => {
-    if (!confirm("Are you sure you want to reject this request?")) {
+    if (!confirm("Are you sure you want to reject this request? This will delete the event from Google Calendar.")) {
       return
     }
 
@@ -87,7 +95,7 @@ export default function FamilyAdminPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -96,6 +104,15 @@ export default function FamilyAdminPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Calendar
           </Button>
+          <a
+            href="https://calendar.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
+          >
+            Open Google Calendar
+            <ExternalLink className="h-3 w-3" />
+          </a>
         </div>
       </header>
 
@@ -127,12 +144,11 @@ export default function FamilyAdminPage() {
         ) : (
           <div className="space-y-4">
             {pendingBookings.map((booking) => {
-              const checkIn = new Date(booking.checkIn)
-              const checkOut = new Date(booking.checkOut)
+              const checkIn = new Date(booking.start)
+              const checkOut = new Date(booking.end)
               const nights = Math.ceil(
                 (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
               )
-              const createdAt = new Date(booking.createdAt * 1000)
               const isProcessing = processingId === booking.id
 
               return (
@@ -141,18 +157,12 @@ export default function FamilyAdminPage() {
                     {/* Booking Details */}
                     <div className="flex-1 space-y-3">
                       <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-semibold">{booking.guestName}</h3>
+                        <h3 className="text-xl font-semibold">{booking.title}</h3>
                         <Badge variant="outline" className="bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800">
                           <Clock className="h-3 w-3 mr-1" />
                           Pending
                         </Badge>
                       </div>
-
-                      {booking.guestEmail && (
-                        <div className="text-sm text-muted-foreground">
-                          {booking.guestEmail}
-                        </div>
-                      )}
 
                       <div className="flex flex-wrap gap-4 text-sm">
                         <div>
@@ -165,10 +175,12 @@ export default function FamilyAdminPage() {
                           <span className="font-medium text-foreground">Nights:</span>{" "}
                           <span className="text-muted-foreground">{nights}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">{booking.guestCount} guests</span>
-                        </div>
+                        {booking.guestCount && (
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">{booking.guestCount} guests</span>
+                          </div>
+                        )}
                       </div>
 
                       {booking.notes && (
@@ -176,14 +188,9 @@ export default function FamilyAdminPage() {
                           <div className="text-xs font-medium text-muted-foreground mb-1">
                             Notes
                           </div>
-                          <div className="text-sm italic">"{booking.notes}"</div>
+                          <div className="text-sm whitespace-pre-wrap">{booking.notes}</div>
                         </div>
                       )}
-
-                      <div className="text-xs text-muted-foreground">
-                        Requested {createdAt.toLocaleDateString()} at{" "}
-                        {createdAt.toLocaleTimeString()}
-                      </div>
                     </div>
 
                     {/* Action Buttons */}
@@ -232,8 +239,27 @@ export default function FamilyAdminPage() {
             Remember to block in Guesty!
           </h3>
           <p className="text-sm text-blue-700 dark:text-blue-300">
-            After approving a request, don't forget to manually block the dates in the Guesty dashboard to prevent double bookings.
+            After approving a request, don't forget to manually block the dates in the Guesty dashboard to prevent double bookings from paying guests.
           </p>
+        </div>
+
+        {/* Alternative: Google Calendar */}
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <h3 className="text-sm font-semibold mb-2">
+            Prefer using Google Calendar directly?
+          </h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            You can also approve bookings by editing the event in Google Calendar - just remove the "Pending:" prefix from the event title.
+          </p>
+          <a
+            href="https://calendar.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+          >
+            Open Google Calendar
+            <ExternalLink className="h-3 w-3" />
+          </a>
         </div>
       </div>
     </div>
