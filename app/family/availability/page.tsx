@@ -176,12 +176,12 @@ export default function FamilyAvailabilityPage() {
             }
             break
           case "owner":
-            bgColor = "bg-gray-200 dark:bg-gray-800"
-            textColor = "text-gray-700 dark:text-gray-300"
+            bgColor = "bg-amber-100 dark:bg-amber-950"
+            textColor = "text-amber-800 dark:text-amber-200"
             break
           case "booked":
-            bgColor = "bg-gray-100 dark:bg-gray-900"
-            textColor = "text-gray-500 dark:text-gray-400"
+            bgColor = "bg-gray-200 dark:bg-gray-800"
+            textColor = "text-gray-600 dark:text-gray-400"
             break
         }
       }
@@ -292,12 +292,12 @@ export default function FamilyAvailabilityPage() {
                   <span className="text-muted-foreground">Family/Friend</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded bg-gray-200 dark:bg-gray-800" />
+                  <div className="h-4 w-4 rounded bg-amber-100 dark:bg-amber-950" />
                   <span className="text-muted-foreground">Owner Block</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded bg-gray-100 dark:bg-gray-900" />
-                  <span className="text-muted-foreground">Booked</span>
+                  <div className="h-4 w-4 rounded bg-gray-200 dark:bg-gray-800" />
+                  <span className="text-muted-foreground">Guest Booking</span>
                 </div>
               </div>
 
