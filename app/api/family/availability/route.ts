@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getConfirmedBookings } from '@/lib/google-calendar'
-import { getCachedAvailability } from '@/lib/kv-cache'
+import { getAvailabilityWithFallback } from '@/lib/kv-cache'
+import { getCachedToken } from '@/lib/token-service-kv'
 
 interface CalendarDay {
   date: string
@@ -72,12 +73,19 @@ export async function GET(request: Request) {
       tempDate.setMonth(tempDate.getMonth() + 1)
     }
 
-    // Fetch all months in parallel
+    // Get auth token once for all requests
+    const token = await getCachedToken()
+
+    // Fetch all months in parallel with read-through caching
+    // Uses same shared function as main /api/calendar endpoint
     const guestyDataByMonth = new Map<string, { date: string; status: string }[]>()
     await Promise.all(
       Array.from(monthsToFetch).map(async (key) => {
         const [year, month] = key.split('-').map(Number)
-        const data = await getCachedAvailability(year, month)
+
+        // Use shared read-through cache function
+        const data = await getAvailabilityWithFallback(year, month, token)
+
         if (data && Array.isArray(data)) {
           guestyDataByMonth.set(key, data)
         }

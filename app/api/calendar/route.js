@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCachedToken } from '../../../lib/token-service-kv';
-import { getCachedAvailability, setCachedAvailability } from '../../../lib/kv-cache';
+import { getAvailabilityWithFallback, getCachedAvailability, setCachedAvailability } from '../../../lib/kv-cache';
 
 export async function GET(request) {
   try {
@@ -8,61 +8,64 @@ export async function GET(request) {
     const listingId = searchParams.get('listingId') || process.env.GUESTY_PROPERTY_ID;
     const from = searchParams.get('from');
     const to = searchParams.get('to');
-    
+
     if (!listingId || !from || !to) {
       return NextResponse.json(
         { error: 'Missing required parameters: listingId, from, to' },
         { status: 400 }
       );
     }
-    
+
     // Extract year and month for cache key
     const fromDate = new Date(from);
     const year = fromDate.getFullYear();
     const month = fromDate.getMonth();
-    
+
     // Check if we should skip cache (for real-time verification)
     const skipCache = searchParams.get('skipCache') === 'true';
-    
-    // Check cache first (unless skipCache is true)
-    if (!skipCache) {
-      const cached = await getCachedAvailability(year, month);
-      if (cached) {
-        console.log(`✅ Returning cached data for ${year}-${month}`);
-        return NextResponse.json(cached);
-      }
-    } else {
+
+    if (skipCache) {
       console.log(`🔍 Cache bypass requested - fetching fresh data`);
+      // Direct fetch bypassing cache
+      const token = await getCachedToken();
+      const url = `https://booking.guesty.com/api/listings/${listingId}/calendar?from=${from}&to=${to}`;
+
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        return NextResponse.json(
+          { error: `Guesty API error: ${error}` },
+          { status: response.status }
+        );
+      }
+
+      const data = await response.json();
+
+      // Cache the fresh result
+      await setCachedAvailability(year, month, data.days || data);
+
+      return NextResponse.json(data.days || data);
     }
-    
-    // Cache miss or bypass - fetch from Guesty
-    console.log(`🌐 Fetching from Guesty API: ${from} to ${to}`);
+
+    // Use shared read-through cache function
     const token = await getCachedToken();
-    
-    const url = `https://booking.guesty.com/api/listings/${listingId}/calendar?from=${from}&to=${to}`;
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-    });
-    
-    if (!response.ok) {
-      const error = await response.text();
+    const data = await getAvailabilityWithFallback(year, month, token);
+
+    if (!data) {
       return NextResponse.json(
-        { error: `Guesty API error: ${error}` },
-        { status: response.status }
+        { error: 'Failed to fetch availability data' },
+        { status: 500 }
       );
     }
-    
-    const data = await response.json();
-    
-    // Cache the result
-    await setCachedAvailability(year, month, data.days || data);
-    
-    return NextResponse.json(data.days || data);
-    
+
+    return NextResponse.json(data);
+
   } catch (error) {
     console.error('Calendar API error:', error);
     return NextResponse.json(
