@@ -1,13 +1,16 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Calendar, Users, Shield, Heart, ArrowRight, Loader2, Check } from "lucide-react"
+import { Calendar, Users, Shield, Heart, ArrowRight, Loader2, Check, Sun, Snowflake } from "lucide-react"
 import Link from "next/link"
+import { getSeasonType, getSeasonDisplay, getSeasonPricing } from "@/lib/seasonal"
 
 interface DayInfo {
   date: string
   status: string
   price?: number
+  season?: 'high' | 'off'
+  seasonLabel?: string
 }
 
 export default function SeasonalPage() {
@@ -98,6 +101,21 @@ export default function SeasonalPage() {
     return false
   }
 
+  const getDayStyle = (date: Date, isAvailable: boolean, isPast: boolean, isSelected: boolean) => {
+    if (isSelected) {
+      return "bg-primary text-white"
+    }
+    if (!isAvailable || isPast) {
+      return "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+    }
+    // Season-based styling
+    const season = getSeasonType(date)
+    if (season === 'high') {
+      return "bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100"
+    }
+    return "bg-blue-50 border border-blue-200 text-blue-800 hover:bg-blue-100"
+  }
+
   const renderCalendar = () => {
     const year = currentMonth.getFullYear()
     const month = currentMonth.getMonth()
@@ -116,21 +134,22 @@ export default function SeasonalPage() {
       const isAvailable = isDateAvailable(date)
       const isPast = isDateInPast(date)
       const isSelected = isDateSelected(date)
+      const season = getSeasonType(date)
 
       days.push(
         <button
           key={day}
           onClick={() => handleDateClick(date)}
           disabled={!isAvailable || isPast}
-          className={`h-12 rounded-lg text-sm font-medium transition-all ${
-            isSelected
-              ? "bg-primary text-white"
-              : isAvailable && !isPast
-              ? "bg-green-50 border border-green-200 text-green-800 hover:bg-green-100"
-              : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-          }`}
+          title={isAvailable && !isPast ? getSeasonDisplay(date) : undefined}
+          className={`h-12 rounded-lg text-sm font-medium transition-all relative ${getDayStyle(date, isAvailable, isPast, isSelected)}`}
         >
           {day}
+          {isAvailable && !isPast && !isSelected && (
+            <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[8px]">
+              {season === 'high' ? '☀️' : '💙'}
+            </span>
+          )}
         </button>
       )
     }
@@ -278,9 +297,29 @@ export default function SeasonalPage() {
           {/* Calendar Section */}
           <div className="bg-white rounded-2xl border border-neutral-200 p-6">
             <h3 className="font-serif text-xl text-neutral-800 mb-4">1. Select Your Dates</h3>
-            <p className="text-sm text-neutral-500 mb-6">
-              Green dates are available. Click to select check-in, then check-out.
+            <p className="text-sm text-neutral-500 mb-4">
+              Click to select check-in, then check-out.
             </p>
+
+            {/* Season Legend */}
+            <div className="flex flex-wrap gap-4 mb-6 p-3 bg-neutral-50 rounded-lg text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-amber-50 border border-amber-200 flex items-center justify-center">
+                  <span className="text-[8px]">☀️</span>
+                </div>
+                <span className="text-neutral-600">High Season (50% off via code)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-blue-50 border border-blue-200 flex items-center justify-center">
+                  <span className="text-[8px]">💙</span>
+                </div>
+                <span className="text-neutral-600">Off-Season ($143/night direct)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-neutral-100"></div>
+                <span className="text-neutral-600">Unavailable</span>
+              </div>
+            </div>
 
             {/* Month navigation */}
             <div className="flex items-center justify-between mb-4">
@@ -315,7 +354,7 @@ export default function SeasonalPage() {
 
             {/* Selected dates display */}
             {selectedDates.checkIn && (
-              <div className="mt-4 p-4 bg-primary/5 rounded-lg">
+              <div className="mt-4 p-4 bg-primary/5 rounded-lg space-y-3">
                 <p className="text-sm text-neutral-700">
                   <strong>Check-in:</strong> {selectedDates.checkIn}
                   {selectedDates.checkOut && (
@@ -328,6 +367,28 @@ export default function SeasonalPage() {
                     </>
                   )}
                 </p>
+                {selectedDates.checkOut && (() => {
+                  const checkInSeason = getSeasonType(new Date(selectedDates.checkIn))
+                  const checkOutSeason = getSeasonType(new Date(selectedDates.checkOut))
+                  const isMixed = checkInSeason !== checkOutSeason
+                  const pricing = getSeasonPricing(checkInSeason)
+
+                  return (
+                    <div className={`text-xs p-2 rounded ${
+                      checkInSeason === 'high'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {isMixed ? (
+                        <span>⚠️ Your dates span both seasons. We'll discuss pricing options.</span>
+                      ) : checkInSeason === 'high' ? (
+                        <span>☀️ High Season — We'll send you a discount code (up to 50% off) after approval</span>
+                      ) : (
+                        <span>💙 Off-Season — Direct booking at $143/night friends rate</span>
+                      )}
+                    </div>
+                  )
+                })()}
               </div>
             )}
           </div>

@@ -24,6 +24,15 @@ export interface FamilySession {
 export interface CalendarDay {
   date: string                  // YYYY-MM-DD
   status: "available" | "family" | "owner" | "booked"
-  booking?: FamilyBooking       // Present if status is "family"
+  isCheckIn?: boolean           // First day of stay (PM arrival)
+  isCheckOut?: boolean          // Last day of stay (AM departure)
+  booking?: {
+    title?: string
+    guestName?: string
+    guestCount?: number
+    checkIn?: string
+    checkOut?: string
+    notes?: string
+  }
   price?: number
 }

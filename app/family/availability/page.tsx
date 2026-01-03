@@ -235,8 +235,13 @@ export default function FamilyAvailabilityPage() {
       let textColor = "text-muted-foreground"
       let borderColor = "border-transparent"
       let content = null
+      let partialDayStyle = ""
 
       if (!isPast && dayInfo) {
+        // Check for partial day (check-in or check-out)
+        const isCheckIn = dayInfo.isCheckIn
+        const isCheckOut = dayInfo.isCheckOut
+
         switch (dayInfo.status) {
           case "available":
             bgColor = "bg-green-100 dark:bg-green-950"
@@ -244,13 +249,21 @@ export default function FamilyAvailabilityPage() {
             textColor = "text-green-900 dark:text-green-100"
             break
           case "family":
-            bgColor = "bg-blue-100 dark:bg-blue-950"
-            borderColor = "border-blue-500"
             textColor = "text-blue-900 dark:text-blue-100"
+            borderColor = "border-blue-500"
+            if (isCheckIn) {
+              // Check-in day: left half available, right half booked
+              partialDayStyle = "bg-gradient-to-r from-green-100 via-green-100 to-blue-100 dark:from-green-950 dark:via-green-950 dark:to-blue-950"
+            } else if (isCheckOut) {
+              // Check-out day: left half booked, right half available
+              partialDayStyle = "bg-gradient-to-r from-blue-100 via-blue-100 to-green-100 dark:from-blue-950 dark:via-blue-950 dark:to-green-950"
+            } else {
+              bgColor = "bg-blue-100 dark:bg-blue-950"
+            }
             if (dayInfo.booking?.guestName) {
               content = (
                 <span className="text-[8px] font-medium mt-0.5 leading-tight text-center px-0.5 truncate max-w-full">
-                  {dayInfo.booking.guestName}
+                  {isCheckIn ? '→' : isCheckOut ? '←' : ''}{dayInfo.booking.guestName}
                 </span>
               )
             }
@@ -260,13 +273,23 @@ export default function FamilyAvailabilityPage() {
             textColor = "text-amber-800 dark:text-amber-200"
             break
           case "booked":
-            bgColor = "bg-gray-200 dark:bg-gray-800"
             textColor = "text-gray-600 dark:text-gray-400"
+            if (isCheckIn) {
+              // Check-in day: left half available, right half booked
+              partialDayStyle = "bg-gradient-to-r from-green-100 via-green-100 to-gray-200 dark:from-green-950 dark:via-green-950 dark:to-gray-800"
+              borderColor = "border-green-500"
+            } else if (isCheckOut) {
+              // Check-out day: left half booked, right half available
+              partialDayStyle = "bg-gradient-to-r from-gray-200 via-gray-200 to-green-100 dark:from-gray-800 dark:via-gray-800 dark:to-green-950"
+              borderColor = "border-green-500"
+            } else {
+              bgColor = "bg-gray-200 dark:bg-gray-800"
+            }
             // Show guest name if available from Google Calendar
             if (dayInfo.booking?.guestName) {
               content = (
                 <span className="text-[8px] font-medium mt-0.5 leading-tight text-center px-0.5 truncate max-w-full">
-                  {dayInfo.booking.guestName}
+                  {isCheckIn ? '→' : isCheckOut ? '←' : ''}{dayInfo.booking.guestName}
                 </span>
               )
             }
@@ -281,7 +304,7 @@ export default function FamilyAvailabilityPage() {
           disabled={isPast || loading}
           className={cn(
             "aspect-square rounded-lg flex flex-col items-center justify-center text-sm transition-all relative border-2",
-            bgColor,
+            partialDayStyle || bgColor,
             textColor,
             borderColor,
             "hover:opacity-80",
@@ -386,6 +409,10 @@ export default function FamilyAvailabilityPage() {
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 rounded bg-gray-200 dark:bg-gray-800" />
                   <span className="text-muted-foreground">Guest Booking</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded bg-gradient-to-r from-green-100 to-gray-200 dark:from-green-950 dark:to-gray-800" />
+                  <span className="text-muted-foreground">→ Check-in / ← Check-out</span>
                 </div>
               </div>
 

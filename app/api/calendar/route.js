@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCachedToken } from '../../../lib/token-service-kv';
 import { getAvailabilityWithFallback, getCachedAvailability, setCachedAvailability } from '../../../lib/kv-cache';
+import { getSeasonType, getSeasonLabel } from '../../../lib/seasonal';
 
 export async function GET(request) {
   try {
@@ -50,7 +51,14 @@ export async function GET(request) {
       // Cache the fresh result
       await setCachedAvailability(year, month, data.days || data);
 
-      return NextResponse.json(data.days || data);
+      // Enrich with season info
+      const enrichedData = (data.days || data || []).map(day => ({
+        ...day,
+        season: getSeasonType(new Date(day.date)),
+        seasonLabel: getSeasonLabel(getSeasonType(new Date(day.date)))
+      }));
+
+      return NextResponse.json(enrichedData);
     }
 
     // Use shared read-through cache function
@@ -64,7 +72,14 @@ export async function GET(request) {
       );
     }
 
-    return NextResponse.json(data);
+    // Enrich with season info
+    const enrichedData = (data || []).map(day => ({
+      ...day,
+      season: getSeasonType(new Date(day.date)),
+      seasonLabel: getSeasonLabel(getSeasonType(new Date(day.date)))
+    }));
+
+    return NextResponse.json(enrichedData);
 
   } catch (error) {
     console.error('Calendar API error:', error);

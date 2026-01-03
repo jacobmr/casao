@@ -6,10 +6,14 @@ import { getCachedToken } from '@/lib/token-service-kv'
 interface CalendarDay {
   date: string
   status: 'available' | 'family' | 'owner' | 'booked'
+  isCheckIn?: boolean   // First day of stay (PM arrival)
+  isCheckOut?: boolean  // Last day of stay (AM departure)
   booking?: {
     title: string
     guestName?: string
     guestCount?: number
+    checkIn?: string
+    checkOut?: string
   }
 }
 
@@ -52,7 +56,8 @@ export async function GET(request: Request) {
 
     // Fetch guest names from Google Calendar (synced from Guesty via scraper)
     // These are events with [GUEST] prefix created by the CASAO_PC scraper
-    const guestyGuestsByDate = new Map<string, string>()
+    // Track check-in/check-out for partial day display
+    const guestyGuestsByDate = new Map<string, { guestName: string, isCheckIn: boolean, isCheckOut: boolean, checkIn: string, checkOut: string }>()
     try {
       const guestBookings = await getGuestBookings(fromStr, toStr)
       guestBookings.forEach(booking => {
@@ -62,8 +67,26 @@ export async function GET(request: Request) {
 
         while (current < checkOut) {
           const dateStr = current.toISOString().split('T')[0]
-          guestyGuestsByDate.set(dateStr, booking.guestName)
+          const isCheckInDate = dateStr === booking.checkIn
+          guestyGuestsByDate.set(dateStr, {
+            guestName: booking.guestName,
+            isCheckIn: isCheckInDate,
+            isCheckOut: false,
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut
+          })
           current.setDate(current.getDate() + 1)
+        }
+        // Mark check-out day
+        const checkOutDateStr = booking.checkOut
+        if (!guestyGuestsByDate.has(checkOutDateStr)) {
+          guestyGuestsByDate.set(checkOutDateStr, {
+            guestName: booking.guestName,
+            isCheckIn: false,
+            isCheckOut: true,
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut
+          })
         }
       })
     } catch (error) {
@@ -71,7 +94,8 @@ export async function GET(request: Request) {
     }
 
     // Create a map of dates to family bookings for quick lookup
-    const familyBookingsByDate = new Map<string, typeof familyBookings[0]>()
+    // Also track which dates are check-in vs check-out
+    const familyBookingsByDate = new Map<string, { booking: typeof familyBookings[0], isCheckIn: boolean, isCheckOut: boolean }>()
 
     familyBookings.forEach(booking => {
       const checkIn = new Date(booking.start)
@@ -80,8 +104,18 @@ export async function GET(request: Request) {
 
       while (current < checkOut) {
         const dateStr = current.toISOString().split('T')[0]
-        familyBookingsByDate.set(dateStr, booking)
+        const isCheckInDate = dateStr === booking.start
+        const isCheckOutDate = false // Check-out is the day AFTER last night, so it's not in this loop
+        familyBookingsByDate.set(dateStr, { booking, isCheckIn: isCheckInDate, isCheckOut: false })
         current.setDate(current.getDate() + 1)
+      }
+      // Mark the check-out day (if within our range)
+      // Check-out day = booking.end (exclusive end date means this is the departure day)
+      const checkOutDateStr = booking.end
+      const existing = familyBookingsByDate.get(checkOutDateStr)
+      if (!existing) {
+        // If no booking on this day yet, mark it as check-out only (AM departure, PM available)
+        familyBookingsByDate.set(checkOutDateStr, { booking, isCheckIn: false, isCheckOut: true })
       }
     })
 
@@ -124,16 +158,21 @@ export async function GET(request: Request) {
       const monthKey = `${year}-${month}`
 
       // Check if this date has a family booking
-      const familyBooking = familyBookingsByDate.get(dateStr)
+      const familyData = familyBookingsByDate.get(dateStr)
 
-      if (familyBooking) {
+      if (familyData) {
         // Family/friend booking takes precedence
         calendarDays.push({
           date: dateStr,
           status: 'family',
+          isCheckIn: familyData.isCheckIn,
+          isCheckOut: familyData.isCheckOut,
           booking: {
-            title: familyBooking.title,
-            guestCount: familyBooking.guestCount,
+            title: familyData.booking.title,
+            guestName: familyData.booking.title,
+            guestCount: familyData.booking.guestCount,
+            checkIn: familyData.booking.start,
+            checkOut: familyData.booking.end,
           }
         })
       } else {
@@ -159,14 +198,33 @@ export async function GET(request: Request) {
         }
 
         // Add guest name for booked dates if we have it from scraper
-        const guestName = guestyGuestsByDate.get(dateStr)
-        if (status === 'booked' && guestName) {
+        const guestData = guestyGuestsByDate.get(dateStr)
+        if (status === 'booked' && guestData) {
           calendarDays.push({
             date: dateStr,
             status,
+            isCheckIn: guestData.isCheckIn,
+            isCheckOut: guestData.isCheckOut,
             booking: {
               title: 'Guest Booking',
-              guestName: guestName
+              guestName: guestData.guestName,
+              checkIn: guestData.checkIn,
+              checkOut: guestData.checkOut
+            }
+          })
+        } else if (guestData?.isCheckOut) {
+          // Check-out day that's marked as available in Guesty (which is correct)
+          // but we want to show the morning is occupied
+          calendarDays.push({
+            date: dateStr,
+            status: 'booked',
+            isCheckIn: false,
+            isCheckOut: true,
+            booking: {
+              title: 'Guest Booking',
+              guestName: guestData.guestName,
+              checkIn: guestData.checkIn,
+              checkOut: guestData.checkOut
             }
           })
         } else {
