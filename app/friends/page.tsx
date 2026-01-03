@@ -160,13 +160,18 @@ export default function FriendsPage() {
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
 
-          <div className="mt-8">
+          <div className="mt-8 space-y-4">
             <Link
-              href="/#availability"
-              className="inline-flex items-center justify-center gap-2 bg-neutral-800 text-white px-6 py-3 rounded font-mono text-sm hover:bg-neutral-700 transition-colors"
+              href="/friends/book"
+              className="inline-flex items-center justify-center gap-2 bg-neutral-800 text-white px-6 py-3 rounded font-mono text-sm hover:bg-neutral-700 transition-colors w-full sm:w-auto"
             >
-              Check Availability
+              Book Now
+              <ArrowRight className="w-4 h-4" />
             </Link>
+            <p className="font-mono text-xs text-neutral-500">
+              Off-season: $143/night direct booking<br />
+              High-season: 30% discount via checkout
+            </p>
           </div>
         </div>
 

@@ -174,7 +174,7 @@ async function sendOwnerNotification(
 ) {
   if (!booking) return
 
-  const pushoverToken = process.env.PUSHOVER_APP_TOKEN
+  const pushoverToken = process.env.PUSHOVER_API_TOKEN
   const pushoverUser = process.env.PUSHOVER_USER_KEY
 
   if (!pushoverToken || !pushoverUser) {
