@@ -197,9 +197,14 @@ export async function getGuestBookings(from: string, to: string): Promise<GuestB
   }
 
   try {
+    // Extend timeMin back 30 days to catch events that started before
+    // the requested range but extend into it
+    const extendedFrom = new Date(from)
+    extendedFrom.setDate(extendedFrom.getDate() - 30)
+
     const response = await calendar.events.list({
       calendarId,
-      timeMin: new Date(from).toISOString(),
+      timeMin: extendedFrom.toISOString(),
       timeMax: new Date(to).toISOString(),
       singleEvents: true,
       orderBy: 'startTime',
