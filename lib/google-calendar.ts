@@ -174,6 +174,58 @@ export async function getPendingBookings(from: string, to: string): Promise<Fami
 }
 
 /**
+ * Guest booking from Guesty (scraped and synced to Google Calendar)
+ */
+export interface GuestBooking {
+  checkIn: string   // YYYY-MM-DD
+  checkOut: string  // YYYY-MM-DD
+  guestName: string
+}
+
+/**
+ * Get guest bookings from Google Calendar (events with [GUEST] prefix)
+ * These are synced from Guesty via the scraper on CASAO_PC
+ * @param from - Start date (YYYY-MM-DD)
+ * @param to - End date (YYYY-MM-DD)
+ */
+export async function getGuestBookings(from: string, to: string): Promise<GuestBooking[]> {
+  const calendar = getCalendarClient()
+  const calendarId = process.env.GOOGLE_CALENDAR_ID
+
+  if (!calendarId) {
+    throw new Error('GOOGLE_CALENDAR_ID not configured')
+  }
+
+  try {
+    const response = await calendar.events.list({
+      calendarId,
+      timeMin: new Date(from).toISOString(),
+      timeMax: new Date(to).toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 250,
+    })
+
+    const events = response.data.items || []
+
+    // Filter for [GUEST] prefixed events and extract guest name
+    return events
+      .filter(event => event.summary?.startsWith('[GUEST]'))
+      .map(event => {
+        const guestName = event.summary!.replace('[GUEST] ', '').trim()
+        return {
+          checkIn: event.start?.date || event.start?.dateTime?.split('T')[0] || '',
+          checkOut: event.end?.date || event.end?.dateTime?.split('T')[0] || '',
+          guestName,
+        }
+      })
+  } catch (error) {
+    console.error('Error fetching guest bookings from Google Calendar:', error)
+    throw error
+  }
+}
+
+/**
  * Approve a pending booking by removing "Pending:" prefix
  */
 export async function approveBooking(eventId: string): Promise<void> {

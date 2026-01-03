@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getConfirmedBookings } from '@/lib/google-calendar'
+import { getConfirmedBookings, getGuestBookings } from '@/lib/google-calendar'
 import { getAvailabilityWithFallback } from '@/lib/kv-cache'
 import { getCachedToken } from '@/lib/token-service-kv'
 
@@ -11,12 +11,6 @@ interface CalendarDay {
     guestName?: string
     guestCount?: number
   }
-}
-
-interface GuestyReservation {
-  checkIn: string
-  checkOut: string
-  guest: string
 }
 
 /**
@@ -56,37 +50,26 @@ export async function GET(request: Request) {
       // Continue without family bookings if Google Calendar fails
     }
 
-    // Fetch Guesty guest names from CASAO_PC scraper API (ZeroTier private network)
-    // Gracefully degrades if unavailable - calendar still works, just without guest names
-    let guestyReservations: GuestyReservation[] = []
-    const guestyScraperUrl = process.env.GUESTY_SCRAPER_API_URL
-    if (guestyScraperUrl) {
-      try {
-        const guestyRes = await fetch(`${guestyScraperUrl}/api/reservations`, {
-          signal: AbortSignal.timeout(5000) // 5 second timeout
-        })
-        if (guestyRes.ok) {
-          const data = await guestyRes.json()
-          guestyReservations = data.upcoming || []
-        }
-      } catch (error) {
-        console.error('Failed to fetch Guesty guest names (continuing without):', error)
-      }
-    }
-
-    // Create a map of dates to Guesty reservations for guest name lookup
+    // Fetch guest names from Google Calendar (synced from Guesty via scraper)
+    // These are events with [GUEST] prefix created by the CASAO_PC scraper
     const guestyGuestsByDate = new Map<string, string>()
-    guestyReservations.forEach(res => {
-      const checkIn = new Date(res.checkIn)
-      const checkOut = new Date(res.checkOut)
-      const current = new Date(checkIn)
+    try {
+      const guestBookings = await getGuestBookings(fromStr, toStr)
+      guestBookings.forEach(booking => {
+        const checkIn = new Date(booking.checkIn)
+        const checkOut = new Date(booking.checkOut)
+        const current = new Date(checkIn)
 
-      while (current < checkOut) {
-        const dateStr = current.toISOString().split('T')[0]
-        guestyGuestsByDate.set(dateStr, res.guest)
-        current.setDate(current.getDate() + 1)
-      }
-    })
+        while (current < checkOut) {
+          const dateStr = current.toISOString().split('T')[0]
+          guestyGuestsByDate.set(dateStr, booking.guestName)
+          current.setDate(current.getDate() + 1)
+        }
+      })
+    } catch (error) {
+      console.error('Failed to fetch guest bookings from Google Calendar:', error)
+      // Continue without guest names if Google Calendar fails
+    }
 
     // Create a map of dates to family bookings for quick lookup
     const familyBookingsByDate = new Map<string, typeof familyBookings[0]>()
