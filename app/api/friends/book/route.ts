@@ -3,6 +3,8 @@ import {
   createOffSeasonBooking,
   validateBookingDates,
   OFF_SEASON_DEFAULTS,
+  FAMILY_RATE,
+  isFamilyCode,
 } from '@/lib/off-season-booking'
 import { createCheckoutSession, isStripeConfigured } from '@/lib/stripe-service'
 import { saveBooking, checkBookingConflicts } from '@/lib/booking-storage'
@@ -33,7 +35,11 @@ export async function POST(request: Request) {
       checkOut,
       notes,
       specialRequests,
+      familyCode,
     } = body
+
+    // Check if family code is provided for special rate
+    const useFamilyRate = isFamilyCode(familyCode)
 
     // Validate required fields
     if (!guestName || !guestEmail || !guestCount || !checkIn || !checkOut) {
@@ -96,7 +102,8 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create booking record
+    // Create booking record with appropriate rate
+    const nightlyRate = useFamilyRate ? FAMILY_RATE.nightlyRate : OFF_SEASON_DEFAULTS.nightlyRate
     const booking = createOffSeasonBooking({
       guestName,
       guestEmail,
@@ -104,7 +111,8 @@ export async function POST(request: Request) {
       guestCount,
       checkIn,
       checkOut,
-      notes,
+      nightlyRate,
+      notes: useFamilyRate ? `${notes || ''}\n[Family Rate - Griffin]`.trim() : notes,
       specialRequests,
     })
 

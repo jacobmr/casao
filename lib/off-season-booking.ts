@@ -66,6 +66,18 @@ export const OFF_SEASON_DEFAULTS = {
   minNights: 3,         // Minimum stay
 }
 
+// Family rate (Griffin code) - $500/week
+export const FAMILY_RATE = {
+  nightlyRate: 71.43,   // $500/week = ~$71.43/night
+  cleaningFee: 300,     // Same cleaning fee
+}
+
+// Family code validation
+export function isFamilyCode(code: string | null | undefined): boolean {
+  if (!code) return false
+  return code.toUpperCase() === 'GRIFFIN'
+}
+
 /**
  * Create a new off-season booking record
  */
