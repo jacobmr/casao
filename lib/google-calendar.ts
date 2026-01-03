@@ -159,11 +159,27 @@ export async function deleteBooking(eventId: string): Promise<void> {
 
 /**
  * Get confirmed (non-pending) family bookings only
- * Excludes [GUEST] events which are from Guesty scraper
+ * Excludes:
+ * - [GUEST] events (from Guesty scraper)
+ * - Confirmation codes (all caps, no spaces like "LCMARIE")
+ * - Events starting with "LC" (Guesty confirmation codes synced from iCal)
+ * - Events with " - LC" pattern (e.g., "Marie - LCLAW" from Guesty iCal sync)
  */
 export async function getConfirmedBookings(from: string, to: string): Promise<FamilyCalendarEvent[]> {
   const allBookings = await getFamilyBookings(from, to)
-  return allBookings.filter(b => !b.isPending && !b.title.startsWith('[GUEST]'))
+  return allBookings.filter(b => {
+    // Exclude pending bookings
+    if (b.isPending) return false
+    // Exclude [GUEST] events from scraper
+    if (b.title.startsWith('[GUEST]')) return false
+    // Exclude Guesty confirmation codes (start with LC)
+    if (b.title.startsWith('LC') && !b.title.includes(' ')) return false
+    // Exclude all-caps entries (likely confirmation codes)
+    if (b.title === b.title.toUpperCase() && !b.title.includes(' ')) return false
+    // Exclude "Name - LCXXXX" pattern from Guesty iCal sync
+    if (/ - LC[A-Z]+$/.test(b.title)) return false
+    return true
+  })
 }
 
 /**
