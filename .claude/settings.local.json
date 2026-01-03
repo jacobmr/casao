@@ -3,7 +3,14 @@
     "allow": [
       "mcp__kluster-verify__kluster_code_review_auto",
       "Skill(frontend-design)",
-      "Bash(vercel env add:*)"
+      "Bash(vercel env add:*)",
+      "Skill(bmad:bmm:workflows:prd)",
+      "WebSearch",
+      "Bash(gh search:*)",
+      "WebFetch(domain:open-api-docs.guesty.com)",
+      "WebFetch(domain:booking-api-docs.guesty.com)",
+      "Bash(pnpm build:*)",
+      "Bash(git stash:*)"
     ]
   }
 }

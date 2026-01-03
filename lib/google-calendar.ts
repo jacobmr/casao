@@ -193,7 +193,8 @@ export async function getGuestBookings(from: string, to: string): Promise<GuestB
   const calendarId = process.env.GOOGLE_CALENDAR_ID
 
   if (!calendarId) {
-    throw new Error('GOOGLE_CALENDAR_ID not configured')
+    console.error('getGuestBookings: GOOGLE_CALENDAR_ID not configured')
+    return []
   }
 
   try {
@@ -201,6 +202,8 @@ export async function getGuestBookings(from: string, to: string): Promise<GuestB
     // the requested range but extend into it
     const extendedFrom = new Date(from)
     extendedFrom.setDate(extendedFrom.getDate() - 30)
+
+    console.log('getGuestBookings: Fetching from', extendedFrom.toISOString(), 'to', new Date(to).toISOString())
 
     const response = await calendar.events.list({
       calendarId,
@@ -212,21 +215,23 @@ export async function getGuestBookings(from: string, to: string): Promise<GuestB
     })
 
     const events = response.data.items || []
+    console.log('getGuestBookings: Total events returned:', events.length)
 
     // Filter for [GUEST] prefixed events and extract guest name
-    return events
-      .filter(event => event.summary?.startsWith('[GUEST]'))
-      .map(event => {
-        const guestName = event.summary!.replace('[GUEST] ', '').trim()
-        return {
-          checkIn: event.start?.date || event.start?.dateTime?.split('T')[0] || '',
-          checkOut: event.end?.date || event.end?.dateTime?.split('T')[0] || '',
-          guestName,
-        }
-      })
+    const guestEvents = events.filter(event => event.summary?.startsWith('[GUEST]'))
+    console.log('getGuestBookings: Found', guestEvents.length, '[GUEST] events')
+
+    return guestEvents.map(event => {
+      const guestName = event.summary!.replace('[GUEST] ', '').trim()
+      return {
+        checkIn: event.start?.date || event.start?.dateTime?.split('T')[0] || '',
+        checkOut: event.end?.date || event.end?.dateTime?.split('T')[0] || '',
+        guestName,
+      }
+    })
   } catch (error) {
-    console.error('Error fetching guest bookings from Google Calendar:', error)
-    throw error
+    console.error('getGuestBookings error:', error)
+    return []
   }
 }
 
