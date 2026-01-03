@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, usePathname } from "next/navigation"
 import { getPromoCode, PromoCode } from "@/lib/promo-codes"
 
 interface PromoContextType {
@@ -55,8 +55,10 @@ export function PromoProvider({ children }: { children: ReactNode }) {
 // Banner component to show active promo
 export function PromoBanner() {
   const { promo } = usePromo()
+  const pathname = usePathname()
 
-  if (!promo) return null
+  // Don't show promo banner on family portal
+  if (!promo || pathname?.startsWith('/family')) return null
 
   return (
     <div className="bg-primary text-primary-foreground py-2 px-4 text-center text-sm font-medium">

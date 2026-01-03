@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -8,6 +9,10 @@ import { cn } from "@/lib/utils"
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const pathname = usePathname()
+
+  // Don't show main navigation on family portal pages
+  const isFamilyRoute = pathname?.startsWith('/family')
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,6 +22,10 @@ export function Navigation() {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  if (isFamilyRoute) {
+    return null
+  }
 
   return (
     <>

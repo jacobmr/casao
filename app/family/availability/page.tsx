@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Users, Loader2, LogOut } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { CalendarDay, FamilyBooking } from "@/lib/family-types"
 
@@ -15,11 +15,21 @@ const MONTHS = [
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
+interface UpcomingStay {
+  id: string
+  guestName: string
+  checkIn: string
+  checkOut: string
+  type: 'family' | 'guest'
+  guestCount?: number
+  notes?: string
+}
+
 export default function FamilyAvailabilityPage() {
   const router = useRouter()
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [availability, setAvailability] = useState<Map<string, CalendarDay>>(new Map())
-  const [upcomingBookings, setUpcomingBookings] = useState<FamilyBooking[]>([])
+  const [upcomingStays, setUpcomingStays] = useState<UpcomingStay[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedBooking, setSelectedBooking] = useState<FamilyBooking | null>(null)
@@ -62,33 +72,105 @@ export default function FamilyAvailabilityPage() {
     fetchAvailability()
   }, [year, month, router])
 
-  // Fetch upcoming family bookings for sidebar
+  // Fetch upcoming stays (both family and guest) for sidebar agenda
   useEffect(() => {
-    const fetchUpcoming = async () => {
+    const fetchUpcomingStays = async () => {
       try {
-        const response = await fetch("/api/family/bookings")
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const from = today.toISOString().split("T")[0]
+        const sixMonthsLater = new Date(today)
+        sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6)
+        const to = sixMonthsLater.toISOString().split("T")[0]
+
+        const response = await fetch(`/api/family/availability?from=${from}&to=${to}`)
 
         if (response.ok) {
           const data = await response.json()
-          const today = new Date()
-          today.setHours(0, 0, 0, 0)
+          const staysMap = new Map<string, UpcomingStay>()
 
-          // Filter for future bookings only
-          const upcoming = data.bookings
-            .filter((b: FamilyBooking) => new Date(b.checkIn) >= today)
-            .sort((a: FamilyBooking, b: FamilyBooking) =>
-              new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime()
-            )
-            .slice(0, 5) // Show next 5 bookings
+          // Extract unique stays from calendar days
+          data.days?.forEach((day: CalendarDay) => {
+            if ((day.status === 'booked' || day.status === 'family') && day.booking?.guestName) {
+              // Use check-in date as unique key for each stay
+              const guestName = day.booking.guestName
+              if (!staysMap.has(guestName + day.date)) {
+                // Find the first occurrence (check-in) of this guest
+                const existingStay = Array.from(staysMap.values()).find(
+                  s => s.guestName === guestName && s.checkOut === day.date
+                )
+                if (existingStay) {
+                  // Extend the checkout date
+                  existingStay.checkOut = new Date(new Date(day.date).getTime() + 86400000).toISOString().split("T")[0]
+                } else if (!Array.from(staysMap.values()).some(s => s.guestName === guestName && s.checkIn <= day.date && s.checkOut > day.date)) {
+                  // New stay
+                  staysMap.set(guestName + day.date, {
+                    id: `${day.status}-${day.date}-${guestName}`,
+                    guestName,
+                    checkIn: day.date,
+                    checkOut: new Date(new Date(day.date).getTime() + 86400000).toISOString().split("T")[0],
+                    type: day.status === 'family' ? 'family' : 'guest',
+                    guestCount: day.booking.guestCount
+                  })
+                }
+              }
+            }
+          })
 
-          setUpcomingBookings(upcoming)
+          // Convert to array and consolidate consecutive days for same guest
+          const stays: UpcomingStay[] = []
+          const guestDays = new Map<string, string[]>()
+
+          data.days?.forEach((day: CalendarDay) => {
+            if ((day.status === 'booked' || day.status === 'family') && day.booking?.guestName) {
+              const key = `${day.booking.guestName}|${day.status}`
+              if (!guestDays.has(key)) {
+                guestDays.set(key, [])
+              }
+              guestDays.get(key)!.push(day.date)
+            }
+          })
+
+          // Group consecutive dates into stays
+          guestDays.forEach((dates, key) => {
+            const [guestName, type] = key.split('|')
+            dates.sort()
+
+            let stayStart = dates[0]
+            let prevDate = dates[0]
+
+            for (let i = 1; i <= dates.length; i++) {
+              const currDate = dates[i]
+              const prevDateObj = new Date(prevDate)
+              const nextDay = new Date(prevDateObj.getTime() + 86400000).toISOString().split("T")[0]
+
+              if (currDate !== nextDay || i === dates.length) {
+                // End of stay - checkout is day after last night
+                stays.push({
+                  id: `${type}-${stayStart}-${guestName}`,
+                  guestName,
+                  checkIn: stayStart,
+                  checkOut: nextDay,
+                  type: type as 'family' | 'guest'
+                })
+                if (currDate) {
+                  stayStart = currDate
+                }
+              }
+              prevDate = currDate || prevDate
+            }
+          })
+
+          // Sort by check-in date
+          stays.sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime())
+          setUpcomingStays(stays.slice(0, 10)) // Show next 10 stays
         }
       } catch (error) {
-        console.error("Error fetching upcoming bookings:", error)
+        console.error("Error fetching upcoming stays:", error)
       }
     }
 
-    fetchUpcoming()
+    fetchUpcomingStays()
   }, [])
 
   const handleLogout = async () => {
@@ -322,46 +404,55 @@ export default function FamilyAvailabilityPage() {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="space-y-6">
-              {/* Upcoming Stays */}
+              {/* Upcoming Stays - Agenda View */}
               <Card className="p-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
+                  <CalendarIcon className="h-5 w-5 text-primary" />
                   Upcoming Stays
                 </h3>
 
-                {upcomingBookings.length === 0 ? (
+                {upcomingStays.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    No upcoming family stays
+                    No upcoming stays
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {upcomingBookings.map((booking) => {
-                      const checkIn = new Date(booking.checkIn)
-                      const checkOut = new Date(booking.checkOut)
+                    {upcomingStays.map((stay) => {
+                      const checkIn = new Date(stay.checkIn)
+                      const checkOut = new Date(stay.checkOut)
                       const nights = Math.ceil(
                         (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
                       )
 
                       return (
                         <div
-                          key={booking.id}
-                          className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800"
+                          key={stay.id}
+                          className={cn(
+                            "p-3 rounded-lg border",
+                            stay.type === 'family'
+                              ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                              : "bg-gray-50 dark:bg-gray-900/30 border-gray-200 dark:border-gray-700"
+                          )}
                         >
-                          <div className="font-semibold text-sm text-foreground mb-1">
-                            {booking.guestName}
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="font-semibold text-sm text-foreground">
+                              {stay.guestName}
+                            </div>
+                            <span className={cn(
+                              "text-[10px] px-1.5 py-0.5 rounded font-medium",
+                              stay.type === 'family'
+                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                            )}>
+                              {stay.type === 'family' ? 'Family' : 'Guest'}
+                            </span>
                           </div>
                           <div className="text-xs text-muted-foreground mb-1">
-                            {checkIn.toLocaleDateString()} → {checkOut.toLocaleDateString()}
+                            {checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {checkOut.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {nights} {nights === 1 ? "night" : "nights"} • {booking.guestCount}{" "}
-                            {booking.guestCount === 1 ? "guest" : "guests"}
+                            {nights} {nights === 1 ? "night" : "nights"}
                           </div>
-                          {booking.notes && (
-                            <div className="text-xs text-muted-foreground mt-2 italic">
-                              "{booking.notes}"
-                            </div>
-                          )}
                         </div>
                       )
                     })}
