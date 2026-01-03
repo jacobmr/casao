@@ -123,8 +123,10 @@ export default function FamilyAvailabilityPage() {
     const dateStr = formatDate(date)
     const dayInfo = availability.get(dateStr)
 
-    if (dayInfo?.status === "family" && dayInfo.booking) {
+    if ((dayInfo?.status === "family" || dayInfo?.status === "booked") && dayInfo.booking) {
       setSelectedBooking(dayInfo.booking)
+    } else {
+      setSelectedBooking(null)
     }
 
     setSelectedDate(date)
@@ -182,6 +184,18 @@ export default function FamilyAvailabilityPage() {
           case "booked":
             bgColor = "bg-gray-200 dark:bg-gray-800"
             textColor = "text-gray-600 dark:text-gray-400"
+            // Show guest initials if available from Guesty scraper
+            if (dayInfo.booking?.guestName) {
+              const initials = dayInfo.booking.guestName
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)
+              content = (
+                <span className="text-[10px] font-semibold mt-0.5">{initials}</span>
+              )
+            }
             break
         }
       }
@@ -198,7 +212,7 @@ export default function FamilyAvailabilityPage() {
             borderColor,
             "hover:opacity-80",
             "disabled:cursor-not-allowed disabled:opacity-40",
-            dayInfo?.status === "family" && "cursor-pointer hover:scale-105"
+            (dayInfo?.status === "family" || (dayInfo?.status === "booked" && dayInfo.booking)) && "cursor-pointer hover:scale-105"
           )}
         >
           <span className="font-medium">{day}</span>

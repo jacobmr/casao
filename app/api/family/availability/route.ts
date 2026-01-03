@@ -8,8 +8,15 @@ interface CalendarDay {
   status: 'available' | 'family' | 'owner' | 'booked'
   booking?: {
     title: string
+    guestName?: string
     guestCount?: number
   }
+}
+
+interface GuestyReservation {
+  checkIn: string
+  checkOut: string
+  guest: string
 }
 
 /**
@@ -48,6 +55,38 @@ export async function GET(request: Request) {
       console.error('Failed to fetch Google Calendar events:', error)
       // Continue without family bookings if Google Calendar fails
     }
+
+    // Fetch Guesty guest names from CASAO_PC scraper API (ZeroTier private network)
+    // Gracefully degrades if unavailable - calendar still works, just without guest names
+    let guestyReservations: GuestyReservation[] = []
+    const guestyScraperUrl = process.env.GUESTY_SCRAPER_API_URL
+    if (guestyScraperUrl) {
+      try {
+        const guestyRes = await fetch(`${guestyScraperUrl}/api/reservations`, {
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        })
+        if (guestyRes.ok) {
+          const data = await guestyRes.json()
+          guestyReservations = data.upcoming || []
+        }
+      } catch (error) {
+        console.error('Failed to fetch Guesty guest names (continuing without):', error)
+      }
+    }
+
+    // Create a map of dates to Guesty reservations for guest name lookup
+    const guestyGuestsByDate = new Map<string, string>()
+    guestyReservations.forEach(res => {
+      const checkIn = new Date(res.checkIn)
+      const checkOut = new Date(res.checkOut)
+      const current = new Date(checkIn)
+
+      while (current < checkOut) {
+        const dateStr = current.toISOString().split('T')[0]
+        guestyGuestsByDate.set(dateStr, res.guest)
+        current.setDate(current.getDate() + 1)
+      }
+    })
 
     // Create a map of dates to family bookings for quick lookup
     const familyBookingsByDate = new Map<string, typeof familyBookings[0]>()
@@ -137,10 +176,23 @@ export async function GET(request: Request) {
           status = 'owner' // Blocked by owner
         }
 
-        calendarDays.push({
-          date: dateStr,
-          status
-        })
+        // Add guest name for booked dates if we have it from scraper
+        const guestName = guestyGuestsByDate.get(dateStr)
+        if (status === 'booked' && guestName) {
+          calendarDays.push({
+            date: dateStr,
+            status,
+            booking: {
+              title: 'Guest Booking',
+              guestName: guestName
+            }
+          })
+        } else {
+          calendarDays.push({
+            date: dateStr,
+            status
+          })
+        }
       }
 
       current.setDate(current.getDate() + 1)
