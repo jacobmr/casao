@@ -158,11 +158,12 @@ export async function deleteBooking(eventId: string): Promise<void> {
 }
 
 /**
- * Get confirmed (non-pending) bookings only
+ * Get confirmed (non-pending) family bookings only
+ * Excludes [GUEST] events which are from Guesty scraper
  */
 export async function getConfirmedBookings(from: string, to: string): Promise<FamilyCalendarEvent[]> {
   const allBookings = await getFamilyBookings(from, to)
-  return allBookings.filter(b => !b.isPending)
+  return allBookings.filter(b => !b.isPending && !b.title.startsWith('[GUEST]'))
 }
 
 /**
@@ -193,7 +194,6 @@ export async function getGuestBookings(from: string, to: string): Promise<GuestB
   const calendarId = process.env.GOOGLE_CALENDAR_ID
 
   if (!calendarId) {
-    console.error('getGuestBookings: GOOGLE_CALENDAR_ID not configured')
     return []
   }
 
@@ -202,8 +202,6 @@ export async function getGuestBookings(from: string, to: string): Promise<GuestB
     // the requested range but extend into it
     const extendedFrom = new Date(from)
     extendedFrom.setDate(extendedFrom.getDate() - 30)
-
-    console.log('getGuestBookings: Fetching from', extendedFrom.toISOString(), 'to', new Date(to).toISOString())
 
     const response = await calendar.events.list({
       calendarId,
@@ -215,22 +213,17 @@ export async function getGuestBookings(from: string, to: string): Promise<GuestB
     })
 
     const events = response.data.items || []
-    console.log('getGuestBookings: Total events returned:', events.length)
 
     // Filter for [GUEST] prefixed events and extract guest name
-    const guestEvents = events.filter(event => event.summary?.startsWith('[GUEST]'))
-    console.log('getGuestBookings: Found', guestEvents.length, '[GUEST] events')
-
-    return guestEvents.map(event => {
-      const guestName = event.summary!.replace('[GUEST] ', '').trim()
-      return {
+    return events
+      .filter(event => event.summary?.startsWith('[GUEST]'))
+      .map(event => ({
         checkIn: event.start?.date || event.start?.dateTime?.split('T')[0] || '',
         checkOut: event.end?.date || event.end?.dateTime?.split('T')[0] || '',
-        guestName,
-      }
-    })
+        guestName: event.summary!.replace('[GUEST] ', '').trim(),
+      }))
   } catch (error) {
-    console.error('getGuestBookings error:', error)
+    console.error('Error fetching guest bookings:', error)
     return []
   }
 }

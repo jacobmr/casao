@@ -54,11 +54,8 @@ export async function GET(request: Request) {
     // These are events with [GUEST] prefix created by the CASAO_PC scraper
     const guestyGuestsByDate = new Map<string, string>()
     try {
-      console.log('Route: Calling getGuestBookings for', fromStr, 'to', toStr)
       const guestBookings = await getGuestBookings(fromStr, toStr)
-      console.log('Route: Got', guestBookings.length, 'guest bookings')
       guestBookings.forEach(booking => {
-        console.log('Route: Processing booking:', booking.guestName, booking.checkIn, '->', booking.checkOut)
         const checkIn = new Date(booking.checkIn)
         const checkOut = new Date(booking.checkOut)
         const current = new Date(checkIn)
@@ -69,10 +66,8 @@ export async function GET(request: Request) {
           current.setDate(current.getDate() + 1)
         }
       })
-      console.log('Route: guestyGuestsByDate has', guestyGuestsByDate.size, 'entries')
     } catch (error) {
       console.error('Failed to fetch guest bookings from Google Calendar:', error)
-      // Continue without guest names if Google Calendar fails
     }
 
     // Create a map of dates to family bookings for quick lookup
