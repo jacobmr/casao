@@ -165,15 +165,11 @@ export default function FamilyAvailabilityPage() {
             bgColor = "bg-blue-100 dark:bg-blue-950"
             borderColor = "border-blue-500"
             textColor = "text-blue-900 dark:text-blue-100"
-            if (dayInfo.booking) {
-              const initials = dayInfo.booking.guestName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)
+            if (dayInfo.booking?.guestName) {
               content = (
-                <span className="text-[10px] font-semibold mt-0.5">{initials}</span>
+                <span className="text-[8px] font-medium mt-0.5 leading-tight text-center px-0.5 truncate max-w-full">
+                  {dayInfo.booking.guestName}
+                </span>
               )
             }
             break
@@ -184,16 +180,12 @@ export default function FamilyAvailabilityPage() {
           case "booked":
             bgColor = "bg-gray-200 dark:bg-gray-800"
             textColor = "text-gray-600 dark:text-gray-400"
-            // Show guest initials if available from Guesty scraper
+            // Show guest name if available from Google Calendar
             if (dayInfo.booking?.guestName) {
-              const initials = dayInfo.booking.guestName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)
               content = (
-                <span className="text-[10px] font-semibold mt-0.5">{initials}</span>
+                <span className="text-[8px] font-medium mt-0.5 leading-tight text-center px-0.5 truncate max-w-full">
+                  {dayInfo.booking.guestName}
+                </span>
               )
             }
             break
