@@ -34,3 +34,9 @@ scripts/
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Local planning/analysis docs
+FRIENDS_FAMILY_*.md
+QUICK_REFERENCE.md
+ANALYSIS_COMPLETE.txt
+docs/
