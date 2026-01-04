@@ -14,9 +14,7 @@ function getStripe(): Stripe {
     if (!secretKey) {
       throw new Error('STRIPE_SECRET_KEY not configured')
     }
-    stripeClient = new Stripe(secretKey, {
-      apiVersion: '2025-04-30.basil',
-    })
+    stripeClient = new Stripe(secretKey)
   }
   return stripeClient
 }
