@@ -1,4 +1,4 @@
-import { Home, Users, Bed, Bath, MapPin, Waves } from "lucide-react"
+import { Home, Users, Bed, Bath, MapPin, Waves } from "lucide-react";
 
 const highlights = [
   { icon: Home, value: "3,600", unit: "sq ft", label: "Living Space" },
@@ -7,7 +7,7 @@ const highlights = [
   { icon: Bath, value: "4.5", unit: "baths", label: "Full Bathrooms" },
   { icon: Waves, value: "300", unit: "ft elevation", label: "Ocean Views" },
   { icon: MapPin, value: "1.5", unit: "miles", label: "To Beach" },
-]
+];
 
 export function PropertyHighlights() {
   return (
@@ -23,8 +23,8 @@ export function PropertyHighlights() {
             At A Glance
           </p>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-light text-foreground text-balance">
-            A retreat designed for{" "}
-            <span className="italic">unforgettable</span> moments
+            A retreat designed for <span className="italic">unforgettable</span>{" "}
+            moments
           </h2>
         </div>
 
@@ -62,12 +62,12 @@ export function PropertyHighlights() {
         {/* Editorial quote */}
         <div className="mt-20 md:mt-28 max-w-3xl mx-auto text-center">
           <blockquote className="editorial-quote">
-            "An oasis where the Pacific stretches endlessly before you,
-            and time moves at the pace of the sunset."
+            "An oasis where the Pacific stretches endlessly before you, and time
+            moves at the pace of the sunset."
           </blockquote>
           <div className="decorative-line mx-auto mt-8" />
         </div>
       </div>
     </section>
-  )
+  );
 }

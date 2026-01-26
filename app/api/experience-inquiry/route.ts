@@ -1,46 +1,46 @@
-import { NextRequest, NextResponse } from "next/server"
-import { Resend } from "resend"
-import { experiences } from "@/lib/experiences-data"
+import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
+import { experiences } from "@/lib/experiences-data";
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface InquiryData {
-  name: string
-  email: string
-  phone?: string
-  dates: string
-  message?: string
-  experiences: string[]
+  name: string;
+  email: string;
+  phone?: string;
+  dates: string;
+  message?: string;
+  experiences: string[];
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const data: InquiryData = await request.json()
+    const data: InquiryData = await request.json();
 
     // Validate required fields
     if (!data.name || !data.email || !data.dates || !data.experiences?.length) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
-      )
+        { status: 400 },
+      );
     }
 
     // Get experience names for the email
     const selectedExperiences = data.experiences
       .map((id) => experiences.find((e) => e.id === id)?.name || id)
-      .filter(Boolean)
+      .filter(Boolean);
 
     // Log inquiry
-    console.log("📧 New Experience Inquiry:")
-    console.log("━".repeat(50))
-    console.log(`Name:     ${data.name}`)
-    console.log(`Email:    ${data.email}`)
-    console.log(`Phone:    ${data.phone || "Not provided"}`)
-    console.log(`Dates:    ${data.dates}`)
-    console.log(`Message:  ${data.message || "None"}`)
-    console.log(`Experiences (${selectedExperiences.length}):`)
-    selectedExperiences.forEach((exp) => console.log(`  • ${exp}`))
-    console.log("━".repeat(50))
+    console.log("📧 New Experience Inquiry:");
+    console.log("━".repeat(50));
+    console.log(`Name:     ${data.name}`);
+    console.log(`Email:    ${data.email}`);
+    console.log(`Phone:    ${data.phone || "Not provided"}`);
+    console.log(`Dates:    ${data.dates}`);
+    console.log(`Message:  ${data.message || "None"}`);
+    console.log(`Experiences (${selectedExperiences.length}):`);
+    selectedExperiences.forEach((exp) => console.log(`  • ${exp}`));
+    console.log("━".repeat(50));
 
     // Build email HTML
     const emailHtml = `
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
           </p>
         </div>
       </div>
-    `
+    `;
 
     // Send email via Resend
     const { error: emailError } = await resend.emails.send({
@@ -99,27 +99,27 @@ export async function POST(request: NextRequest) {
       replyTo: data.email,
       subject: `Experience Inquiry from ${data.name} - ${data.dates}`,
       html: emailHtml,
-    })
+    });
 
     if (emailError) {
-      console.error("Resend error:", emailError)
+      console.error("Resend error:", emailError);
       return NextResponse.json(
         { error: "Failed to send email" },
-        { status: 500 }
-      )
+        { status: 500 },
+      );
     }
 
-    console.log("✅ Email sent successfully to", process.env.INQUIRY_EMAIL)
+    console.log("✅ Email sent successfully to", process.env.INQUIRY_EMAIL);
 
     return NextResponse.json({
       success: true,
       message: "Inquiry received. We'll be in touch within 24 hours.",
-    })
+    });
   } catch (error) {
-    console.error("Experience inquiry error:", error)
+    console.error("Experience inquiry error:", error);
     return NextResponse.json(
       { error: "Failed to process inquiry" },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }

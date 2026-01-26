@@ -25,12 +25,14 @@ curl localhost:3000/api/warmup-cache  # Preload 6 months of availability/pricing
 ## Architecture
 
 ### Tech Stack
+
 - **Framework:** Next.js 16 with App Router, React 19, TypeScript
 - **UI:** Radix UI + shadcn/ui components, Tailwind CSS 4
 - **Cache:** Vercel KV (Redis) for availability/pricing/tokens
 - **External API:** Guesty Booking Engine (OAuth 2.0 client credentials)
 
 ### Key Directories
+
 ```
 app/
 ├── api/                    # API routes
@@ -58,6 +60,7 @@ lib/
 ```
 
 ### Booking Flow
+
 1. Guest selects dates on home page or `/booking`
 2. Optional: Add experiences on `/enhance` page
 3. Click "Continue to Checkout" → `/api/handoff`
@@ -65,6 +68,7 @@ lib/
 5. Redirect to Blue Zone Guesty checkout with UTM tracking
 
 ### Caching Strategy
+
 - **Availability:** `availability:{year}-{month}` - 24h TTL, 6 months preloaded
 - **Pricing:** `pricing:{year}-{month}` - 24h TTL
 - **OAuth Tokens:** `guesty:token` - 24h TTL, auto-refresh 5 min before expiry
@@ -74,6 +78,7 @@ Cache is refreshed nightly at 2 AM UTC via Vercel Cron (`vercel.json`).
 ## Environment Variables
 
 Required (set in `.env.local` or Vercel):
+
 ```
 GUESTY_CLIENT_ID
 GUESTY_CLIENT_SECRET
@@ -90,3 +95,61 @@ Vercel KV variables are auto-configured on Vercel deployment.
 - **Import Alias:** Use `@/*` for project root imports (configured in tsconfig)
 - **Build Config:** ESLint and TypeScript errors are ignored during builds (`next.config.mjs`)
 - **Images:** Unoptimized in Next.js config; property photos in `public/images/`
+
+## External Infrastructure
+
+### CASAO Server (172.30.30.196)
+
+Ubuntu server running ancillary services for Casa Vistas.
+
+**Guesty → Google Calendar Scraper:**
+- **Purpose:** Syncs commercial Guesty bookings to Google Calendar as `[GUEST]` events
+- **Tech:** Puppeteer inside n8n Docker container
+- **Schedule:** Daily at 6:00 AM CST (`0 6 * * *`)
+- **Script:** `/home/node/scrape-to-gcal.js` (inside n8n container)
+- **Runner:** `/home/jacob/run-guesty-scraper.sh`
+- **Logs:** `/home/jacob/guesty-scraper.log`
+
+**How it works:**
+1. Logs into Guesty Owners portal (bluezoneexperience.guestyowners.com)
+2. Scrapes reservation report for Casa Vistas bookings
+3. Creates/updates `[GUEST] Guest Name` events in Google Calendar
+4. Family Portal reads these events via `lib/google-calendar.ts`
+
+**SSH access:**
+```bash
+ssh jacob@172.30.30.196
+tail -f ~/guesty-scraper.log          # Check logs
+~/run-guesty-scraper.sh               # Run manually
+docker exec -it n8n node /home/node/scrape-to-gcal.js  # Run in container
+```
+
+### Google Calendar Integration
+
+**Calendar ID:** `c_3d8960421a7c6f85186c09691337e19aea403d7636c58fd36fb7c0278768680f@group.calendar.google.com`
+
+**Event Prefixes:**
+| Prefix | Source | Reader |
+|--------|--------|--------|
+| `[GUEST]` | Guesty scraper on CASAO Server | `getGuestBookings()` |
+| `[KINDRED]` | Google Apps Script (`scripts/kindred-calendar-sync.gs`) | `getKindredBookings()` |
+| `Pending:` | Family Portal booking requests | `getPendingBookings()` |
+| (none) | Confirmed family bookings | `getConfirmedBookings()` |
+
+**Scripts in this repo:**
+- `scripts/kindred-calendar-sync.gs` - Apps Script for Kindred invite sync
+- `scripts/KINDRED-SETUP.md` - Setup instructions
+- `lib/google-calendar.ts` - TypeScript client for reading calendar events
+
+### Family Portal
+
+**Routes:**
+- `/family` - Main portal (password: see Redis `family:password`)
+- `/family/admin` - Admin view for pending approvals
+- `/friends` - Friends & Family booking with promo codes
+
+**Key files:**
+- `app/family/` - Portal pages
+- `app/api/family/` - API routes
+- `lib/google-calendar.ts` - Calendar read/write operations
+- `lib/family-kv.js` - Redis storage for family auth

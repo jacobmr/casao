@@ -1,22 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { CreditCard, Building2, Wallet } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CreditCard, Building2, Wallet } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type PaymentMethod = "card" | "bank" | "paypal"
+type PaymentMethod = "card" | "bank" | "paypal";
 
 export function PaymentMethods() {
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("card")
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("card");
 
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-6">
         <Wallet className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-semibold text-foreground">Payment Method</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          Payment Method
+        </h2>
       </div>
 
       {/* Payment Method Selection */}
@@ -30,8 +32,20 @@ export function PaymentMethods() {
               : "border-border hover:border-primary/50 hover:bg-accent",
           )}
         >
-          <CreditCard className={cn("h-6 w-6", selectedMethod === "card" ? "text-primary" : "text-muted-foreground")} />
-          <span className={cn("text-sm font-medium", selectedMethod === "card" ? "text-primary" : "text-foreground")}>
+          <CreditCard
+            className={cn(
+              "h-6 w-6",
+              selectedMethod === "card"
+                ? "text-primary"
+                : "text-muted-foreground",
+            )}
+          />
+          <span
+            className={cn(
+              "text-sm font-medium",
+              selectedMethod === "card" ? "text-primary" : "text-foreground",
+            )}
+          >
             Credit Card
           </span>
         </button>
@@ -45,8 +59,20 @@ export function PaymentMethods() {
               : "border-border hover:border-primary/50 hover:bg-accent",
           )}
         >
-          <Building2 className={cn("h-6 w-6", selectedMethod === "bank" ? "text-primary" : "text-muted-foreground")} />
-          <span className={cn("text-sm font-medium", selectedMethod === "bank" ? "text-primary" : "text-foreground")}>
+          <Building2
+            className={cn(
+              "h-6 w-6",
+              selectedMethod === "bank"
+                ? "text-primary"
+                : "text-muted-foreground",
+            )}
+          />
+          <span
+            className={cn(
+              "text-sm font-medium",
+              selectedMethod === "bank" ? "text-primary" : "text-foreground",
+            )}
+          >
             Bank Transfer
           </span>
         </button>
@@ -60,8 +86,20 @@ export function PaymentMethods() {
               : "border-border hover:border-primary/50 hover:bg-accent",
           )}
         >
-          <Wallet className={cn("h-6 w-6", selectedMethod === "paypal" ? "text-primary" : "text-muted-foreground")} />
-          <span className={cn("text-sm font-medium", selectedMethod === "paypal" ? "text-primary" : "text-foreground")}>
+          <Wallet
+            className={cn(
+              "h-6 w-6",
+              selectedMethod === "paypal"
+                ? "text-primary"
+                : "text-muted-foreground",
+            )}
+          />
+          <span
+            className={cn(
+              "text-sm font-medium",
+              selectedMethod === "paypal" ? "text-primary" : "text-foreground",
+            )}
+          >
             PayPal
           </span>
         </button>
@@ -72,7 +110,13 @@ export function PaymentMethods() {
         <form className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="cardNumber">Card Number</Label>
-            <Input id="cardNumber" type="text" placeholder="1234 5678 9012 3456" maxLength={19} required />
+            <Input
+              id="cardNumber"
+              type="text"
+              placeholder="1234 5678 9012 3456"
+              maxLength={19}
+              required
+            />
           </div>
 
           <div className="space-y-2">
@@ -83,11 +127,23 @@ export function PaymentMethods() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="expiry">Expiry Date</Label>
-              <Input id="expiry" type="text" placeholder="MM/YY" maxLength={5} required />
+              <Input
+                id="expiry"
+                type="text"
+                placeholder="MM/YY"
+                maxLength={5}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="cvv">CVV</Label>
-              <Input id="cvv" type="text" placeholder="123" maxLength={4} required />
+              <Input
+                id="cvv"
+                type="text"
+                placeholder="123"
+                maxLength={4}
+                required
+              />
             </div>
           </div>
         </form>
@@ -96,24 +152,29 @@ export function PaymentMethods() {
       {/* Bank Transfer Info */}
       {selectedMethod === "bank" && (
         <div className="p-4 bg-accent/50 rounded-lg space-y-3">
-          <p className="text-sm font-medium text-foreground">Bank Transfer Instructions</p>
+          <p className="text-sm font-medium text-foreground">
+            Bank Transfer Instructions
+          </p>
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
-              <strong className="text-foreground">Bank Name:</strong> Costa Rica National Bank
+              <strong className="text-foreground">Bank Name:</strong> Costa Rica
+              National Bank
             </p>
             <p>
-              <strong className="text-foreground">Account Number:</strong> 1234567890
+              <strong className="text-foreground">Account Number:</strong>{" "}
+              1234567890
             </p>
             <p>
               <strong className="text-foreground">SWIFT Code:</strong> CRNBCRSX
             </p>
             <p>
-              <strong className="text-foreground">Reference:</strong> Your booking confirmation number
+              <strong className="text-foreground">Reference:</strong> Your
+              booking confirmation number
             </p>
           </div>
           <p className="text-xs text-muted-foreground pt-2 border-t">
-            Please allow 2-3 business days for the transfer to be processed. Your booking will be confirmed once payment
-            is received.
+            Please allow 2-3 business days for the transfer to be processed.
+            Your booking will be confirmed once payment is received.
           </p>
         </div>
       )}
@@ -123,7 +184,8 @@ export function PaymentMethods() {
         <div className="p-4 bg-accent/50 rounded-lg space-y-3">
           <p className="text-sm font-medium text-foreground">PayPal Payment</p>
           <p className="text-sm text-muted-foreground">
-            You will be redirected to PayPal to complete your payment securely. Please have your PayPal account ready.
+            You will be redirected to PayPal to complete your payment securely.
+            Please have your PayPal account ready.
           </p>
           <div className="pt-3">
             <button className="w-full py-3 bg-[#0070ba] hover:bg-[#005ea6] text-white font-semibold rounded-lg transition-colors">
@@ -133,5 +195,5 @@ export function PaymentMethods() {
         </div>
       )}
     </Card>
-  )
+  );
 }

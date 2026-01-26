@@ -1,17 +1,17 @@
-import { MapPin, Clock, Cigarette, DollarSign } from "lucide-react"
+import { MapPin, Clock, Cigarette, DollarSign } from "lucide-react";
 
 const locationFeatures = [
   "Flamingo Beach - 1.5 miles",
   "12 unique beaches nearby",
   "Mar Vista community access",
   "24/7 gated security",
-]
+];
 
 const houseRules = [
   { icon: Clock, text: "Check-in 3 PM / Check-out 10 AM" },
   { icon: Cigarette, text: "Non-smoking property" },
   { icon: DollarSign, text: "$1,000 security deposit" },
-]
+];
 
 export function PropertyDetails() {
   return (
@@ -24,8 +24,7 @@ export function PropertyDetails() {
               The Villa
             </p>
             <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-light text-foreground mb-8">
-              Your private{" "}
-              <span className="italic">paradise</span> awaits
+              Your private <span className="italic">paradise</span> awaits
             </h2>
 
             <div className="prose prose-lg max-w-none">
@@ -44,8 +43,8 @@ export function PropertyDetails() {
               </p>
               <p className="text-foreground/80 leading-relaxed text-lg">
                 Let us help personalize your stay. From tour reservations and
-                fishing charters to private chef services, we handle every detail
-                at no extra charge with preferred corporate rates.
+                fishing charters to private chef services, we handle every
+                detail at no extra charge with preferred corporate rates.
               </p>
             </div>
 
@@ -66,7 +65,10 @@ export function PropertyDetails() {
               </div>
               <ul className="space-y-3">
                 {locationFeatures.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3 text-foreground/70">
+                  <li
+                    key={feature}
+                    className="flex items-start gap-3 text-foreground/70"
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-secondary mt-2 flex-shrink-0" />
                     <span>{feature}</span>
                   </li>
@@ -81,9 +83,15 @@ export function PropertyDetails() {
               </h3>
               <ul className="space-y-4">
                 {houseRules.map((rule) => (
-                  <li key={rule.text} className="flex items-center gap-4 text-foreground/70">
+                  <li
+                    key={rule.text}
+                    className="flex items-center gap-4 text-foreground/70"
+                  >
                     <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                      <rule.icon className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+                      <rule.icon
+                        className="w-4 h-4 text-muted-foreground"
+                        strokeWidth={1.5}
+                      />
                     </div>
                     <span>{rule.text}</span>
                   </li>
@@ -109,5 +117,5 @@ export function PropertyDetails() {
         </div>
       </div>
     </section>
-  )
+  );
 }

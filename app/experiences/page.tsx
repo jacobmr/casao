@@ -1,35 +1,40 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { experiences, categories, getAllCategories, getExperiencesByCategory } from "@/lib/experiences-data"
-import { Button } from "@/components/ui/button"
-import { Check, Send, Loader2, ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import {
+  experiences,
+  categories,
+  getAllCategories,
+  getExperiencesByCategory,
+} from "@/lib/experiences-data";
+import { Button } from "@/components/ui/button";
+import { Check, Send, Loader2, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function ExperiencesPage() {
-  const [selectedExperiences, setSelectedExperiences] = useState<string[]>([])
+  const [selectedExperiences, setSelectedExperiences] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     dates: "",
     message: "",
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState("")
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   const handleToggle = (id: string) => {
     setSelectedExperiences((prev) =>
-      prev.includes(id) ? prev.filter((expId) => expId !== id) : [...prev, id]
-    )
-  }
+      prev.includes(id) ? prev.filter((expId) => expId !== id) : [...prev, id],
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError("")
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
 
     try {
       const response = await fetch("/api/experience-inquiry", {
@@ -39,20 +44,20 @@ export default function ExperiencesPage() {
           ...formData,
           experiences: selectedExperiences,
         }),
-      })
+      });
 
       if (response.ok) {
-        setSubmitted(true)
+        setSubmitted(true);
       } else {
-        const data = await response.json()
-        setError(data.error || "Failed to send inquiry. Please try again.")
+        const data = await response.json();
+        setError(data.error || "Failed to send inquiry. Please try again.");
       }
     } catch {
-      setError("Failed to send inquiry. Please try again.")
+      setError("Failed to send inquiry. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   if (submitted) {
     return (
@@ -65,8 +70,9 @@ export default function ExperiencesPage() {
             Thank You!
           </h1>
           <p className="text-muted-foreground text-lg mb-8">
-            We've received your experience inquiry. Our concierge team will be in touch
-            within 24 hours to discuss availability and pricing for your selected experiences.
+            We've received your experience inquiry. Our concierge team will be
+            in touch within 24 hours to discuss availability and pricing for
+            your selected experiences.
           </p>
           <Link
             href="/"
@@ -77,7 +83,7 @@ export default function ExperiencesPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -96,13 +102,14 @@ export default function ExperiencesPage() {
             Curated <span className="italic">Experiences</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-4">
-            Enhance your stay at Casa Vistas with our hand-picked local experiences.
-            Select what interests you and we'll coordinate everything for your visit.
+            Enhance your stay at Casa Vistas with our hand-picked local
+            experiences. Select what interests you and we'll coordinate
+            everything for your visit.
           </p>
           <p className="text-sm text-muted-foreground/70 max-w-xl mx-auto">
             This concierge service is exclusively for Casa Vistas guests.
-            Already booked or planning to book? Let us know what experiences you'd like
-            and we'll arrange them during your stay.
+            Already booked or planning to book? Let us know what experiences
+            you'd like and we'll arrange them during your stay.
           </p>
         </div>
 
@@ -110,10 +117,10 @@ export default function ExperiencesPage() {
           {/* Experience Selection */}
           <div className="lg:col-span-2 space-y-12">
             {getAllCategories().map((categoryKey) => {
-              const category = categories[categoryKey]
-              const categoryExperiences = getExperiencesByCategory(categoryKey)
+              const category = categories[categoryKey];
+              const categoryExperiences = getExperiencesByCategory(categoryKey);
 
-              if (categoryExperiences.length === 0) return null
+              if (categoryExperiences.length === 0) return null;
 
               return (
                 <section key={categoryKey}>
@@ -131,7 +138,9 @@ export default function ExperiencesPage() {
 
                   <div className="space-y-3">
                     {categoryExperiences.map((experience) => {
-                      const isSelected = selectedExperiences.includes(experience.id)
+                      const isSelected = selectedExperiences.includes(
+                        experience.id,
+                      );
                       return (
                         <button
                           key={experience.id}
@@ -140,7 +149,7 @@ export default function ExperiencesPage() {
                             "w-full text-left p-4 rounded-xl border transition-all duration-300",
                             isSelected
                               ? "bg-primary/5 border-primary shadow-sm"
-                              : "bg-card border-border hover:border-primary/30 hover:bg-accent/30"
+                              : "bg-card border-border hover:border-primary/30 hover:bg-accent/30",
                           )}
                         >
                           <div className="flex items-start justify-between gap-4">
@@ -162,7 +171,7 @@ export default function ExperiencesPage() {
                                 "w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300",
                                 isSelected
                                   ? "bg-primary border-primary"
-                                  : "border-muted-foreground/30"
+                                  : "border-muted-foreground/30",
                               )}
                             >
                               {isSelected && (
@@ -171,11 +180,11 @@ export default function ExperiencesPage() {
                             </div>
                           </div>
                         </button>
-                      )
+                      );
                     })}
                   </div>
                 </section>
-              )
+              );
             })}
           </div>
 
@@ -187,7 +196,8 @@ export default function ExperiencesPage() {
                   Interested?
                 </h3>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Tell us about your trip and we'll coordinate everything for you.
+                  Tell us about your trip and we'll coordinate everything for
+                  you.
                 </p>
 
                 {selectedExperiences.length > 0 && (
@@ -197,8 +207,8 @@ export default function ExperiencesPage() {
                     </p>
                     <ul className="text-sm text-muted-foreground space-y-1">
                       {selectedExperiences.map((id) => {
-                        const exp = experiences.find((e) => e.id === id)
-                        return <li key={id}>• {exp?.name}</li>
+                        const exp = experiences.find((e) => e.id === id);
+                        return <li key={id}>• {exp?.name}</li>;
                       })}
                     </ul>
                   </div>
@@ -214,7 +224,10 @@ export default function ExperiencesPage() {
                       required
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, name: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
                       }
                       className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       placeholder="John Smith"
@@ -230,7 +243,10 @@ export default function ExperiencesPage() {
                       required
                       value={formData.email}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, email: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
                       }
                       className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       placeholder="john@example.com"
@@ -245,7 +261,10 @@ export default function ExperiencesPage() {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
                       }
                       className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       placeholder="+1 (555) 123-4567"
@@ -261,7 +280,10 @@ export default function ExperiencesPage() {
                       required
                       value={formData.dates}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, dates: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          dates: e.target.value,
+                        }))
                       }
                       className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       placeholder="Dec 20-27, 2025"
@@ -275,7 +297,10 @@ export default function ExperiencesPage() {
                     <textarea
                       value={formData.message}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, message: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          message: e.target.value,
+                        }))
                       }
                       rows={3}
                       className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
@@ -283,9 +308,7 @@ export default function ExperiencesPage() {
                     />
                   </div>
 
-                  {error && (
-                    <p className="text-sm text-destructive">{error}</p>
-                  )}
+                  {error && <p className="text-sm text-destructive">{error}</p>}
 
                   <Button
                     type="submit"
@@ -318,5 +341,5 @@ export default function ExperiencesPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

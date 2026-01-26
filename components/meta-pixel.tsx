@@ -1,9 +1,10 @@
-'use client'
+"use client";
 
-import Script from 'next/script'
+import Script from "next/script";
 
 // Meta Pixel ID - can be overridden via NEXT_PUBLIC_META_PIXEL_ID env var
-const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '896263299741384'
+const META_PIXEL_ID =
+  process.env.NEXT_PUBLIC_META_PIXEL_ID || "896263299741384";
 
 export function MetaPixel() {
   return (
@@ -30,19 +31,25 @@ export function MetaPixel() {
         <img
           height="1"
           width="1"
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
           src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
           alt=""
         />
       </noscript>
     </>
-  )
+  );
 }
 
 // Helper function to track custom events
-export function trackMetaEvent(eventName: string, params?: Record<string, unknown>) {
-  if (typeof window !== 'undefined' && (window as unknown as { fbq?: Function }).fbq) {
-    (window as unknown as { fbq: Function }).fbq('track', eventName, params)
+export function trackMetaEvent(
+  eventName: string,
+  params?: Record<string, unknown>,
+) {
+  if (
+    typeof window !== "undefined" &&
+    (window as unknown as { fbq?: Function }).fbq
+  ) {
+    (window as unknown as { fbq: Function }).fbq("track", eventName, params);
   }
 }
 
@@ -50,49 +57,49 @@ export function trackMetaEvent(eventName: string, params?: Record<string, unknow
 export const MetaEvents = {
   // Track when user views property details
   viewContent: (contentName?: string) => {
-    trackMetaEvent('ViewContent', {
-      content_name: contentName || 'Casa Vistas Property',
-      content_category: 'Vacation Rental',
-      content_type: 'property',
-    })
+    trackMetaEvent("ViewContent", {
+      content_name: contentName || "Casa Vistas Property",
+      content_category: "Vacation Rental",
+      content_type: "property",
+    });
   },
 
   // Track when user starts checkout process
   initiateCheckout: (value?: number, checkIn?: string, checkOut?: string) => {
-    trackMetaEvent('InitiateCheckout', {
+    trackMetaEvent("InitiateCheckout", {
       value: value,
-      currency: 'USD',
-      content_name: 'Casa Vistas Booking',
+      currency: "USD",
+      content_name: "Casa Vistas Booking",
       checkin_date: checkIn,
       checkout_date: checkOut,
-    })
+    });
   },
 
   // Track when user submits inquiry
   lead: (source?: string) => {
-    trackMetaEvent('Lead', {
-      content_name: 'Casa Vistas Inquiry',
-      content_category: source || 'Contact Form',
-    })
+    trackMetaEvent("Lead", {
+      content_name: "Casa Vistas Inquiry",
+      content_category: source || "Contact Form",
+    });
   },
 
   // Track when user selects dates
   search: (checkIn?: string, checkOut?: string, guests?: number) => {
-    trackMetaEvent('Search', {
-      content_category: 'Date Selection',
+    trackMetaEvent("Search", {
+      content_category: "Date Selection",
       checkin_date: checkIn,
       checkout_date: checkOut,
       num_guests: guests,
-    })
+    });
   },
 
   // Track when user adds experiences
   addToCart: (experienceName: string, value?: number) => {
-    trackMetaEvent('AddToCart', {
+    trackMetaEvent("AddToCart", {
       content_name: experienceName,
-      content_type: 'experience',
+      content_type: "experience",
       value: value,
-      currency: 'USD',
-    })
+      currency: "USD",
+    });
   },
-}
+};

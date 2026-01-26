@@ -9,12 +9,14 @@ After testing and discussion, we've implemented a **much simpler** discount code
 ## 🎯 **New User Flow**
 
 ### **Step 1: Casa Vistas (No Code Entry)**
+
 - Guest selects dates
 - Sees regular pricing
 - No discount code input field
 - Clicks "Book This!"
 
 ### **Step 2: Handoff Page (Friendly Reminder)**
+
 Shows a blue info banner:
 
 ```
@@ -25,6 +27,7 @@ Active codes: CasaO20, CasaO30, CasaO40, CasaO50
 ```
 
 ### **Step 3: Blue Zone Checkout (Single Entry)**
+
 - Guest enters discount code ONCE
 - Blue Zone validates and applies discount
 - Guest completes booking with discounted price
@@ -34,6 +37,7 @@ Active codes: CasaO20, CasaO30, CasaO40, CasaO50
 ## 🎨 **What's Live**
 
 ### **Handoff Page Banner**
+
 - Blue background (#dbeafe)
 - Tag icon
 - Lists all active codes
@@ -41,6 +45,7 @@ Active codes: CasaO20, CasaO30, CasaO40, CasaO50
 - No warnings or errors
 
 ### **Active Discount Codes**
+
 - **CasaO20** - 20% off
 - **CasaO30** - 30% off
 - **CasaO40** - 40% off
@@ -62,6 +67,7 @@ Active codes: CasaO20, CasaO30, CasaO40, CasaO50
 ## 🚫 **What We Removed**
 
 From the previous implementation:
+
 - ❌ Discount code input field on calendar
 - ❌ Real-time validation via Quote API
 - ❌ Success/error banners
@@ -74,6 +80,7 @@ From the previous implementation:
 ## 📊 **Comparison**
 
 ### **Old Approach (Removed)**
+
 ```
 1. Enter code on Casa Vistas
 2. Validate via API
@@ -82,9 +89,11 @@ From the previous implementation:
 5. See warning to re-enter
 6. Enter code AGAIN on Blue Zone
 ```
+
 **Problem:** Guest must enter code twice
 
 ### **New Approach (Current)**
+
 ```
 1. Select dates on Casa Vistas
 2. See regular pricing
@@ -92,6 +101,7 @@ From the previous implementation:
 4. See reminder about discount codes
 5. Enter code ONCE on Blue Zone
 ```
+
 **Solution:** Single entry point, no re-entry
 
 ---
@@ -99,18 +109,21 @@ From the previous implementation:
 ## 🎯 **Why This Works Better**
 
 ### **User Experience**
+
 - ✅ Less friction
 - ✅ No confusion about re-entry
 - ✅ Clear expectations
 - ✅ Familiar checkout flow
 
 ### **Technical**
+
 - ✅ Less code to maintain
 - ✅ No API calls for validation
 - ✅ No cache management for coupons
 - ✅ Blue Zone owns the discount logic
 
 ### **Business**
+
 - ✅ Guests see discount codes are available
 - ✅ Encourages code usage
 - ✅ No technical barriers
@@ -123,21 +136,29 @@ From the previous implementation:
 If you want to improve this further in the future:
 
 ### **Option 1: Pre-fill Code in URL**
+
 Research if Blue Zone supports:
+
 ```
 ?coupon=CASAO20
 ```
+
 This would auto-fill the code field.
 
 ### **Option 2: Quote ID Handoff**
+
 Create quote with code, pass quote ID:
+
 ```
 ?quoteId=abc123
 ```
+
 Blue Zone retrieves quote with discount already applied.
 
 ### **Option 3: Full Casa Vistas Checkout**
+
 Build complete checkout on Casa Vistas:
+
 - Stripe integration
 - Contract signing
 - Email confirmations
@@ -150,6 +171,7 @@ Build complete checkout on Casa Vistas:
 ## 📝 **Files Modified**
 
 ### **Removed Code From:**
+
 - `/components/availability-calendar.tsx`
   - Discount code state
   - Input field UI
@@ -164,6 +186,7 @@ Build complete checkout on Casa Vistas:
   - Warning banner
 
 ### **Added:**
+
 - `/app/api/handoff/route.js`
   - Friendly discount info banner
   - Lists active codes
@@ -173,6 +196,7 @@ Build complete checkout on Casa Vistas:
 ## 🧪 **Testing**
 
 ### **Test Flow:**
+
 1. Go to https://www.casavistas.net
 2. Select dates (e.g., Nov 1-4)
 3. See pricing WITHOUT discount field ✅
@@ -188,6 +212,7 @@ Build complete checkout on Casa Vistas:
 ## 📊 **Success Metrics**
 
 Track these to measure effectiveness:
+
 - Discount code usage rate
 - Conversion rate (with vs without codes)
 - Average discount amount
@@ -221,6 +246,7 @@ Now that codes are easy to use:
 ## ✅ **Status: COMPLETE**
 
 The simplified discount code flow is:
+
 - ✅ Implemented
 - ✅ Tested
 - ✅ Deployed

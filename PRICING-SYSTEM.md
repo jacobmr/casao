@@ -10,14 +10,17 @@ The pricing system uses a **two-step caching approach**:
 ## 📊 Why Two Steps?
 
 **Guesty's calendar API does NOT include pricing!**
+
 - Calendar API returns: `{date, status, minNights}`
 - Pricing requires: Separate quote requests
 
 **Challenge:** Can't pre-cache all possible date combinations
+
 - 30 days × 30 possible lengths = 900 combinations per month!
 - Would hit rate limits immediately
 
 **Solution:** Smart pricing fetcher
+
 - Only fetch pricing for **available dates**
 - Group into **weekly chunks** to minimize API calls
 - Cache results for calendar display
@@ -25,6 +28,7 @@ The pricing system uses a **two-step caching approach**:
 ## 🔄 Data Flow
 
 ### Step 1: Availability (Warmup)
+
 ```
 Warmup Endpoint
   ↓
@@ -36,6 +40,7 @@ Returns: [{date, status, minNights}, ...]
 ```
 
 ### Step 2: Pricing (After Availability)
+
 ```
 Pricing Fetcher
   ↓
@@ -59,6 +64,7 @@ Returns: {date: price, ...}
 ### Core Files
 
 **`/lib/pricing-fetcher.js`** - THE SMART PART
+
 ```javascript
 // This is the key file!
 // It efficiently fetches pricing for available dates only
@@ -72,37 +78,42 @@ fetchMonthlyPricing(availabilityData)
 ```
 
 **`/lib/kv-cache.js`** - Redis storage
+
 ```javascript
 // Availability
-getCachedAvailability(year, month)
-setCachedAvailability(year, month, data)
+getCachedAvailability(year, month);
+setCachedAvailability(year, month, data);
 
 // Monthly pricing
-getMonthlyPricing(year, month)
-setMonthlyPricing(year, month, data)
+getMonthlyPricing(year, month);
+setMonthlyPricing(year, month, data);
 
 // Quote pricing (date ranges)
-getCachedPricing(checkIn, checkOut, guests)
-setCachedPricing(checkIn, checkOut, guests, data)
+getCachedPricing(checkIn, checkOut, guests);
+setCachedPricing(checkIn, checkOut, guests, data);
 ```
 
 ### API Endpoints
 
 **`/api/warmup-cache`** - Caches availability
+
 - Fetches 6 months of availability
 - Stores in Redis
 - **TODO:** Should also trigger pricing fetch!
 
 **`/api/pricing/monthly`** - Fetches pricing for a month
+
 - Takes availability data
 - Uses pricing-fetcher
 - **TODO:** Migrate from files to Redis!
 
 **`/api/pricing/monthly-cached`** - Reads cached pricing
+
 - Returns pricing for calendar display
 - **TODO:** Migrate from files to Redis!
 
 **`/api/quotes`** - On-demand quote for date range
+
 - Used when user selects specific dates
 - Caches result for that date range
 - Already uses Redis ✅
@@ -110,16 +121,19 @@ setCachedPricing(checkIn, checkOut, guests, data)
 ## 🔧 Current State (BEFORE FIX)
 
 ### What Works ✅
+
 - Availability caching in Redis
 - Quote caching in Redis (when dates selected)
 - Pricing-fetcher logic (smart chunking)
 
 ### What's Broken ❌
+
 - Warmup doesn't trigger pricing fetch
 - Pricing endpoints still use FILE storage
 - Monthly pricing not in Redis
 
 ### Result
+
 - Calendar shows availability ✅
 - Calendar shows NO pricing ❌
 - Pricing appears when dates selected ✅
@@ -127,6 +141,7 @@ setCachedPricing(checkIn, checkOut, guests, data)
 ## 🎯 The Fix
 
 ### 1. Update Warmup Endpoint
+
 ```javascript
 // app/api/warmup-cache/route.js
 
@@ -134,13 +149,14 @@ for each month:
   // Step 1: Fetch availability
   const availability = await fetchAvailability(year, month)
   await setCachedAvailability(year, month, availability)
-  
+
   // Step 2: Fetch pricing for available dates
   const pricing = await fetchMonthlyPricing(availability)
   await setMonthlyPricing(year, month, pricing)
 ```
 
 ### 2. Update Pricing-Fetcher for Redis
+
 ```javascript
 // lib/pricing-fetcher.js
 
@@ -152,18 +168,20 @@ import { getCachedToken } from './token-service-kv'
 ```
 
 ### 3. Update Monthly Pricing Endpoints
+
 ```javascript
 // app/api/pricing/monthly/route.js
 // Remove file system code
 // Use setMonthlyPricing from kv-cache
 
-// app/api/pricing/monthly-cached/route.js  
+// app/api/pricing/monthly-cached/route.js
 // Already updated to use Redis ✅
 ```
 
 ## 📈 Expected Results After Fix
 
 ### Warmup Process
+
 ```
 1. Fetch availability for Oct 2025 → Cache in Redis
 2. Fetch pricing for available dates → Cache in Redis
@@ -173,6 +191,7 @@ import { getCachedToken } from './token-service-kv'
 ```
 
 ### API Calls Per Month
+
 ```
 Availability: 1 request
 Pricing: ~4-8 requests (depends on available dates)
@@ -181,6 +200,7 @@ For 6 months: ~30-54 requests total
 ```
 
 ### Calendar Display
+
 ```
 ✅ Shows availability (booked/available)
 ✅ Shows per-day pricing ($XXX/night)
@@ -191,18 +211,21 @@ For 6 months: ~30-54 requests total
 ## ⚠️ Important Notes
 
 ### Rate Limits
+
 - Guesty allows reasonable API usage
 - Pricing-fetcher groups requests efficiently
 - 1 second delay between quote requests
 - Total warmup time: ~1-2 minutes
 
 ### Token Management
+
 - Uses cached token (no new requests)
 - Token valid for 24 hours
 - Rate limit: 3 token requests per 24 hours
 - See TOKEN-SAFETY-CHECK.md
 
 ### Cache Duration
+
 - Availability: 24 hours
 - Pricing: 24 hours
 - Quotes: 24 hours
@@ -211,6 +234,7 @@ For 6 months: ~30-54 requests total
 ## 🧪 Testing
 
 ### After Fix, Test:
+
 ```bash
 # 1. Trigger warmup
 curl https://www.casavistas.net/api/warmup-cache
@@ -225,6 +249,7 @@ curl "https://www.casavistas.net/api/pricing/monthly-cached?year=2025&month=10"
 ```
 
 ### Expected Response
+
 ```json
 {
   "success": true,

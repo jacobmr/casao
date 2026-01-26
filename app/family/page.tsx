@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Loader2 } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 export default function FamilyPortalGate() {
-  const router = useRouter()
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [attempts, setAttempts] = useState(0)
-  const [shake, setShake] = useState(false)
+  const router = useRouter();
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [shake, setShake] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
       const response = await fetch("/api/family/auth", {
@@ -27,36 +27,36 @@ export default function FamilyPortalGate() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ password }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
         // Success - redirect to calendar
-        router.push("/family/availability")
+        router.push("/family/availability");
       } else {
         // Failed - show error with progressive hints
-        setAttempts((prev) => prev + 1)
-        setShake(true)
-        setTimeout(() => setShake(false), 500)
+        setAttempts((prev) => prev + 1);
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
 
         if (attempts >= 2) {
-          setError("Hint: It's JR's middle name (all lowercase)")
+          setError("Hint: It's JR's middle name (all lowercase)");
         } else if (attempts >= 1) {
-          setError("Not quite - try again!")
+          setError("Not quite - try again!");
         } else {
-          setError("Incorrect password")
+          setError("Incorrect password");
         }
 
-        setPassword("")
+        setPassword("");
       }
     } catch (err) {
-      console.error("Auth error:", err)
-      setError("Something went wrong. Please try again.")
+      console.error("Auth error:", err);
+      setError("Something went wrong. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-800 to-emerald-600 flex items-center justify-center p-4">
@@ -126,14 +126,28 @@ export default function FamilyPortalGate() {
 
       <style jsx>{`
         @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-          20%, 40%, 60%, 80% { transform: translateX(5px); }
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          10%,
+          30%,
+          50%,
+          70%,
+          90% {
+            transform: translateX(-5px);
+          }
+          20%,
+          40%,
+          60%,
+          80% {
+            transform: translateX(5px);
+          }
         }
         .animate-shake {
           animation: shake 0.5s;
         }
       `}</style>
     </div>
-  )
+  );
 }

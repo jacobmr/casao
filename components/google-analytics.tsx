@@ -1,9 +1,10 @@
-'use client'
+"use client";
 
-import Script from 'next/script'
+import Script from "next/script";
 
 // GA4 Measurement ID - can be overridden via NEXT_PUBLIC_GA_MEASUREMENT_ID env var
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-7X4E4WDTHK'
+const GA_MEASUREMENT_ID =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-7X4E4WDTHK";
 
 export function GoogleAnalytics() {
   return (
@@ -25,12 +26,18 @@ export function GoogleAnalytics() {
         }}
       />
     </>
-  )
+  );
 }
 
 // Helper function to track custom events
-export function trackGAEvent(eventName: string, params?: Record<string, unknown>) {
-  if (typeof window !== 'undefined' && (window as unknown as { gtag?: Function }).gtag) {
-    (window as unknown as { gtag: Function }).gtag('event', eventName, params)
+export function trackGAEvent(
+  eventName: string,
+  params?: Record<string, unknown>,
+) {
+  if (
+    typeof window !== "undefined" &&
+    (window as unknown as { gtag?: Function }).gtag
+  ) {
+    (window as unknown as { gtag: Function }).gtag("event", eventName, params);
   }
 }

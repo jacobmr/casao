@@ -1,6 +1,7 @@
 # Token Safety Verification
 
 ## ✅ Current Token Status
+
 - **Expires:** 2025-10-26 22:35:43 UTC
 - **Valid for:** ~15 hours
 - **Stored in:** Redis (guesty:token key)
@@ -9,16 +10,19 @@
 ## 🔒 Safety Mechanisms
 
 ### 1. Triple-Layer Caching
+
 ```
 Request → In-Memory Cache → Redis Cache → Fetch New (ONLY if expired)
 ```
 
 ### 2. Expiry Checks (Multiple Layers)
+
 - **kv-cache.js getCachedToken()**: Checks `expires_at > now + 60`
 - **token-service-kv.js isTokenValid()**: Checks `expires_at > now + 60`
 - **token-service-kv.js getCachedToken()**: Checks both memory and Redis
 
 ### 3. Defensive Programming
+
 - ✅ Returns `null` if token missing
 - ✅ Returns `null` if token structure invalid
 - ✅ Returns `null` if token expired
@@ -28,6 +32,7 @@ Request → In-Memory Cache → Redis Cache → Fetch New (ONLY if expired)
 ## 🚨 When Token Fetch Happens
 
 **fetchNewToken() is ONLY called when:**
+
 1. No token in memory cache
 2. No token in Redis cache
 3. Token in cache but expired (< 60 seconds left)
@@ -57,6 +62,7 @@ Return token
 ## 🧪 Test Commands
 
 ### Check current token in Redis:
+
 ```bash
 # This should return the token with ~15 hours left
 curl https://casao.vercel.app/api/calendar?from=2025-11-01&to=2025-11-30
@@ -64,6 +70,7 @@ curl https://casao.vercel.app/api/calendar?from=2025-11-01&to=2025-11-30
 ```
 
 ### Verify no new token requests:
+
 ```bash
 # Run this multiple times - should NEVER see "FETCHING NEW TOKEN"
 for i in {1..5}; do
@@ -73,17 +80,19 @@ for i in {1..5}; do
 done
 ```
 
-## ⚠️  Rate Limit Protection
+## ⚠️ Rate Limit Protection
 
 **Guesty Limit:** 3 token requests per 24 hours
 
 **Our Protection:**
+
 - Token cached for 24 hours (86400 seconds)
 - Refresh starts 60 seconds before expiry
 - Redis persists across all serverless instances
 - In-memory cache reduces Redis calls
 
 **Expected Token Requests:**
+
 - **Today:** 0 (using seeded token)
 - **Tomorrow:** 1 (when token expires at 22:35 UTC)
 - **Per Day:** 1 maximum
@@ -93,14 +102,17 @@ done
 Watch Vercel logs for these messages:
 
 **✅ GOOD (Expected):**
+
 - `✅ Using Redis cached token (valid for X hours)`
 - `✓ Using in-memory cached token`
 
-**⚠️  WARNING (Investigate):**
+**⚠️ WARNING (Investigate):**
+
 - `⚠️  Token in cache but expired or expiring soon`
 - `❌ No token in Redis cache`
 
 **🚨 CRITICAL (Should be rare):**
+
 - `⚠️  ⚠️  ⚠️  FETCHING NEW TOKEN FROM GUESTY`
 - Should only appear once per 24 hours
 

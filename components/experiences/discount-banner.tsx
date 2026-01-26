@@ -1,16 +1,19 @@
-"use client"
+"use client";
 
-import { Sparkles, TrendingUp, PartyPopper } from "lucide-react"
+import { Sparkles, TrendingUp, PartyPopper } from "lucide-react";
 
 interface DiscountBannerProps {
-  selectedCount: number
-  lodgingTotal?: number
+  selectedCount: number;
+  lodgingTotal?: number;
 }
 
-export function DiscountBanner({ selectedCount, lodgingTotal = 0 }: DiscountBannerProps) {
-  const discountApplies = selectedCount >= 2
-  const discountAmount = discountApplies ? lodgingTotal * 0.05 : 0
-  
+export function DiscountBanner({
+  selectedCount,
+  lodgingTotal = 0,
+}: DiscountBannerProps) {
+  const discountApplies = selectedCount >= 2;
+  const discountAmount = discountApplies ? lodgingTotal * 0.05 : 0;
+
   if (selectedCount === 0) {
     return (
       <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
@@ -26,9 +29,9 @@ export function DiscountBanner({ selectedCount, lodgingTotal = 0 }: DiscountBann
           </div>
         </div>
       </div>
-    )
+    );
   }
-  
+
   if (selectedCount === 1) {
     return (
       <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
@@ -44,9 +47,9 @@ export function DiscountBanner({ selectedCount, lodgingTotal = 0 }: DiscountBann
           </div>
         </div>
       </div>
-    )
+    );
   }
-  
+
   return (
     <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
       <div className="flex items-start gap-3">
@@ -56,12 +59,12 @@ export function DiscountBanner({ selectedCount, lodgingTotal = 0 }: DiscountBann
             <span>🎉</span> Discount Unlocked!
           </p>
           <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-            You've selected {selectedCount} experiences — Save{' '}
+            You've selected {selectedCount} experiences — Save{" "}
             {lodgingTotal > 0 && `$${discountAmount.toFixed(2)} `}
             (5%) on your lodging!
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

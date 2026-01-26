@@ -1,6 +1,6 @@
-import { CheckoutForm } from "@/components/checkout-form"
-import { OrderSummary } from "@/components/order-summary"
-import { PaymentMethods } from "@/components/payment-methods"
+import { CheckoutForm } from "@/components/checkout-form";
+import { OrderSummary } from "@/components/order-summary";
+import { PaymentMethods } from "@/components/payment-methods";
 
 export default function CheckoutPage() {
   return (
@@ -26,5 +26,5 @@ export default function CheckoutPage() {
         </div>
       </div>
     </main>
-  )
+  );
 }

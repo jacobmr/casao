@@ -1,95 +1,107 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Loader2, CheckCircle, XCircle, ArrowLeft, Clock, Users, ExternalLink } from "lucide-react"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
+  CheckCircle,
+  XCircle,
+  ArrowLeft,
+  Clock,
+  Users,
+  ExternalLink,
+} from "lucide-react";
 
 interface PendingBooking {
-  id: string
-  title: string
-  start: string
-  end: string
-  guestCount?: number
-  notes?: string
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  guestCount?: number;
+  notes?: string;
 }
 
 export default function FamilyAdminPage() {
-  const router = useRouter()
-  const [pendingBookings, setPendingBookings] = useState<PendingBooking[]>([])
-  const [loading, setLoading] = useState(true)
-  const [processingId, setProcessingId] = useState<string | null>(null)
+  const router = useRouter();
+  const [pendingBookings, setPendingBookings] = useState<PendingBooking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPendingBookings()
-  }, [])
+    fetchPendingBookings();
+  }, []);
 
   const fetchPendingBookings = async () => {
     try {
-      const response = await fetch("/api/family/admin/pending")
+      const response = await fetch("/api/family/admin/pending");
 
       if (response.ok) {
-        const data = await response.json()
-        setPendingBookings(data.bookings || [])
+        const data = await response.json();
+        setPendingBookings(data.bookings || []);
       } else if (response.status === 401) {
-        router.push("/family")
+        router.push("/family");
       }
     } catch (error) {
-      console.error("Error fetching pending bookings:", error)
+      console.error("Error fetching pending bookings:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleApprove = async (id: string) => {
-    setProcessingId(id)
+    setProcessingId(id);
     try {
       const response = await fetch(`/api/family/admin/approve/${id}`, {
         method: "POST",
-      })
+      });
 
       if (response.ok) {
         // Remove from pending list
-        setPendingBookings((prev) => prev.filter((b) => b.id !== id))
+        setPendingBookings((prev) => prev.filter((b) => b.id !== id));
       } else {
-        const data = await response.json()
-        alert(`Failed to approve: ${data.error}`)
+        const data = await response.json();
+        alert(`Failed to approve: ${data.error}`);
       }
     } catch (error) {
-      console.error("Error approving booking:", error)
-      alert("Failed to approve booking")
+      console.error("Error approving booking:", error);
+      alert("Failed to approve booking");
     } finally {
-      setProcessingId(null)
+      setProcessingId(null);
     }
-  }
+  };
 
   const handleReject = async (id: string) => {
-    if (!confirm("Are you sure you want to reject this request? This will delete the event from Google Calendar.")) {
-      return
+    if (
+      !confirm(
+        "Are you sure you want to reject this request? This will delete the event from Google Calendar.",
+      )
+    ) {
+      return;
     }
 
-    setProcessingId(id)
+    setProcessingId(id);
     try {
       const response = await fetch(`/api/family/admin/reject/${id}`, {
         method: "POST",
-      })
+      });
 
       if (response.ok) {
         // Remove from pending list
-        setPendingBookings((prev) => prev.filter((b) => b.id !== id))
+        setPendingBookings((prev) => prev.filter((b) => b.id !== id));
       } else {
-        const data = await response.json()
-        alert(`Failed to reject: ${data.error}`)
+        const data = await response.json();
+        alert(`Failed to reject: ${data.error}`);
       }
     } catch (error) {
-      console.error("Error rejecting booking:", error)
-      alert("Failed to reject booking")
+      console.error("Error rejecting booking:", error);
+      alert("Failed to reject booking");
     } finally {
-      setProcessingId(null)
+      setProcessingId(null);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -144,12 +156,13 @@ export default function FamilyAdminPage() {
         ) : (
           <div className="space-y-4">
             {pendingBookings.map((booking) => {
-              const checkIn = new Date(booking.start)
-              const checkOut = new Date(booking.end)
+              const checkIn = new Date(booking.start);
+              const checkOut = new Date(booking.end);
               const nights = Math.ceil(
-                (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
-              )
-              const isProcessing = processingId === booking.id
+                (checkOut.getTime() - checkIn.getTime()) /
+                  (1000 * 60 * 60 * 24),
+              );
+              const isProcessing = processingId === booking.id;
 
               return (
                 <Card key={booking.id} className="p-6">
@@ -157,8 +170,13 @@ export default function FamilyAdminPage() {
                     {/* Booking Details */}
                     <div className="flex-1 space-y-3">
                       <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-semibold">{booking.title}</h3>
-                        <Badge variant="outline" className="bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800">
+                        <h3 className="text-xl font-semibold">
+                          {booking.title}
+                        </h3>
+                        <Badge
+                          variant="outline"
+                          className="bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800"
+                        >
                           <Clock className="h-3 w-3 mr-1" />
                           Pending
                         </Badge>
@@ -166,19 +184,28 @@ export default function FamilyAdminPage() {
 
                       <div className="flex flex-wrap gap-4 text-sm">
                         <div>
-                          <span className="font-medium text-foreground">Dates:</span>{" "}
+                          <span className="font-medium text-foreground">
+                            Dates:
+                          </span>{" "}
                           <span className="text-muted-foreground">
-                            {checkIn.toLocaleDateString()} → {checkOut.toLocaleDateString()}
+                            {checkIn.toLocaleDateString()} →{" "}
+                            {checkOut.toLocaleDateString()}
                           </span>
                         </div>
                         <div>
-                          <span className="font-medium text-foreground">Nights:</span>{" "}
-                          <span className="text-muted-foreground">{nights}</span>
+                          <span className="font-medium text-foreground">
+                            Nights:
+                          </span>{" "}
+                          <span className="text-muted-foreground">
+                            {nights}
+                          </span>
                         </div>
                         {booking.guestCount && (
                           <div className="flex items-center gap-1">
                             <Users className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">{booking.guestCount} guests</span>
+                            <span className="text-muted-foreground">
+                              {booking.guestCount} guests
+                            </span>
                           </div>
                         )}
                       </div>
@@ -188,7 +215,9 @@ export default function FamilyAdminPage() {
                           <div className="text-xs font-medium text-muted-foreground mb-1">
                             Notes
                           </div>
-                          <div className="text-sm whitespace-pre-wrap">{booking.notes}</div>
+                          <div className="text-sm whitespace-pre-wrap">
+                            {booking.notes}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -228,7 +257,7 @@ export default function FamilyAdminPage() {
                     </div>
                   </div>
                 </Card>
-              )
+              );
             })}
           </div>
         )}
@@ -239,7 +268,9 @@ export default function FamilyAdminPage() {
             Remember to block in Guesty!
           </h3>
           <p className="text-sm text-blue-700 dark:text-blue-300">
-            After approving a request, don't forget to manually block the dates in the Guesty dashboard to prevent double bookings from paying guests.
+            After approving a request, don't forget to manually block the dates
+            in the Guesty dashboard to prevent double bookings from paying
+            guests.
           </p>
         </div>
 
@@ -249,7 +280,8 @@ export default function FamilyAdminPage() {
             Prefer using Google Calendar directly?
           </h3>
           <p className="text-sm text-muted-foreground mb-3">
-            You can also approve bookings by editing the event in Google Calendar - just remove the "Pending:" prefix from the event title.
+            You can also approve bookings by editing the event in Google
+            Calendar - just remove the "Pending:" prefix from the event title.
           </p>
           <a
             href="https://calendar.google.com"
@@ -263,5 +295,5 @@ export default function FamilyAdminPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

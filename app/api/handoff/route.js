@@ -1,11 +1,19 @@
-import { NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
+import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 
 /**
  * Render lead capture form
  */
-function renderLeadCaptureForm({ checkIn, checkOut, adults, experiences, promoCode }) {
-  const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+function renderLeadCaptureForm({
+  checkIn,
+  checkOut,
+  adults,
+  experiences,
+  promoCode,
+}) {
+  const nights = Math.ceil(
+    (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24),
+  );
 
   return `
 <!doctype html>
@@ -258,8 +266,8 @@ function renderLeadCaptureForm({ checkIn, checkOut, adults, experiences, promoCo
         email: email
       });
 
-      ${experiences ? `params.set('experiences', '${experiences}');` : ''}
-      ${promoCode ? `params.set('promo', '${promoCode}');` : ''}
+      ${experiences ? `params.set('experiences', '${experiences}');` : ""}
+      ${promoCode ? `params.set('promo', '${promoCode}');` : ""}
 
       window.location.href = '/api/handoff?' + params.toString();
     }
@@ -271,17 +279,17 @@ function renderLeadCaptureForm({ checkIn, checkOut, adults, experiences, promoCo
 
 /**
  * Branded Checkout Handoff Endpoint
- * 
+ *
  * Creates a seamless handoff from Casa O to Blue Zone's Guesty checkout
  * while maintaining Casa O branding throughout the journey.
- * 
+ *
  * Flow:
  * 1. Guest selects dates on casavistas.net
- * 2. Clicks "Book This!" 
+ * 2. Clicks "Book This!"
  * 3. Sees Casa O branded "Secure Checkout" interstitial
  * 4. Redirects to Blue Zone Guesty (pre-filled with dates)
  * 5. Blue Zone handles payment, contract, confirmation
- * 
+ *
  * Benefits:
  * - Casa O controls UX/branding
  * - Blue Zone keeps Stripe + contracts
@@ -292,39 +300,42 @@ function renderLeadCaptureForm({ checkIn, checkOut, adults, experiences, promoCo
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const checkIn = searchParams.get('checkIn');
-    const checkOut = searchParams.get('checkOut');
-    const adults = searchParams.get('adults') || '2';
-    const propertyId = searchParams.get('propertyId') || process.env.GUESTY_PROPERTY_ID;
-    const experiences = searchParams.get('experiences'); // Comma-separated experience IDs
-    const promoCode = searchParams.get('promo'); // Promo/discount code
-    const guestName = searchParams.get('name');
-    const guestEmail = searchParams.get('email');
+    const checkIn = searchParams.get("checkIn");
+    const checkOut = searchParams.get("checkOut");
+    const adults = searchParams.get("adults") || "2";
+    const propertyId =
+      searchParams.get("propertyId") || process.env.GUESTY_PROPERTY_ID;
+    const experiences = searchParams.get("experiences"); // Comma-separated experience IDs
+    const promoCode = searchParams.get("promo"); // Promo/discount code
+    const guestName = searchParams.get("name");
+    const guestEmail = searchParams.get("email");
 
     // Validate required parameters
     if (!checkIn || !checkOut) {
       return NextResponse.json(
-        { error: 'Missing checkIn or checkOut parameters' },
-        { status: 400 }
+        { error: "Missing checkIn or checkOut parameters" },
+        { status: 400 },
       );
     }
 
     // Validate 3-night minimum
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
-    const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    const nights = Math.ceil(
+      (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24),
+    );
 
     if (nights < 3) {
       return NextResponse.json(
-        { error: 'Minimum stay is 3 nights', nights },
-        { status: 400 }
+        { error: "Minimum stay is 3 nights", nights },
+        { status: 400 },
       );
     }
 
     if (!propertyId) {
       return NextResponse.json(
-        { error: 'Property ID not configured' },
-        { status: 500 }
+        { error: "Property ID not configured" },
+        { status: 500 },
       );
     }
 
@@ -332,7 +343,9 @@ export async function GET(request) {
     const uuid = randomUUID();
 
     // Parse experience selections
-    const selectedExperiences = experiences ? experiences.split(',').filter(Boolean) : [];
+    const selectedExperiences = experiences
+      ? experiences.split(",").filter(Boolean)
+      : [];
     const hasDiscount = selectedExperiences.length >= 2;
 
     // Build Blue Zone Guesty property URL (not /checkout - that doesn't exist)
@@ -342,9 +355,18 @@ export async function GET(request) {
 
     // If name/email not provided, show lead capture form first (no notification yet)
     if (!guestName || !guestEmail) {
-      return new NextResponse(renderLeadCaptureForm({ checkIn, checkOut, adults, experiences, promoCode }), {
-        headers: { 'Content-Type': 'text/html' },
-      });
+      return new NextResponse(
+        renderLeadCaptureForm({
+          checkIn,
+          checkOut,
+          adults,
+          experiences,
+          promoCode,
+        }),
+        {
+          headers: { "Content-Type": "text/html" },
+        },
+      );
     }
 
     // User has completed lead capture - log and notify
@@ -359,7 +381,7 @@ export async function GET(request) {
       promoCode: promoCode || null,
       guestName: guestName,
       guestEmail: guestEmail,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Send push notification via Pushover (only after lead capture completed)
@@ -367,10 +389,12 @@ export async function GET(request) {
     const pushoverApiToken = process.env.PUSHOVER_API_TOKEN;
     if (pushoverUserKey && pushoverApiToken) {
       try {
-        const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
-        const title = '🏠 Casa Vistas Booking';
+        const nights = Math.ceil(
+          (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24),
+        );
+        const title = "🏠 Casa Vistas Booking";
         const guestInfo = `\n${guestName} (${guestEmail})`;
-        const message = `${checkIn} → ${checkOut} (${nights} nights, ${adults} guests)${promoCode ? ` [${promoCode}]` : ''}${guestInfo}`;
+        const message = `${checkIn} → ${checkOut} (${nights} nights, ${adults} guests)${promoCode ? ` [${promoCode}]` : ""}${guestInfo}`;
 
         const formData = new URLSearchParams({
           token: pushoverApiToken,
@@ -378,13 +402,13 @@ export async function GET(request) {
           title: title,
           message: message,
         });
-        await fetch('https://api.pushover.net/1/messages.json', {
-          method: 'POST',
+        await fetch("https://api.pushover.net/1/messages.json", {
+          method: "POST",
           body: formData,
         });
-        console.log('📱 Push notification sent');
+        console.log("📱 Push notification sent");
       } catch (pushError) {
-        console.error('Push notification failed:', pushError);
+        console.error("Push notification failed:", pushError);
         // Don't block the handoff if push fails
       }
     }
@@ -563,7 +587,9 @@ export async function GET(request) {
       <strong>Blue Zone Experience</strong>.
     </p>
     
-    ${promoCode ? `
+    ${
+      promoCode
+        ? `
     <div style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; text-align: center;">
       <div style="font-weight: 700; color: #047857; font-size: 1.125rem; margin-bottom: 0.5rem;">
         🎉 Special Rate Applied!
@@ -586,26 +612,36 @@ export async function GET(request) {
         <img src="/images/discount-code-hint.png" alt="Where to enter coupon code" style="max-width: 100%; border-radius: 6px; border: 1px solid #e5e7eb;" />
       </div>
     </div>
-    ` : ''}
+    `
+        : ""
+    }
 
-    ${selectedExperiences.length > 0 ? `
+    ${
+      selectedExperiences.length > 0
+        ? `
     <div style="background: #f3f4f6; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; text-align: left;">
       <div style="font-weight: 600; color: #111827; margin-bottom: 0.75rem;">
         ✨ Your Selected Experiences (${selectedExperiences.length})
       </div>
       <div style="font-size: 0.875rem; color: #6b7280; line-height: 1.6;">
-        ${selectedExperiences.map(id => `• ${id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`).join('<br>')}
+        ${selectedExperiences.map((id) => `• ${id.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}`).join("<br>")}
       </div>
-      ${hasDiscount ? `
+      ${
+        hasDiscount
+          ? `
       <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; font-size: 0.875rem; color: #059669; font-weight: 600;">
         🎉 5% discount applied to your lodging!
       </div>
-      ` : ''}
+      `
+          : ""
+      }
       <div style="margin-top: 1rem; font-size: 0.75rem; color: #9ca3af;">
         Our concierge team will contact you to confirm availability and pricing for your selected experiences.
       </div>
     </div>
-    ` : ''}
+    `
+        : ""
+    }
     
     <a class="button" href="${blueZoneURL}">
       Continue to Secure Checkout →
@@ -639,15 +675,14 @@ export async function GET(request) {
 
     return new NextResponse(html, {
       headers: {
-        'Content-Type': 'text/html',
+        "Content-Type": "text/html",
       },
     });
-
   } catch (error) {
-    console.error('Handoff error:', error);
+    console.error("Handoff error:", error);
     return NextResponse.json(
-      { error: 'Failed to create checkout handoff' },
-      { status: 500 }
+      { error: "Failed to create checkout handoff" },
+      { status: 500 },
     );
   }
 }

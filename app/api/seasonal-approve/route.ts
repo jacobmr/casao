@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server"
-import { Resend } from "resend"
-import { getSeasonalCode, setSeasonalCode } from "@/lib/kv-cache"
+import { NextResponse } from "next/server";
+import { Resend } from "resend";
+import { getSeasonalCode, setSeasonalCode } from "@/lib/kv-cache";
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // HTML escape function to prevent XSS
 function escapeHtml(str: string): string {
@@ -11,7 +11,7 @@ function escapeHtml(str: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;")
+    .replace(/'/g, "&#039;");
 }
 
 // Map discount percentages to promo codes
@@ -20,60 +20,72 @@ const PROMO_CODES: Record<number, string> = {
   30: "CASAO30",
   40: "CASAO40",
   50: "CASAO50",
-}
+};
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const code = searchParams.get("code")
-    const discountStr = searchParams.get("discount")
+    const { searchParams } = new URL(request.url);
+    const code = searchParams.get("code");
+    const discountStr = searchParams.get("discount");
 
     if (!code || !discountStr) {
-      return new Response(generateErrorPage("Missing code or discount parameter"), {
-        status: 400,
-        headers: { "Content-Type": "text/html" },
-      })
+      return new Response(
+        generateErrorPage("Missing code or discount parameter"),
+        {
+          status: 400,
+          headers: { "Content-Type": "text/html" },
+        },
+      );
     }
 
-    const discount = parseInt(discountStr, 10)
+    const discount = parseInt(discountStr, 10);
     if (![20, 30, 40, 50].includes(discount)) {
       return new Response(generateErrorPage("Invalid discount percentage"), {
         status: 400,
         headers: { "Content-Type": "text/html" },
-      })
+      });
     }
 
     // Retrieve the stored inquiry
-    const inquiry = await getSeasonalCode(code)
+    const inquiry = await getSeasonalCode(code);
     if (!inquiry) {
-      return new Response(generateErrorPage("This code has expired or doesn't exist"), {
-        status: 404,
-        headers: { "Content-Type": "text/html" },
-      })
+      return new Response(
+        generateErrorPage("This code has expired or doesn't exist"),
+        {
+          status: 404,
+          headers: { "Content-Type": "text/html" },
+        },
+      );
     }
 
     // Check if already approved
     if (inquiry.promoCode) {
-      return new Response(generateErrorPage(`This inquiry was already approved with ${inquiry.promoCode}`), {
-        status: 400,
-        headers: { "Content-Type": "text/html" },
-      })
+      return new Response(
+        generateErrorPage(
+          `This inquiry was already approved with ${inquiry.promoCode}`,
+        ),
+        {
+          status: 400,
+          headers: { "Content-Type": "text/html" },
+        },
+      );
     }
 
     // Get the promo code for this discount level
-    const promoCode = PROMO_CODES[discount]
+    const promoCode = PROMO_CODES[discount];
 
     // Update the inquiry with the promo code
-    inquiry.promoCode = promoCode
-    inquiry.approvedAt = new Date().toISOString()
-    inquiry.discountPercent = discount
+    inquiry.promoCode = promoCode;
+    inquiry.approvedAt = new Date().toISOString();
+    inquiry.discountPercent = discount;
 
     // Save back to Redis (refresh TTL)
-    await setSeasonalCode(code, inquiry)
+    await setSeasonalCode(code, inquiry);
 
     // Build the booking URL - go directly to handoff page
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.casavistas.net"
-    const bookingUrl = `${baseUrl}/api/handoff?checkIn=${inquiry.checkIn}&checkOut=${inquiry.checkOut}&adults=${inquiry.guests}&promo=${promoCode}`
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL || "https://www.casavistas.net";
+    const bookingUrl = `${baseUrl}/api/handoff?checkIn=${inquiry.checkIn}&checkOut=${inquiry.checkOut}&adults=${inquiry.guests}&promo=${promoCode}`;
 
     // Send approval email to the guest
     const emailHtml = `
@@ -124,17 +136,17 @@ export async function GET(request: Request) {
           <span style="color: #9ca3af;">Casa Vistas</span>
         </p>
       </div>
-    `
+    `;
 
-    console.log(`📧 Sending approval email to ${inquiry.email}...`)
+    console.log(`📧 Sending approval email to ${inquiry.email}...`);
     const emailResult = await resend.emails.send({
       from: "Casa Vistas <noreply@salundo.com>",
       to: inquiry.email,
       replyTo: "jacob@reider.us",
       subject: `🎉 Your ${discount}% Discount for Casa Vistas is Ready!`,
       html: emailHtml,
-    })
-    console.log(`✅ Approval email result:`, emailResult)
+    });
+    console.log(`✅ Approval email result:`, emailResult);
 
     // Return success page
     const successHtml = `
@@ -203,18 +215,21 @@ export async function GET(request: Request) {
         </div>
       </body>
       </html>
-    `
+    `;
 
     return new Response(successHtml, {
       status: 200,
       headers: { "Content-Type": "text/html" },
-    })
+    });
   } catch (error) {
-    console.error("Seasonal approval error:", error)
-    return new Response(generateErrorPage("Something went wrong. Please try again."), {
-      status: 500,
-      headers: { "Content-Type": "text/html" },
-    })
+    console.error("Seasonal approval error:", error);
+    return new Response(
+      generateErrorPage("Something went wrong. Please try again."),
+      {
+        status: 500,
+        headers: { "Content-Type": "text/html" },
+      },
+    );
   }
 }
 
@@ -258,5 +273,5 @@ function generateErrorPage(message: string): string {
       </div>
     </body>
     </html>
-  `
+  `;
 }

@@ -1,16 +1,18 @@
-"use client"
+"use client";
 
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Users, Mail, Phone, MessageSquare } from "lucide-react"
-import Link from "next/link"
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Users, Mail, Phone, MessageSquare } from "lucide-react";
+import Link from "next/link";
 
 export function BookingSummary() {
   return (
     <Card className="p-6 sticky top-24">
-      <h2 className="text-xl font-semibold text-foreground mb-6">Guest Information</h2>
+      <h2 className="text-xl font-semibold text-foreground mb-6">
+        Guest Information
+      </h2>
 
       <form className="space-y-4">
         <div className="space-y-2">
@@ -75,15 +77,19 @@ export function BookingSummary() {
         </div>
 
         <Link href="/checkout" className="block w-full">
-          <Button size="lg" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Button
+            size="lg"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
             Continue to Checkout
           </Button>
         </Link>
 
         <p className="text-xs text-muted-foreground text-center">
-          You won't be charged yet. Review your booking details on the next page.
+          You won't be charged yet. Review your booking details on the next
+          page.
         </p>
       </form>
     </Card>
-  )
+  );
 }

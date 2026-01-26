@@ -12,11 +12,12 @@
  */
 
 @font-face {
-  font-family: 'Fraunces';
+  font-family: "Fraunces";
   font-style: normal;
   font-weight: 400 900;
   font-display: swap;
-  src: url('https://fonts.gstatic.com/s/fraunces/v31/6NUh8FyLNQOQZAnv9bYEvDiIdE9Ea92uemAk_WBq8U_9v0c2Wa0K7iN7hzFUPJH58nib14cyOBiMO-7fUM4.woff2') format('woff2');
+  src: url("https://fonts.gstatic.com/s/fraunces/v31/6NUh8FyLNQOQZAnv9bYEvDiIdE9Ea92uemAk_WBq8U_9v0c2Wa0K7iN7hzFUPJH58nib14cyOBiMO-7fUM4.woff2")
+    format("woff2");
 }
 
 :root {
@@ -59,14 +60,27 @@
   --chart-2: oklch(0.58 0.14 45);
   --chart-3: oklch(0.65 0.15 145);
   --chart-4: oklch(0.55 0.12 280);
-  --chart-5: oklch(0.70 0.12 85);
+  --chart-5: oklch(0.7 0.12 85);
 
   --radius: 0.625rem;
 
   /* Custom properties for unique design elements */
-  --gradient-sunset: linear-gradient(135deg, oklch(0.65 0.18 45) 0%, oklch(0.55 0.15 25) 50%, oklch(0.45 0.12 195) 100%);
-  --gradient-ocean: linear-gradient(180deg, oklch(0.45 0.12 195) 0%, oklch(0.35 0.10 210) 100%);
-  --gradient-sand: linear-gradient(180deg, oklch(0.95 0.03 85) 0%, oklch(0.92 0.04 75) 100%);
+  --gradient-sunset: linear-gradient(
+    135deg,
+    oklch(0.65 0.18 45) 0%,
+    oklch(0.55 0.15 25) 50%,
+    oklch(0.45 0.12 195) 100%
+  );
+  --gradient-ocean: linear-gradient(
+    180deg,
+    oklch(0.45 0.12 195) 0%,
+    oklch(0.35 0.1 210) 100%
+  );
+  --gradient-sand: linear-gradient(
+    180deg,
+    oklch(0.95 0.03 85) 0%,
+    oklch(0.92 0.04 75) 100%
+  );
 
   /* Texture overlays */
   --noise-opacity: 0.03;
@@ -80,7 +94,7 @@
   --card-foreground: oklch(0.95 0.01 75);
   --popover: oklch(0.18 0.02 45);
   --popover-foreground: oklch(0.95 0.01 75);
-  --primary: oklch(0.60 0.14 195);
+  --primary: oklch(0.6 0.14 195);
   --primary-foreground: oklch(0.14 0.02 45);
   --secondary: oklch(0.65 0.14 45);
   --secondary-foreground: oklch(0.14 0.02 45);
@@ -92,13 +106,13 @@
   --destructive-foreground: oklch(0.98 0.005 75);
   --border: oklch(0.28 0.02 45);
   --input: oklch(0.28 0.02 45);
-  --ring: oklch(0.60 0.14 195);
+  --ring: oklch(0.6 0.14 195);
 }
 
 @theme inline {
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-serif: 'Fraunces', Georgia, serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -157,7 +171,7 @@
   }
 
   .texture-noise::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
@@ -194,7 +208,9 @@
 
   /* Asymmetric card hover */
   .card-hover-lift {
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+    transition:
+      transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.4s ease;
   }
 
   .card-hover-lift:hover {
@@ -205,12 +221,24 @@
   }
 
   /* Staggered animation helpers */
-  .stagger-1 { animation-delay: 0.1s; }
-  .stagger-2 { animation-delay: 0.2s; }
-  .stagger-3 { animation-delay: 0.3s; }
-  .stagger-4 { animation-delay: 0.4s; }
-  .stagger-5 { animation-delay: 0.5s; }
-  .stagger-6 { animation-delay: 0.6s; }
+  .stagger-1 {
+    animation-delay: 0.1s;
+  }
+  .stagger-2 {
+    animation-delay: 0.2s;
+  }
+  .stagger-3 {
+    animation-delay: 0.3s;
+  }
+  .stagger-4 {
+    animation-delay: 0.4s;
+  }
+  .stagger-5 {
+    animation-delay: 0.5s;
+  }
+  .stagger-6 {
+    animation-delay: 0.6s;
+  }
 }
 
 @layer utilities {
@@ -233,7 +261,8 @@
 
   /* Gentle float animation */
   @keyframes gentle-float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0);
     }
     50% {

@@ -1,6 +1,7 @@
 # Discount Code Implementation Plan
 
 ## 🎯 Objective
+
 Add discount code support to Casa Vistas booking flow while maintaining seamless handoff to Blue Zone Guesty checkout.
 
 ---
@@ -8,6 +9,7 @@ Add discount code support to Casa Vistas booking flow while maintaining seamless
 ## 📋 Requirements
 
 ### User Experience
+
 1. Guest enters discount code on Casa Vistas site
 2. System validates code via Guesty API
 3. Shows discounted price immediately
@@ -15,6 +17,7 @@ Add discount code support to Casa Vistas booking flow while maintaining seamless
 5. Guest doesn't need to re-enter code
 
 ### Technical Requirements
+
 1. Validate codes using Guesty Quote API
 2. Display original + discounted prices
 3. Handle invalid codes gracefully
@@ -30,17 +33,19 @@ Add discount code support to Casa Vistas booking flow while maintaining seamless
 **Endpoint:** `POST https://booking.guesty.com/api/reservations/quotes`
 
 **Request with Coupon:**
+
 ```json
 {
   "checkInDateLocalized": "2025-11-01",
   "checkOutDateLocalized": "2025-11-04",
   "listingId": "688a8aae483ff0001243e891",
   "adults": 2,
-  "coupons": "SUMMER25,WELCOME10"  // ← Comma-separated codes
+  "coupons": "SUMMER25,WELCOME10" // ← Comma-separated codes
 }
 ```
 
 **Response:**
+
 ```json
 {
   "_id": "quote_123",
@@ -49,22 +54,25 @@ Add discount code support to Casa Vistas booking flow while maintaining seamless
       "name": "Summer Special",
       "type": "percentage",
       "code": "SUMMER25",
-      "adjustment": -250  // ← Discount amount
+      "adjustment": -250 // ← Discount amount
     }
   ],
   "rates": {
-    "ratePlans": [{
-      "money": {
-        "fareAccommodation": 1200,
-        "fareAccommodationAdjusted": 950,  // ← After discount
-        "totalPrice": 1100
+    "ratePlans": [
+      {
+        "money": {
+          "fareAccommodation": 1200,
+          "fareAccommodationAdjusted": 950, // ← After discount
+          "totalPrice": 1100
+        }
       }
-    }]
+    ]
   }
 }
 ```
 
 ### Key Points
+
 - ✅ Coupons validated automatically by Guesty
 - ✅ Invalid codes are silently ignored (no error)
 - ✅ Multiple codes can be applied (comma-separated)
@@ -76,11 +84,13 @@ Add discount code support to Casa Vistas booking flow while maintaining seamless
 ## 🚧 The Blue Zone Handoff Challenge
 
 ### Current Flow
+
 ```
 Casa Vistas → /api/handoff → Blue Zone Guesty Checkout
 ```
 
 ### Current URL Format
+
 ```
 https://bluezoneexperience.guestybookings.com/en/properties/688a8aae483ff0001243e891/checkout
   ?checkIn=2025-11-01
@@ -89,15 +99,18 @@ https://bluezoneexperience.guestybookings.com/en/properties/688a8aae483ff0001243
 ```
 
 ### Problem
+
 **We don't know if Blue Zone's Guesty booking page supports coupon URL parameters!**
 
 Possible URL parameters to try:
+
 - `&coupon=SUMMER25`
 - `&couponCode=SUMMER25`
 - `&promo=SUMMER25`
 - `&discount=SUMMER25`
 
 ### Research Needed
+
 1. Test Blue Zone URL with coupon parameters
 2. Check if Guesty booking pages support coupon in URL
 3. Contact Blue Zone to ask about coupon passing
@@ -108,7 +121,9 @@ Possible URL parameters to try:
 ## 💡 Implementation Options
 
 ### Option 1: URL Parameter (Ideal)
+
 **IF** Blue Zone supports coupon in URL:
+
 ```
 https://bluezoneexperience.guestybookings.com/.../checkout
   ?checkIn=2025-11-01
@@ -118,17 +133,20 @@ https://bluezoneexperience.guestybookings.com/.../checkout
 ```
 
 **Pros:**
+
 - ✅ Seamless - guest doesn't re-enter code
 - ✅ Simple implementation
 - ✅ No PM changes needed
 
 **Cons:**
+
 - ❌ Requires Blue Zone URL to support it
 - ❌ Unknown if this works
 
 ---
 
 ### Option 2: Quote ID Handoff (Recommended)
+
 Create quote with coupon, pass quote ID to Blue Zone:
 
 ```
@@ -139,32 +157,37 @@ Create quote with coupon, pass quote ID to Blue Zone:
 ```
 
 **Pros:**
+
 - ✅ Quote locks in the price with discount
 - ✅ More reliable than URL params
 - ✅ Guesty designed for this flow
 
 **Cons:**
+
 - ❌ Requires Blue Zone to support quote ID parameter
 - ❌ Still unknown if Blue Zone URL supports it
 
 ---
 
 ### Option 3: Display Warning (Fallback)
+
 Show discount on Casa Vistas, but warn guest to re-enter:
 
 ```
 ✅ Your discount code SUMMER25 saves you $250!
 
-⚠️ Important: Please enter code "SUMMER25" again 
+⚠️ Important: Please enter code "SUMMER25" again
    on the checkout page to apply your discount.
 ```
 
 **Pros:**
+
 - ✅ Works without Blue Zone changes
 - ✅ Guest sees discount upfront
 - ✅ Simple to implement
 
 **Cons:**
+
 - ❌ Poor UX - guest must re-enter code
 - ❌ Risk of guest forgetting
 - ❌ Looks unprofessional
@@ -172,14 +195,17 @@ Show discount on Casa Vistas, but warn guest to re-enter:
 ---
 
 ### Option 4: Full Casa Vistas Checkout (Future)
+
 Build complete checkout on Casa Vistas, create reservation via API:
 
 **Pros:**
+
 - ✅ Complete control
 - ✅ Perfect UX
 - ✅ No handoff issues
 
 **Cons:**
+
 - ❌ Requires Stripe integration
 - ❌ Requires contract signing
 - ❌ Major development effort
@@ -190,13 +216,15 @@ Build complete checkout on Casa Vistas, create reservation via API:
 ## 🎯 Recommended Approach
 
 ### Phase 1: Research & Test (NOW)
+
 1. **Test Blue Zone URL parameters:**
+
    ```bash
    # Try these URLs manually:
    https://bluezoneexperience.guestybookings.com/en/properties/688a8aae483ff0001243e891/checkout?checkIn=2025-11-01&checkOut=2025-11-04&adults=2&coupon=TESTCODE
-   
+
    https://bluezoneexperience.guestybookings.com/en/properties/688a8aae483ff0001243e891/checkout?checkIn=2025-11-01&checkOut=2025-11-04&adults=2&couponCode=TESTCODE
-   
+
    https://bluezoneexperience.guestybookings.com/en/properties/688a8aae483ff0001243e891/checkout?checkIn=2025-11-01&checkOut=2025-11-04&adults=2&promo=TESTCODE
    ```
 
@@ -209,6 +237,7 @@ Build complete checkout on Casa Vistas, create reservation via API:
    - Look for coupon/promo code passing
 
 ### Phase 2: Implement UI (Can Start Now)
+
 Even without knowing the handoff solution, we can:
 
 1. ✅ Add discount code input field
@@ -218,7 +247,9 @@ Even without knowing the handoff solution, we can:
 5. ⏸️ Pass to handoff (pending research)
 
 ### Phase 3: Handoff Integration (After Research)
+
 Based on research findings:
+
 - **Best case**: Add `&coupon=CODE` to URL
 - **Good case**: Create quote, pass quote ID
 - **Fallback**: Show warning to re-enter
@@ -232,25 +263,26 @@ Based on research findings:
 **File:** `/app/api/quotes/route.js`
 
 Add coupon parameter:
+
 ```javascript
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const coupon = searchParams.get('coupon'); // ← NEW
-  
+  const coupon = searchParams.get("coupon"); // ← NEW
+
   const body = {
     listingId,
     checkInDateLocalized: checkIn,
     checkOutDateLocalized: checkOut,
     adults: parseInt(guests),
     children: 0,
-    currency: 'USD',
+    currency: "USD",
   };
-  
+
   // Add coupon if provided
   if (coupon && coupon.trim()) {
     body.coupons = coupon.trim();
   }
-  
+
   // ... rest of code
 }
 ```
@@ -260,6 +292,7 @@ export async function GET(request) {
 **File:** `/components/availability-calendar.tsx`
 
 Add discount code UI:
+
 ```tsx
 const [discountCode, setDiscountCode] = useState('')
 const [appliedDiscount, setAppliedDiscount] = useState(null)
@@ -274,7 +307,7 @@ const [appliedDiscount, setAppliedDiscount] = useState(null)
       placeholder="Enter code"
     />
   </div>
-  
+
   {appliedDiscount && (
     <div className="bg-green-50 p-3 rounded">
       ✅ {appliedDiscount.name} applied!
@@ -291,21 +324,21 @@ const [appliedDiscount, setAppliedDiscount] = useState(null)
 ```tsx
 const fetchQuote = async () => {
   const url = `/api/quotes?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}${
-    discountCode ? `&coupon=${discountCode}` : ''
-  }`
-  
-  const response = await fetch(url)
-  const data = await response.json()
-  
+    discountCode ? `&coupon=${discountCode}` : ""
+  }`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
   // Check if coupon was applied
   if (data.coupons && data.coupons.length > 0) {
-    setAppliedDiscount(data.coupons[0])
+    setAppliedDiscount(data.coupons[0]);
   } else if (discountCode) {
     // Code was entered but not applied (invalid)
-    setAppliedDiscount(null)
+    setAppliedDiscount(null);
     // Show error message
   }
-}
+};
 ```
 
 ### 4. Update Handoff Endpoint
@@ -315,16 +348,16 @@ const fetchQuote = async () => {
 ```javascript
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const coupon = searchParams.get('coupon'); // ← NEW
-  
+  const coupon = searchParams.get("coupon"); // ← NEW
+
   // Build Blue Zone URL
-  let guestyUrl = `https://bluezoneexperience.guestybookings.com/...?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}`
-  
+  let guestyUrl = `https://bluezoneexperience.guestybookings.com/...?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}`;
+
   // ⚠️ PENDING RESEARCH: How to pass coupon?
   if (coupon) {
     // Option 1: URL parameter (if supported)
-    guestyUrl += `&coupon=${encodeURIComponent(coupon)}`
-    
+    guestyUrl += `&coupon=${encodeURIComponent(coupon)}`;
+
     // Option 2: Quote ID (if supported)
     // const quote = await createQuoteWithCoupon(...)
     // guestyUrl += `&quoteId=${quote._id}`
@@ -337,6 +370,7 @@ export async function GET(request) {
 ## 🧪 Testing Plan
 
 ### Test Cases
+
 1. ✅ Valid coupon code → Shows discount
 2. ✅ Invalid coupon code → Shows error
 3. ✅ Empty code → Normal pricing
@@ -345,6 +379,7 @@ export async function GET(request) {
 6. ❌ Coupon doesn't pass → Guest must re-enter
 
 ### Manual Testing
+
 ```bash
 # Test valid code
 curl "https://www.casavistas.net/api/quotes?checkIn=2025-11-01&checkOut=2025-11-04&guests=2&coupon=VALIDCODE"
@@ -362,6 +397,7 @@ https://bluezoneexperience.guestybookings.com/en/properties/688a8aae483ff0001243
 ## 📝 Next Steps
 
 ### Immediate Actions
+
 1. ⏸️ **RESEARCH**: Test Blue Zone URL with coupon parameters
 2. ⏸️ **CONTACT**: Email Blue Zone about coupon passing
 3. ⏸️ **DOCUMENT**: Record findings in this file
@@ -369,6 +405,7 @@ https://bluezoneexperience.guestybookings.com/en/properties/688a8aae483ff0001243
 5. ⏸️ **INTEGRATE**: Connect handoff (after research)
 
 ### Questions to Answer
+
 - ❓ Does Blue Zone URL support `&coupon=CODE` parameter?
 - ❓ Does Blue Zone URL support `&quoteId=ID` parameter?
 - ❓ What coupon codes are currently active in Guesty?

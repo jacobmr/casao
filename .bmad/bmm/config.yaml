@@ -1,12 +1,12 @@
 user_skill_level: intermediate
-sprint_artifacts: '{project-root}/docs/sprint-artifacts'
+sprint_artifacts: "{project-root}/docs/sprint-artifacts"
 project_name: Casa Vistas
-tech_docs: '{project-root}/docs'
-dev_story_location: '{project-root}/docs/stories'
+tech_docs: "{project-root}/docs"
+dev_story_location: "{project-root}/docs/stories"
 user_name: JMR
 communication_language: English
-output_folder: '{project-root}/docs'
+output_folder: "{project-root}/docs"
 bmad_indicator: "💎 [BMAD]"
 bmad_folder: .bmad
-document_output_language: '{communication_language}'
+document_output_language: "{communication_language}"
 install_user_docs: true

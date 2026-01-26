@@ -3,8 +3,9 @@
 ## ❌ IGNORE These (v0 is guessing wrong)
 
 v0 may ask for these - **we don't use them**:
+
 - ❌ `GUESTY_SEARCH_URL`
-- ❌ `GUESTY_API_KEY` 
+- ❌ `GUESTY_API_KEY`
 - ❌ `GUESTY_API_SECRET`
 - ❌ `GUESTY_BOOKING_URL`
 - ❌ `__TMP_TOKEN`
@@ -30,23 +31,29 @@ GUESTY_OAUTH_SCOPE=booking_engine:api
 ### Backend API Routes (already built)
 
 1. **Get Calendar Availability**
+
    ```
    GET /api/calendar?listingId={id}&from={date}&to={date}
    ```
+
    - Returns: Array of dates with status (available/blocked)
 
 2. **Create Quote**
+
    ```
    POST /api/quotes
    Body: { listingId, checkInDateLocalized, checkOutDateLocalized, adults, children, currency }
    ```
+
    - Returns: Quote object with pricing
 
 3. **Create Booking** (to be built)
+
    ```
    POST /api/bookings
    Body: { quoteId, guest, ccToken }
    ```
+
    - Returns: Reservation with confirmation code
 
 ### Frontend Components (already built)
@@ -67,6 +74,7 @@ GUESTY_OAUTH_SCOPE=booking_engine:api
 ## Token Management
 
 We have a centralized token service (`lib/token-service.js`) that:
+
 - ✅ Caches tokens in memory and file
 - ✅ Refreshes automatically when expired
 - ✅ Prevents rate limiting
@@ -79,8 +87,9 @@ We have a centralized token service (`lib/token-service.js`) that:
 Tell v0:
 
 > "The Guesty API integration is complete. All API calls go through Next.js API routes:
+>
 > - `/api/calendar` - availability
-> - `/api/quotes` - pricing  
+> - `/api/quotes` - pricing
 > - `/api/bookings` - reservations
-> 
+>
 > Environment variables are already set in Vercel. Just design the frontend UI components that call these endpoints. No need to handle OAuth, tokens, or direct Guesty API calls."

@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server"
-import { Resend } from "resend"
-import { nanoid } from "nanoid"
-import { setSeasonalCode } from "@/lib/kv-cache"
+import { NextResponse } from "next/server";
+import { Resend } from "resend";
+import { nanoid } from "nanoid";
+import { setSeasonalCode } from "@/lib/kv-cache";
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // HTML escape function to prevent XSS
 function escapeHtml(str: string): string {
@@ -12,39 +12,51 @@ function escapeHtml(str: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;")
+    .replace(/'/g, "&#039;");
 }
 
 // Validate URL to prevent javascript: and other malicious schemes
 function sanitizeUrl(url: string): string | null {
   try {
-    const parsed = new URL(url)
+    const parsed = new URL(url);
     // Only allow http and https schemes
     if (parsed.protocol === "http:" || parsed.protocol === "https:") {
-      return escapeHtml(url)
+      return escapeHtml(url);
     }
-    return null
+    return null;
   } catch {
-    return null
+    return null;
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json()
+    const data = await request.json();
 
     // Validate required fields
-    if (!data.firstName || !data.lastName || !data.email || !data.checkIn || !data.checkOut || !data.aboutYou) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    if (
+      !data.firstName ||
+      !data.lastName ||
+      !data.email ||
+      !data.checkIn ||
+      !data.checkOut ||
+      !data.aboutYou
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 },
+      );
     }
 
     // Generate a unique one-time code (12 chars, URL-safe)
-    const oneTimeCode = nanoid(12)
+    const oneTimeCode = nanoid(12);
 
     // Calculate nights
-    const checkInDate = new Date(data.checkIn)
-    const checkOutDate = new Date(data.checkOut)
-    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
+    const checkInDate = new Date(data.checkIn);
+    const checkOutDate = new Date(data.checkOut);
+    const nights = Math.ceil(
+      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
 
     // Store the code in Redis with inquiry details
     // Code expires in 30 days
@@ -61,16 +73,17 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
       used: false,
       promoCode: null, // You'll set this when you reply
-    }
+    };
 
-    await setSeasonalCode(oneTimeCode, codeData)
+    await setSeasonalCode(oneTimeCode, codeData);
 
     // Build approval links for different discount levels
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.casavistas.net"
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL || "https://www.casavistas.net";
     const approvalLinks = [20, 30, 40, 50].map((discount) => ({
       discount,
       url: `${baseUrl}/api/seasonal-approve?code=${oneTimeCode}&discount=${discount}`,
-    }))
+    }));
 
     // Send email to owner
     const emailHtml = `
@@ -101,20 +114,26 @@ export async function POST(request: Request) {
               <td style="color: #666; padding: 4px 0;">Dates:</td>
               <td style="color: #1a1a1a;">${escapeHtml(data.checkIn)} → ${escapeHtml(data.checkOut)} (${nights} nights)</td>
             </tr>
-            ${data.socialLink ? (() => {
-              const safeUrl = sanitizeUrl(data.socialLink)
-              return safeUrl ? `
+            ${
+              data.socialLink
+                ? (() => {
+                    const safeUrl = sanitizeUrl(data.socialLink);
+                    return safeUrl
+                      ? `
             <tr>
               <td style="color: #666; padding: 4px 0;">Social:</td>
               <td style="color: #1a1a1a;"><a href="${safeUrl}" target="_blank">${safeUrl}</a></td>
             </tr>
-            ` : `
+            `
+                      : `
             <tr>
               <td style="color: #666; padding: 4px 0;">Social:</td>
               <td style="color: #dc2626;">(Invalid URL provided)</td>
             </tr>
-            `
-            })() : ""}
+            `;
+                  })()
+                : ""
+            }
           </table>
         </div>
 
@@ -129,11 +148,15 @@ export async function POST(request: Request) {
             Click a button to send them a discount code. This will email them automatically.
           </p>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            ${approvalLinks.map((link) => `
+            ${approvalLinks
+              .map(
+                (link) => `
               <a href="${link.url}" style="display: inline-block; padding: 10px 16px; background: #1a1a1a; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500;">
                 ${link.discount}% Off
               </a>
-            `).join("")}
+            `,
+              )
+              .join("")}
           </div>
         </div>
 
@@ -148,24 +171,27 @@ export async function POST(request: Request) {
           Sent from Casa Vistas Seasonal Booking System
         </p>
       </div>
-    `
+    `;
 
     // Hardcoded email for now - INQUIRY_EMAIL env var has formatting issues
-    const toEmail = "jacob@reider.us"
-    console.log(`📧 Sending seasonal inquiry email to ${toEmail}...`)
+    const toEmail = "jacob@reider.us";
+    console.log(`📧 Sending seasonal inquiry email to ${toEmail}...`);
 
     const emailResult = await resend.emails.send({
       from: "Casa Vistas <noreply@salundo.com>",
       to: toEmail,
       subject: `🏠 Seasonal Request: ${escapeHtml(data.firstName)} ${escapeHtml(data.lastName)} | ${escapeHtml(data.checkIn)} → ${escapeHtml(data.checkOut)}`,
       html: emailHtml,
-    })
+    });
 
-    console.log(`✅ Seasonal inquiry email sent:`, emailResult)
+    console.log(`✅ Seasonal inquiry email sent:`, emailResult);
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("❌ Seasonal inquiry error:", error)
-    return NextResponse.json({ error: "Failed to submit inquiry" }, { status: 500 })
+    console.error("❌ Seasonal inquiry error:", error);
+    return NextResponse.json(
+      { error: "Failed to submit inquiry" },
+      { status: 500 },
+    );
   }
 }

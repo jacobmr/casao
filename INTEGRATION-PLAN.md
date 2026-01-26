@@ -14,6 +14,7 @@ This document consolidates the **Add-ons PRD** (Enhance Your Stay experiences pa
 ## 📊 Current State
 
 ### ✅ What's Already Built
+
 - Calendar with real-time availability
 - Per-day pricing display
 - Redis cache system (6 months of data)
@@ -24,6 +25,7 @@ This document consolidates the **Add-ons PRD** (Enhance Your Stay experiences pa
 - Handoff endpoint (`/api/handoff`) - EXISTS
 
 ### 🐛 Known Issues
+
 1. **Calendar pricing display bug** - Pricing works locally but not on production
 2. **Hero image loading** - Very slow initial load
 3. **Footer content** - Incorrect phone number, needs email/address update
@@ -35,21 +37,25 @@ This document consolidates the **Add-ons PRD** (Enhance Your Stay experiences pa
 We can weave together multiple improvements today by working in this order:
 
 ### **Priority 1: Fix Core Issues** (1-2 hours)
+
 1. ✅ Fix calendar pricing display bug
 2. ✅ Optimize hero image loading
 3. ✅ Update footer content
 
 ### **Priority 2: Enhance Booking Flow** (2-3 hours)
+
 4. ✅ Improve calendar UX (modal, visual indicators)
 5. ✅ Enhance branded checkout handoff page
 
 ### **Priority 3: Add-ons Integration** (3-4 hours)
+
 6. ✅ Design "Enhance Your Stay" page
 7. ✅ Implement tours & concierge services selection
 8. ✅ Add 5% discount logic for 2+ selections
 9. ✅ Integrate with booking flow
 
 ### **Priority 4: Planning** (1 hour)
+
 10. ✅ Document chatbot integration approach
 
 ---
@@ -62,10 +68,12 @@ We can weave together multiple improvements today by working in this order:
 **Solution:** Update warmup-cache to also populate monthly pricing cache
 
 **Files to modify:**
+
 - `/app/api/warmup-cache/route.js`
 - `/lib/cache-service.js` (if needed)
 
 **Steps:**
+
 ```javascript
 // In warmup-cache route:
 // 1. After caching availability, also fetch pricing
@@ -81,9 +89,11 @@ We can weave together multiple improvements today by working in this order:
 **Target:** < 1 second for hero image
 
 **Files to modify:**
+
 - `/components/hero-carousel.tsx`
 
 **Implementation:**
+
 ```typescript
 // Use Next.js Image component with:
 - priority={true} for first image
@@ -98,12 +108,14 @@ We can weave together multiple improvements today by working in this order:
 ### 3. Update Footer Content
 
 **Changes needed:**
+
 - ❌ Remove incorrect phone number
 - ✅ Update email: info@casavistas.net
 - ❌ Remove "Book Now" and "Contact Us" buttons
 - ✅ Update address: Brasilito, Costa Rica
 
 **File to modify:**
+
 - `/components/footer.tsx`
 
 ---
@@ -111,6 +123,7 @@ We can weave together multiple improvements today by working in this order:
 ### 4. Improve Calendar UX
 
 **Enhancements:**
+
 - Modal for availability (instead of pushing content down)
 - Smaller calendar size (optimized for modal)
 - Better visual indicators:
@@ -119,10 +132,12 @@ We can weave together multiple improvements today by working in this order:
   - Improved contrast and readability
 
 **Files to modify:**
+
 - `/components/availability-calendar.tsx`
 - `/components/booking-calendar.tsx` (if used)
 
 **Implementation:**
+
 ```typescript
 // Create modal wrapper
 // Adjust calendar size for modal view
@@ -138,10 +153,12 @@ We can weave together multiple improvements today by working in this order:
 **Enhancement:** Create beautiful interstitial page
 
 **Files to create/modify:**
+
 - `/app/checkout/handoff/page.tsx` (new)
 - `/app/api/handoff/route.js` (enhance)
 
 **Features:**
+
 ```typescript
 // Branded interstitial page with:
 - Casa O branding
@@ -153,8 +170,9 @@ We can weave together multiple improvements today by working in this order:
 ```
 
 **Flow:**
+
 ```
-Guest clicks "Book This!" 
+Guest clicks "Book This!"
   ↓
 POST /api/handoff (generate UUID, log event)
   ↓
@@ -172,6 +190,7 @@ Auto-redirect to Blue Zone Guesty (pre-filled)
 **New route:** `/app/enhance/page.tsx`
 
 **Layout:**
+
 ```
 ┌─────────────────────────────────────┐
 │  Enhance Your Stay                  │
@@ -197,6 +216,7 @@ Auto-redirect to Blue Zone Guesty (pre-filled)
 ```
 
 **UI/UX Features:**
+
 - Long-scroll layout (like "buy a book" landing pages)
 - Large, tappable checkboxes
 - Icons/thumbnails for each item
@@ -214,24 +234,24 @@ Auto-redirect to Blue Zone Guesty (pre-filled)
 ```typescript
 export const tours = [
   {
-    id: 'atv-tour',
-    name: 'ATV Tour',
-    summary: 'Off-road adventure through forests and beaches',
-    duration: '~2 hours',
-    inclusions: ['ATV rental', 'guide', 'water'],
-    icon: '🏍️',
-    category: 'adventure'
+    id: "atv-tour",
+    name: "ATV Tour",
+    summary: "Off-road adventure through forests and beaches",
+    duration: "~2 hours",
+    inclusions: ["ATV rental", "guide", "water"],
+    icon: "🏍️",
+    category: "adventure",
   },
   // ... 15 more tours
 ];
 
 export const conciergeServices = [
   {
-    id: 'airport-transfer',
-    name: 'Airport Transfers',
-    summary: 'Hassle-free pickup from Liberia or Tamarindo',
-    icon: '✈️',
-    category: 'transportation'
+    id: "airport-transfer",
+    name: "Airport Transfers",
+    summary: "Hassle-free pickup from Liberia or Tamarindo",
+    icon: "✈️",
+    category: "transportation",
   },
   // ... 12 more services
 ];
@@ -242,15 +262,17 @@ export const conciergeServices = [
 ### 8. Add 5% Discount Logic
 
 **Files to create:**
+
 - `/lib/discount-calculator.ts`
 - `/app/api/apply-discount/route.js`
 
 **Logic:**
+
 ```typescript
 // discount-calculator.ts
 export function calculateDiscount(
   selectedExperiences: string[],
-  lodgingTotal: number
+  lodgingTotal: number,
 ): {
   discountApplies: boolean;
   discountAmount: number;
@@ -259,12 +281,13 @@ export function calculateDiscount(
   const discountApplies = selectedExperiences.length >= 2;
   const discountAmount = discountApplies ? lodgingTotal * 0.05 : 0;
   const newTotal = lodgingTotal - discountAmount;
-  
+
   return { discountApplies, discountAmount, newTotal };
 }
 ```
 
 **Integration:**
+
 - Store selections in session/state
 - Pass to checkout handoff
 - Display in booking summary
@@ -275,6 +298,7 @@ export function calculateDiscount(
 ### 9. Integrate with Booking Flow
 
 **Updated Flow:**
+
 ```
 1. Guest selects dates on calendar
    ↓
@@ -299,12 +323,14 @@ export function calculateDiscount(
 ```
 
 **Files to modify:**
+
 - `/components/availability-calendar.tsx` - Update "Book This!" button
 - `/app/enhance/page.tsx` - New experiences page
 - `/app/api/handoff/route.js` - Accept experiences data
 - `/app/checkout/handoff/page.tsx` - Display selections
 
 **Data Flow:**
+
 ```typescript
 // Store in session or URL params
 interface BookingData {
@@ -325,6 +351,7 @@ interface BookingData {
 **Approach:** Integrate chatbot with experiences page
 
 **Key Integration Points:**
+
 1. **On Enhance Page:**
    - "Need help choosing?" button
    - Opens chatbot with context about tours/services
@@ -340,12 +367,14 @@ interface BookingData {
    - Aware of booking dates
 
 **Technical Stack:**
+
 - Vercel AI SDK + React
 - OpenAI GPT-4 or Anthropic Claude
 - Redis for conversation history
 - Email notifications (Resend/SendGrid)
 
 **Future Phase 3 Implementation:**
+
 ```typescript
 // components/concierge-chat.tsx
 - Floating chat button
@@ -360,6 +389,7 @@ interface BookingData {
 ## 🔄 Implementation Order (Today)
 
 ### **Morning Session (3-4 hours)**
+
 1. ✅ Fix calendar pricing bug (30 min)
 2. ✅ Optimize hero image loading (30 min)
 3. ✅ Update footer content (15 min)
@@ -367,6 +397,7 @@ interface BookingData {
 5. ✅ Test and verify fixes (30 min)
 
 ### **Afternoon Session (4-5 hours)**
+
 6. ✅ Create experiences data file (30 min)
 7. ✅ Build "Enhance Your Stay" page UI (2 hours)
 8. ✅ Implement discount logic (45 min)
@@ -375,6 +406,7 @@ interface BookingData {
 11. ✅ Test end-to-end flow (30 min)
 
 ### **Evening Session (1-2 hours)**
+
 12. ✅ Document chatbot integration approach (30 min)
 13. ✅ Update ROADMAP.md with progress (15 min)
 14. ✅ Deploy to production (30 min)
@@ -385,6 +417,7 @@ interface BookingData {
 ## 📦 Deliverables
 
 ### Code Files
+
 - [x] `/app/api/warmup-cache/route.js` - Fixed pricing cache
 - [x] `/components/hero-carousel.tsx` - Optimized images
 - [x] `/components/footer.tsx` - Updated content
@@ -397,6 +430,7 @@ interface BookingData {
 - [ ] `/components/concierge-chat.tsx` - Chatbot (Phase 3)
 
 ### Documentation
+
 - [ ] This integration plan
 - [ ] Updated ROADMAP.md
 - [ ] Chatbot implementation guide
@@ -406,6 +440,7 @@ interface BookingData {
 ## 🎨 Design Considerations
 
 ### Enhance Your Stay Page
+
 - **Visual Style:** Clean, modern, trust-building
 - **Color Scheme:** Match Casa O branding
 - **Typography:** Clear hierarchy, readable on mobile
@@ -413,6 +448,7 @@ interface BookingData {
 - **Images:** Optional thumbnails for tours (future enhancement)
 
 ### Discount Banner
+
 ```
 ┌─────────────────────────────────────┐
 │  🎉 You've selected 2 experiences!  │
@@ -421,6 +457,7 @@ interface BookingData {
 ```
 
 ### Handoff Page
+
 ```
 ┌─────────────────────────────────────┐
 │        🏡 Casa O                     │
@@ -444,6 +481,7 @@ interface BookingData {
 ## 🧪 Testing Checklist
 
 ### Calendar Fixes
+
 - [ ] Pricing displays correctly on production
 - [ ] Hero image loads in < 1 second
 - [ ] Footer shows correct contact info
@@ -451,6 +489,7 @@ interface BookingData {
 - [ ] Visual indicators are clear
 
 ### Enhance Your Stay
+
 - [ ] All 16 tours display correctly
 - [ ] All 13 services display correctly
 - [ ] Checkboxes work on mobile
@@ -459,6 +498,7 @@ interface BookingData {
 - [ ] Selections persist through flow
 
 ### Booking Flow
+
 - [ ] Calendar → Enhance page works
 - [ ] Enhance → Handoff works
 - [ ] Handoff → Blue Zone works
@@ -466,6 +506,7 @@ interface BookingData {
 - [ ] Discount applies in summary
 
 ### Responsive Design
+
 - [ ] Mobile (375px width)
 - [ ] Tablet (768px width)
 - [ ] Desktop (1440px width)
@@ -475,18 +516,21 @@ interface BookingData {
 ## 📊 Success Metrics
 
 ### Immediate (Today)
+
 - ✅ All bugs fixed
 - ✅ Enhance page deployed
 - ✅ Booking flow integrated
 - ✅ 5% discount working
 
 ### Short-term (This Week)
+
 - 📈 Track experience selection rate
 - 📈 Monitor average selections per booking
 - 📈 Measure discount redemption rate
 - 📈 Collect user feedback
 
 ### Long-term (Phase 3)
+
 - 🤖 Chatbot integration
 - 📧 Email notifications
 - 📊 Analytics dashboard
@@ -497,12 +541,14 @@ interface BookingData {
 ## 🚀 Deployment Strategy
 
 ### Staging
+
 1. Deploy to Vercel preview branch
 2. Test all features
 3. Verify pricing calculations
 4. Check mobile responsiveness
 
 ### Production
+
 1. Merge to main branch
 2. Vercel auto-deploys
 3. Verify on casavistas.net
@@ -514,18 +560,21 @@ interface BookingData {
 ## 💡 Future Enhancements
 
 ### Phase 3 (Next Week)
+
 - AI Concierge Chatbot
 - Smart recommendations
 - Email summaries
 - Vendor database
 
 ### Phase 4 (Future)
+
 - Full white-label booking (when GuestyPay available)
 - Pricing display for experiences
 - Payment collection for add-ons
 - Guest portal
 
 ### Nice-to-Have
+
 - Photo gallery for tours
 - Reviews/testimonials
 - Virtual tours
@@ -537,18 +586,21 @@ interface BookingData {
 ## 📝 Notes
 
 ### Key Decisions
+
 1. **Add-ons are interest capture only** - No payment processing yet
 2. **5% discount applies to lodging only** - Not to experiences
 3. **Blue Zone handles final payment** - We just pass selections
 4. **UUID tracking** - For analytics and follow-up
 
 ### Dependencies
+
 - ✅ Redis cache (already set up)
 - ✅ Guesty API (already integrated)
 - ✅ Vercel deployment (already configured)
 - ⏳ GuestyPay credentials (future - for full white-label)
 
 ### Risks & Mitigations
+
 - **Risk:** Discount logic errors
   - **Mitigation:** Thorough testing, clear calculations
 - **Risk:** Mobile UX issues
@@ -561,12 +613,14 @@ interface BookingData {
 ## 🤝 Collaboration Points
 
 ### With Property Manager (Blue Zone)
+
 - Confirm experience list is complete
 - Verify discount policy (5% on lodging)
 - Coordinate on follow-up process for selections
 - Share UUID tracking data
 
 ### With Guests
+
 - Clear communication about "interest capture"
 - Set expectations on pricing/availability confirmation
 - Provide excellent concierge follow-up
@@ -576,6 +630,7 @@ interface BookingData {
 ## ✅ Definition of Done
 
 Today's work is complete when:
+
 - [x] All Phase 2 bugs are fixed
 - [ ] Enhance Your Stay page is live
 - [ ] 5% discount logic works correctly

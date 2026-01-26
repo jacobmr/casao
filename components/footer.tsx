@@ -1,5 +1,5 @@
-import { Mail, MapPin, Instagram, Facebook } from "lucide-react"
-import Link from "next/link"
+import { Mail, MapPin, Instagram, Facebook } from "lucide-react";
+import Link from "next/link";
 
 export function Footer() {
   return (
@@ -9,7 +9,10 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Brand column */}
           <div className="lg:col-span-2">
-            <Link href="/" className="font-serif text-3xl font-light text-background mb-6 block">
+            <Link
+              href="/"
+              className="font-serif text-3xl font-light text-background mb-6 block"
+            >
               Casa <span className="italic">Vistas</span>
             </Link>
             <p className="text-background/70 leading-relaxed max-w-md mb-6">
@@ -107,7 +110,8 @@ export function Footer() {
                 <div className="flex items-start gap-3 text-background/70">
                   <MapPin className="w-4 h-4 flex-shrink-0 mt-1" />
                   <span>
-                    Mar Vista Community<br />
+                    Mar Vista Community
+                    <br />
                     Brasilito, Costa Rica
                   </span>
                 </div>
@@ -129,5 +133,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

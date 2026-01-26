@@ -1,15 +1,20 @@
-"use client"
+"use client";
 
-import { ReactNode } from "react"
+import { ReactNode } from "react";
 
 interface CategorySectionProps {
-  icon: string
-  title: string
-  description: string
-  children: ReactNode
+  icon: string;
+  title: string;
+  description: string;
+  children: ReactNode;
 }
 
-export function CategorySection({ icon, title, description, children }: CategorySectionProps) {
+export function CategorySection({
+  icon,
+  title,
+  description,
+  children,
+}: CategorySectionProps) {
   return (
     <section className="mb-16">
       <div className="text-center mb-8">
@@ -21,10 +26,10 @@ export function CategorySection({ icon, title, description, children }: Category
           {description}
         </p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {children}
       </div>
     </section>
-  )
+  );
 }

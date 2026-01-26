@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
-import { deleteBooking } from '@/lib/google-calendar'
+import { NextResponse } from "next/server";
+import { deleteBooking } from "@/lib/google-calendar";
 
 /**
  * POST /api/family/admin/reject/[id]
@@ -7,25 +7,25 @@ import { deleteBooking } from '@/lib/google-calendar'
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = await params
+    const { id } = await params;
 
     // Delete the event from Google Calendar
-    await deleteBooking(id)
+    await deleteBooking(id);
 
-    console.log(`❌ Rejected family booking ${id}`)
+    console.log(`❌ Rejected family booking ${id}`);
 
     return NextResponse.json({
       success: true,
-      message: 'Booking rejected and removed'
-    })
+      message: "Booking rejected and removed",
+    });
   } catch (error) {
-    console.error('Error rejecting booking:', error)
+    console.error("Error rejecting booking:", error);
     return NextResponse.json(
-      { error: 'Failed to reject booking' },
-      { status: 500 }
-    )
+      { error: "Failed to reject booking" },
+      { status: 500 },
+    );
   }
 }

@@ -11,6 +11,7 @@
 **NEW THINKING:** Sell complete vacation packages → Lodging + Experiences = Unforgettable Stay
 
 ### Why This Matters
+
 - **Differentiation:** Every property has beds. Not every property curates world-class experiences.
 - **Higher perceived value:** $2000 lodging feels expensive. $2000 for lodging + ATV + zip-line + private chef feels like a steal.
 - **Emotional connection:** People book vacations for memories, not mattresses.
@@ -21,6 +22,7 @@
 ## 📐 Complete User Journey
 
 ### **Phase 1: Discovery (Homepage)**
+
 ```
 Hero Section
   ↓
@@ -38,6 +40,7 @@ Property Details
 ---
 
 ### **Phase 2: Exploration (/experiences page)**
+
 ```
 Stunning hero image of adventure
   ↓
@@ -62,6 +65,7 @@ Each with:
 ---
 
 ### **Phase 3: Booking Intent (Calendar Modal)**
+
 ```
 Click "Check Availability" from anywhere
   ↓
@@ -77,6 +81,7 @@ Select dates
 ---
 
 ### **Phase 4: Enhancement (/enhance page)**
+
 ```
 "Enhance Your Stay - Select Your Experiences"
   ↓
@@ -93,6 +98,7 @@ Sticky "Continue to Checkout" button
 ---
 
 ### **Phase 5: Checkout (Handoff)**
+
 ```
 Branded handoff page shows:
   - Dates & property
@@ -112,6 +118,7 @@ Redirect to Blue Zone Guesty
 ### Public Experiences Page (/experiences)
 
 **Layout:**
+
 ```
 ┌─────────────────────────────────────────┐
 │  Hero Image (Full width, 60vh)          │
@@ -148,6 +155,7 @@ Redirect to Blue Zone Guesty
 ```
 
 **Card Design:**
+
 ```
 ┌─────────────────────┐
 │                     │
@@ -173,6 +181,7 @@ Redirect to Blue Zone Guesty
 ### In-Booking Enhancement Page (/enhance)
 
 **Layout:**
+
 ```
 ┌─────────────────────────────────────────┐
 │  Enhance Your Stay                      │
@@ -200,6 +209,7 @@ Redirect to Blue Zone Guesty
 ```
 
 **Compact List Item:**
+
 ```
 ☐ ATV Tour
   Off-road adventure through forests and beaches
@@ -211,6 +221,7 @@ Redirect to Blue Zone Guesty
 ## 🏗️ Technical Architecture
 
 ### File Structure
+
 ```
 /app/
   /experiences/
@@ -218,18 +229,18 @@ Redirect to Blue Zone Guesty
     layout.tsx            # Experiences-specific layout
   /enhance/
     page.tsx              # In-booking selection page
-  
+
 /components/
   /experiences/
     experience-card.tsx   # Card for public page
     experience-list-item.tsx  # Checkbox item for enhance page
     category-section.tsx  # Reusable category container
     discount-banner.tsx   # 5% discount notification
-    
+
 /lib/
   experiences-data.ts     # Single source of truth for all experiences
   discount-calculator.ts  # Calculate 5% discount logic
-  
+
 /public/
   /images/
     /experiences/
@@ -246,63 +257,74 @@ Redirect to Blue Zone Guesty
 // lib/experiences-data.ts
 
 export interface Experience {
-  id: string
-  name: string
-  category: 'adventure' | 'water' | 'nature' | 'wellness' | 'concierge'
-  shortDescription: string
-  fullDescription: string
-  duration?: string
-  inclusions: string[]
-  highlights: string[]
-  icon: string
-  image?: string
-  seasonal?: boolean
-  seasonalNote?: string
+  id: string;
+  name: string;
+  category: "adventure" | "water" | "nature" | "wellness" | "concierge";
+  shortDescription: string;
+  fullDescription: string;
+  duration?: string;
+  inclusions: string[];
+  highlights: string[];
+  icon: string;
+  image?: string;
+  seasonal?: boolean;
+  seasonalNote?: string;
 }
 
 export const experiences: Experience[] = [
   {
-    id: 'atv-tour',
-    name: 'ATV Tour',
-    category: 'adventure',
-    shortDescription: 'Off-road adventure through forests and beaches',
-    fullDescription: 'Experience the thrill of riding through Costa Rica\'s diverse terrain. Navigate forest trails, cross rivers, and cruise along pristine beaches on your own ATV with an expert guide leading the way.',
-    duration: '~2 hours',
-    inclusions: ['ATV rental', 'Professional guide', 'Safety equipment', 'Water'],
-    highlights: ['Beach riding', 'Forest trails', 'River crossings', 'Scenic viewpoints'],
-    icon: '🏍️',
-    image: '/images/experiences/atv-tour.jpg'
+    id: "atv-tour",
+    name: "ATV Tour",
+    category: "adventure",
+    shortDescription: "Off-road adventure through forests and beaches",
+    fullDescription:
+      "Experience the thrill of riding through Costa Rica's diverse terrain. Navigate forest trails, cross rivers, and cruise along pristine beaches on your own ATV with an expert guide leading the way.",
+    duration: "~2 hours",
+    inclusions: [
+      "ATV rental",
+      "Professional guide",
+      "Safety equipment",
+      "Water",
+    ],
+    highlights: [
+      "Beach riding",
+      "Forest trails",
+      "River crossings",
+      "Scenic viewpoints",
+    ],
+    icon: "🏍️",
+    image: "/images/experiences/atv-tour.jpg",
   },
   // ... 28 more experiences
-]
+];
 
 export const categories = {
   adventure: {
-    name: 'Adventures',
-    icon: '🏄',
-    description: 'Thrilling activities for adrenaline seekers'
+    name: "Adventures",
+    icon: "🏄",
+    description: "Thrilling activities for adrenaline seekers",
   },
   water: {
-    name: 'Water Activities',
-    icon: '🌊',
-    description: 'Dive, fish, and surf in the Pacific'
+    name: "Water Activities",
+    icon: "🌊",
+    description: "Dive, fish, and surf in the Pacific",
   },
   nature: {
-    name: 'Nature Tours',
-    icon: '🌿',
-    description: 'Explore Costa Rica\'s incredible biodiversity'
+    name: "Nature Tours",
+    icon: "🌿",
+    description: "Explore Costa Rica's incredible biodiversity",
   },
   wellness: {
-    name: 'Wellness & Relaxation',
-    icon: '💆',
-    description: 'Rejuvenate your body and mind'
+    name: "Wellness & Relaxation",
+    icon: "💆",
+    description: "Rejuvenate your body and mind",
   },
   concierge: {
-    name: 'Concierge Services',
-    icon: '🍽️',
-    description: 'Personalized services for a seamless stay'
-  }
-}
+    name: "Concierge Services",
+    icon: "🍽️",
+    description: "Personalized services for a seamless stay",
+  },
+};
 ```
 
 ---
@@ -324,7 +346,7 @@ export function ExperienceCard({ experience, onBookClick }: ExperienceCardProps)
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       {/* Image */}
       <div className="relative h-48 w-full">
-        <Image 
+        <Image
           src={experience.image || '/images/placeholder.jpg'}
           alt={experience.name}
           fill
@@ -334,25 +356,25 @@ export function ExperienceCard({ experience, onBookClick }: ExperienceCardProps)
           <Badge className="absolute top-2 right-2">Seasonal</Badge>
         )}
       </div>
-      
+
       {/* Content */}
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-2xl">{experience.icon}</span>
           <h3 className="font-semibold text-lg">{experience.name}</h3>
         </div>
-        
+
         <p className="text-muted-foreground text-sm mb-3">
           {experience.shortDescription}
         </p>
-        
+
         {experience.duration && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <Clock className="h-4 w-4" />
             {experience.duration}
           </div>
         )}
-        
+
         <div className="space-y-1 mb-4">
           {experience.inclusions.slice(0, 3).map((item, i) => (
             <div key={i} className="flex items-center gap-2 text-sm">
@@ -361,10 +383,10 @@ export function ExperienceCard({ experience, onBookClick }: ExperienceCardProps)
             </div>
           ))}
         </div>
-        
-        <Button 
-          onClick={onBookClick} 
-          variant="outline" 
+
+        <Button
+          onClick={onBookClick}
+          variant="outline"
           className="w-full"
         >
           Book Your Stay
@@ -388,17 +410,17 @@ interface ExperienceListItemProps {
   onToggle: (id: string) => void
 }
 
-export function ExperienceListItem({ 
-  experience, 
-  selected, 
-  onToggle 
+export function ExperienceListItem({
+  experience,
+  selected,
+  onToggle
 }: ExperienceListItemProps) {
   return (
-    <div 
+    <div
       className={cn(
         "flex items-start gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer",
-        selected 
-          ? "border-primary bg-primary/5" 
+        selected
+          ? "border-primary bg-primary/5"
           : "border-border hover:border-primary/50"
       )}
       onClick={() => onToggle(experience.id)}
@@ -407,25 +429,25 @@ export function ExperienceListItem({
       <div className="flex-shrink-0 mt-1">
         <div className={cn(
           "h-5 w-5 rounded border-2 flex items-center justify-center",
-          selected 
-            ? "bg-primary border-primary" 
+          selected
+            ? "bg-primary border-primary"
             : "border-muted-foreground"
         )}>
           {selected && <Check className="h-3 w-3 text-white" />}
         </div>
       </div>
-      
+
       {/* Content */}
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xl">{experience.icon}</span>
           <h4 className="font-semibold">{experience.name}</h4>
         </div>
-        
+
         <p className="text-sm text-muted-foreground mb-2">
           {experience.shortDescription}
         </p>
-        
+
         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
           {experience.duration && (
             <span className="flex items-center gap-1">
@@ -461,7 +483,7 @@ interface DiscountBannerProps {
 export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerProps) {
   const discountApplies = selectedCount >= 2
   const discountAmount = discountApplies ? lodgingTotal * 0.05 : 0
-  
+
   if (selectedCount === 0) {
     return (
       <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
@@ -479,7 +501,7 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
       </div>
     )
   }
-  
+
   if (selectedCount === 1) {
     return (
       <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
@@ -497,7 +519,7 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
       </div>
     )
   }
-  
+
   return (
     <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
       <div className="flex items-center gap-3">
@@ -521,6 +543,7 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
 ## 🔄 Updated User Flows
 
 ### Flow A: Discovery → Experiences → Booking
+
 ```
 1. Land on homepage
 2. See "Featured Experiences" teaser
@@ -540,6 +563,7 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
 ```
 
 ### Flow B: Direct Booking → Discover Experiences
+
 ```
 1. Land on homepage
 2. Click "Check Availability"
@@ -554,6 +578,7 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
 ```
 
 ### Flow C: Navigation → Experiences
+
 ```
 1. Click "Experiences" in main nav
 2. Browse /experiences page
@@ -567,12 +592,14 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
 ## 📱 Mobile Optimization
 
 ### Public Experiences Page
+
 - **Hero:** 50vh on mobile (not 60vh)
 - **Cards:** Single column on mobile, 2 cols on tablet, 3-4 cols on desktop
 - **Images:** Lazy load after first 3
 - **Sticky CTA:** "Book Your Stay" button floats at bottom
 
 ### Enhance Page
+
 - **Banner:** Collapsible on mobile after first view
 - **List items:** Full width, larger tap targets
 - **Sticky footer:** Shows selected count + "Continue" button
@@ -582,12 +609,14 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
 ## 🎨 Visual Design Guidelines
 
 ### Photography
+
 - **High quality:** Professional photos only
 - **Action shots:** People enjoying experiences (with permission)
 - **Diverse:** Show different ages, groups, solo travelers
 - **Authentic:** Real Costa Rica, not stock photos
 
 ### Color Psychology
+
 - **Green:** Nature, wellness, available
 - **Blue:** Water activities, trust, calm
 - **Orange:** Adventure, energy, excitement
@@ -595,6 +624,7 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
 - **Gold:** Premium, concierge services
 
 ### Typography
+
 - **Headings:** Font-serif (elegant, vacation feel)
 - **Body:** Sans-serif (readable, modern)
 - **CTAs:** Bold, high contrast
@@ -604,18 +634,21 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
 ## 📊 Success Metrics
 
 ### Public Experiences Page
+
 - **Page views:** Track visits to /experiences
 - **Time on page:** Measure engagement
 - **CTA clicks:** "Book Your Stay" conversion rate
 - **Scroll depth:** How far users scroll
 
 ### Enhance Page
+
 - **Selection rate:** % who select at least 1 experience
 - **Average selections:** Mean number of items selected
 - **Discount redemption:** % who select 2+ (get discount)
 - **Completion rate:** % who continue to checkout
 
 ### Overall
+
 - **Booking conversion:** Compare before/after experiences launch
 - **Average booking value:** Lodging + perceived experience value
 - **Guest satisfaction:** Post-stay survey about experience interest
@@ -625,24 +658,28 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
 ## 🚀 Implementation Phases
 
 ### Phase 1: Foundation (Today)
+
 - [x] Create experiences data structure
 - [ ] Build public /experiences page
 - [ ] Add "Experiences" to navigation
 - [ ] Create homepage teaser section
 
 ### Phase 2: Booking Integration (Today)
+
 - [ ] Build /enhance page with checkboxes
 - [ ] Implement discount logic
 - [ ] Update calendar "Book This!" to go to /enhance
 - [ ] Update handoff to include selections
 
 ### Phase 3: Polish (Tomorrow)
+
 - [ ] Add experience images
 - [ ] Implement lazy loading
 - [ ] Add animations/transitions
 - [ ] Mobile testing & optimization
 
 ### Phase 4: Enhancement (Next Week)
+
 - [ ] Add testimonials/reviews
 - [ ] Implement filtering (by category, duration)
 - [ ] Add "Recommended packages" (pre-selected bundles)
@@ -653,24 +690,26 @@ export function DiscountBanner({ selectedCount, lodgingTotal }: DiscountBannerPr
 ## 💡 Future Enhancements
 
 ### Smart Recommendations
+
 ```typescript
 // Based on booking dates, suggest seasonal experiences
-if (bookingMonth === 'July' || bookingMonth === 'August') {
-  highlight('turtle-tours') // Nesting season
+if (bookingMonth === "July" || bookingMonth === "August") {
+  highlight("turtle-tours"); // Nesting season
 }
 
 // Based on group size
 if (guests >= 6) {
-  highlight('private-chef', 'beach-rentals')
+  highlight("private-chef", "beach-rentals");
 }
 
 // Based on stay duration
 if (nights >= 7) {
-  suggest('multi-day-packages')
+  suggest("multi-day-packages");
 }
 ```
 
 ### Package Deals
+
 ```
 "Adventure Seeker Package"
   ✓ ATV Tour
@@ -686,6 +725,7 @@ if (nights >= 7) {
 ```
 
 ### Social Proof
+
 ```
 ⭐⭐⭐⭐⭐ "The ATV tour was incredible!"
 - Sarah M., Feb 2025
@@ -699,6 +739,7 @@ if (nights >= 7) {
 ## ✅ Definition of Done
 
 ### Public Experiences Page
+
 - [ ] All 29 experiences displayed
 - [ ] Categorized and filterable
 - [ ] Beautiful imagery
@@ -708,6 +749,7 @@ if (nights >= 7) {
 - [ ] "Book Your Stay" CTAs work
 
 ### Enhance Page
+
 - [ ] All experiences with checkboxes
 - [ ] Discount banner works
 - [ ] Selection state persists
@@ -716,6 +758,7 @@ if (nights >= 7) {
 - [ ] Accessible (keyboard nav, screen readers)
 
 ### Integration
+
 - [ ] Navigation includes "Experiences"
 - [ ] Homepage teaser section
 - [ ] Calendar → Enhance flow works

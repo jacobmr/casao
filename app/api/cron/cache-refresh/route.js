@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 /**
  * Vercel Cron Job - Cache Refresh
@@ -7,51 +7,50 @@ import { NextResponse } from 'next/server';
  */
 export async function GET(request) {
   // Verify this is actually a cron request from Vercel
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  console.log('🕐 Cron job started: Cache refresh');
-  
+  console.log("🕐 Cron job started: Cache refresh");
+
   try {
-    const baseUrl = process.env.VERCEL_URL 
+    const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
-    
+      : "http://localhost:3000";
+
     // Call the warmup endpoint
     const response = await fetch(`${baseUrl}/api/warmup-cache`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
-    
+
     if (!response.ok) {
       throw new Error(`Warmup failed: ${response.status}`);
     }
-    
+
     const result = await response.json();
-    
-    console.log('✅ Cron job completed successfully');
-    console.log('Results:', result);
-    
+
+    console.log("✅ Cron job completed successfully");
+    console.log("Results:", result);
+
     return NextResponse.json({
       success: true,
-      message: 'Cache refresh completed',
+      message: "Cache refresh completed",
       timestamp: new Date().toISOString(),
-      results: result
+      results: result,
     });
-    
   } catch (error) {
-    console.error('❌ Cron job failed:', error);
+    console.error("❌ Cron job failed:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

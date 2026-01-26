@@ -1,10 +1,11 @@
-import Link from "next/link"
-import { ArrowRight, Calendar, Sun, Waves, Users } from "lucide-react"
+import Link from "next/link";
+import { ArrowRight, Calendar, Sun, Waves, Users } from "lucide-react";
 
 export const metadata = {
   title: "Friends & Family Opportunity | Casa Vistas",
-  description: "A rare opportunity to stay at Casa Vistas this high season at a special rate.",
-}
+  description:
+    "A rare opportunity to stay at Casa Vistas this high season at a special rate.",
+};
 
 export default function FriendsPage() {
   return (
@@ -24,7 +25,8 @@ export default function FriendsPage() {
             December 2025
           </p>
           <h1 className="font-mono text-3xl md:text-4xl lg:text-5xl text-neutral-800 leading-tight mb-6">
-            A note to friends<br />
+            A note to friends
+            <br />
             <span className="text-neutral-500">&amp; family</span>
           </h1>
           <div className="w-24 h-px bg-neutral-300" />
@@ -35,27 +37,28 @@ export default function FriendsPage() {
           <p>Hey there —</p>
 
           <p>
-            If you're seeing this page, you're friends or family (or you know someone who is).
+            If you're seeing this page, you're friends or family (or you know
+            someone who is).
           </p>
 
           <p>
             We've had our Costa Rica 3 bedroom home (and 2 bedroom casita)
-            blocked for this high season — but plans have changed, and
-            we've opened up the calendar.
+            blocked for this high season — but plans have changed, and we've
+            opened up the calendar.
           </p>
 
           <p>
             <strong className="text-neutral-900">
               Our scheduling error is your gain.
             </strong>{" "}
-            There's quite a bit of availability from now through early March
-            at our place, during what's typically the most sought-after
-            (and most expensive) time of year.
+            There's quite a bit of availability from now through early March at
+            our place, during what's typically the most sought-after (and most
+            expensive) time of year.
           </p>
 
           <p>
-            Because this is last-minute, and because you found this page,
-            we can offer something we couldn't offer elsewhere:
+            Because this is last-minute, and because you found this page, we can
+            offer something we couldn't offer elsewhere:
           </p>
 
           {/* Special offer box */}
@@ -73,9 +76,9 @@ export default function FriendsPage() {
 
           <p>
             The property sleeps 11 across 5 bedrooms (Casa + Casita), has a
-            stunning infinity pool overlooking the Pacific, and sits in a
-            gated community just 1.5 miles from Flamingo Beach, 1 mile from
-            Brasilito Beach and Playa Conchal.
+            stunning infinity pool overlooking the Pacific, and sits in a gated
+            community just 1.5 miles from Flamingo Beach, 1 mile from Brasilito
+            Beach and Playa Conchal.
           </p>
 
           <p>Here's what you're looking at:</p>
@@ -118,9 +121,9 @@ export default function FriendsPage() {
               For Transparency
             </p>
             <p className="text-sm text-neutral-600 mb-4">
-              You can find this same property on the major booking sites —
-              but at full price. I'm including these links so you can see
-              the reviews and compare:
+              You can find this same property on the major booking sites — but
+              at full price. I'm including these links so you can see the
+              reviews and compare:
             </p>
             <div className="flex flex-wrap gap-3">
               <a
@@ -129,7 +132,9 @@ export default function FriendsPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-xs font-mono text-neutral-500 hover:text-neutral-800 transition-colors"
               >
-                <span className="w-4 h-4 rounded bg-[#FF5A5F] flex items-center justify-center text-white text-[10px] font-bold">A</span>
+                <span className="w-4 h-4 rounded bg-[#FF5A5F] flex items-center justify-center text-white text-[10px] font-bold">
+                  A
+                </span>
                 Airbnb Listing →
               </a>
               <a
@@ -138,14 +143,17 @@ export default function FriendsPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-xs font-mono text-neutral-500 hover:text-neutral-800 transition-colors"
               >
-                <span className="w-4 h-4 rounded bg-[#3B5998] flex items-center justify-center text-white text-[10px] font-bold">V</span>
+                <span className="w-4 h-4 rounded bg-[#3B5998] flex items-center justify-center text-white text-[10px] font-bold">
+                  V
+                </span>
                 VRBO Listing →
               </a>
             </div>
           </div>
 
           <p className="pt-4">
-            Pura vida,<br />
+            Pura vida,
+            <br />
             <span className="text-neutral-500">— Jacob & Alicia</span>
           </p>
         </article>
@@ -169,7 +177,8 @@ export default function FriendsPage() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <p className="font-mono text-xs text-neutral-500">
-              Off-season: $143/night direct booking<br />
+              Off-season: $143/night direct booking
+              <br />
               High-season: 30% discount via checkout
             </p>
           </div>
@@ -180,11 +189,11 @@ export default function FriendsPage() {
           <p className="font-mono text-xs text-neutral-400 leading-relaxed">
             This page is for friends and family only. Please don't share
             publicly — the special rate is not available through our regular
-            booking channels. If you know someone who'd be interested, feel
-            free to forward this directly to them.
+            booking channels. If you know someone who'd be interested, feel free
+            to forward this directly to them.
           </p>
         </footer>
       </div>
     </div>
-  )
+  );
 }

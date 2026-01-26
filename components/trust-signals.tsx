@@ -1,4 +1,4 @@
-import { Star, Shield, Award, Heart, Quote } from "lucide-react"
+import { Star, Shield, Award, Heart, Quote } from "lucide-react";
 
 const trustItems = [
   {
@@ -25,7 +25,7 @@ const trustItems = [
     label: "Return Rate",
     detail: "Guests rebook",
   },
-]
+];
 
 const testimonials = [
   {
@@ -42,7 +42,7 @@ const testimonials = [
     location: "New York, NY",
     rating: 5,
   },
-]
+];
 
 export function TrustSignals() {
   return (
@@ -91,7 +91,10 @@ export function TrustSignals() {
             >
               {/* Quote icon */}
               <div className="absolute -top-4 left-8 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                <Quote className="w-4 h-4 text-secondary-foreground" fill="currentColor" />
+                <Quote
+                  className="w-4 h-4 text-secondary-foreground"
+                  fill="currentColor"
+                />
               </div>
 
               {/* Stars */}
@@ -115,7 +118,8 @@ export function TrustSignals() {
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-primary text-sm font-medium">
                     {testimonial.author.split(" ")[0][0]}
-                    {testimonial.author.split(" ")[2]?.[0] || testimonial.author.split(" ")[1][0]}
+                    {testimonial.author.split(" ")[2]?.[0] ||
+                      testimonial.author.split(" ")[1][0]}
                   </span>
                 </div>
                 <div>
@@ -148,11 +152,15 @@ export function TrustSignals() {
               stroke="currentColor"
               strokeWidth={2}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
             </svg>
           </a>
         </div>
       </div>
     </section>
-  )
+  );
 }

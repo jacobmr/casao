@@ -11,7 +11,7 @@ import {
   Sparkles,
   Shield,
   Baby,
-} from "lucide-react"
+} from "lucide-react";
 
 const amenities = [
   {
@@ -86,11 +86,11 @@ const amenities = [
     description: "Tennis & pickleball nearby",
     featured: false,
   },
-]
+];
 
 export function AmenitiesGrid() {
-  const featuredAmenities = amenities.filter((a) => a.featured)
-  const otherAmenities = amenities.filter((a) => !a.featured)
+  const featuredAmenities = amenities.filter((a) => a.featured);
+  const otherAmenities = amenities.filter((a) => !a.featured);
 
   return (
     <section className="py-24 md:py-32 bg-background" id="amenities">
@@ -101,12 +101,12 @@ export function AmenitiesGrid() {
             Amenities
           </p>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-light text-foreground mb-6">
-            Everything you need for the{" "}
-            <span className="italic">perfect</span> escape
+            Everything you need for the <span className="italic">perfect</span>{" "}
+            escape
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            From morning yoga overlooking the ocean to evening cocktails by the infinity pool,
-            every detail has been considered.
+            From morning yoga overlooking the ocean to evening cocktails by the
+            infinity pool, every detail has been considered.
           </p>
         </div>
 
@@ -161,5 +161,5 @@ export function AmenitiesGrid() {
         </div>
       </div>
     </section>
-  )
+  );
 }

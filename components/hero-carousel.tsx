@@ -1,72 +1,76 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import Image from "next/image"
-import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const TOTAL_IMAGES = 39
+const TOTAL_IMAGES = 39;
 
 // Curated hero images - best shots for first impression (optimal photos first)
-const HERO_IMAGES = [66, 67, 29, 26, 28, 23, 35, 8, 12, 15, 18, 22, 25, 31]
+const HERO_IMAGES = [66, 67, 29, 26, 28, 23, 35, 8, 12, 15, 18, 22, 25, 31];
 
 export function HeroCarousel() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    setIsLoaded(true)
-  }, [])
+    setIsLoaded(true);
+  }, []);
 
   useEffect(() => {
-    if (!isAutoPlaying) return
+    if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length)
-    }, 6000)
+      setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 6000);
 
-    return () => clearInterval(interval)
-  }, [isAutoPlaying])
+    return () => clearInterval(interval);
+  }, [isAutoPlaying]);
 
   const goToPrevious = useCallback(() => {
-    setIsAutoPlaying(false)
-    setCurrentIndex((prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length)
-  }, [])
+    setIsAutoPlaying(false);
+    setCurrentIndex(
+      (prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length,
+    );
+  }, []);
 
   const goToNext = useCallback(() => {
-    setIsAutoPlaying(false)
-    setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length)
-  }, [])
+    setIsAutoPlaying(false);
+    setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+  }, []);
 
   const toggleAutoPlay = useCallback(() => {
-    setIsAutoPlaying((prev) => !prev)
-  }, [])
+    setIsAutoPlaying((prev) => !prev);
+  }, []);
 
   return (
     <section className="relative h-[100svh] w-full overflow-hidden">
       {/* Images with Ken Burns effect */}
       <div className="absolute inset-0">
         {HERO_IMAGES.map((imageNum, index) => {
-          const isPrevious = index === (currentIndex - 1 + HERO_IMAGES.length) % HERO_IMAGES.length
-          const isCurrent = index === currentIndex
-          const isNext = index === (currentIndex + 1) % HERO_IMAGES.length
-          const shouldRender = isPrevious || isCurrent || isNext
+          const isPrevious =
+            index ===
+            (currentIndex - 1 + HERO_IMAGES.length) % HERO_IMAGES.length;
+          const isCurrent = index === currentIndex;
+          const isNext = index === (currentIndex + 1) % HERO_IMAGES.length;
+          const shouldRender = isPrevious || isCurrent || isNext;
 
-          if (!shouldRender) return null
+          if (!shouldRender) return null;
 
           return (
             <div
               key={imageNum}
               className={cn(
                 "absolute inset-0 transition-opacity duration-1500 ease-in-out",
-                isCurrent ? "opacity-100" : "opacity-0"
+                isCurrent ? "opacity-100" : "opacity-0",
               )}
             >
               <div
                 className={cn(
                   "absolute inset-0 scale-105 transition-transform duration-[8000ms] ease-out",
-                  isCurrent && "scale-100"
+                  isCurrent && "scale-100",
                 )}
               >
                 <Image
@@ -80,7 +84,7 @@ export function HeroCarousel() {
                 />
               </div>
             </div>
-          )
+          );
         })}
       </div>
 
@@ -95,7 +99,7 @@ export function HeroCarousel() {
           "backdrop-blur-md bg-white/10 border border-white/30 rounded-xl shadow-lg shadow-black/20",
           "px-3 py-2.5 md:px-4 md:py-3",
           "transition-all duration-1000 delay-1000",
-          isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+          isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4",
         )}
       >
         <div className="text-white/70 text-[10px] md:text-xs uppercase tracking-widest mb-1.5 font-medium">
@@ -108,14 +112,28 @@ export function HeroCarousel() {
           className="flex items-center gap-2 mb-1.5 group transition-all hover:bg-white/10 rounded px-1.5 -mx-1.5 py-1 cursor-pointer hover:scale-105"
         >
           <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-[#FF5A5F] flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-[10px] md:text-xs font-bold">A</span>
+            <span className="text-white text-[10px] md:text-xs font-bold">
+              A
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-yellow-400 text-xs md:text-sm">★★★★★</span>
           </div>
-          <span className="text-white text-xs md:text-sm font-semibold">4.94</span>
-          <svg className="w-3 h-3 text-white/60 group-hover:text-white/90 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          <span className="text-white text-xs md:text-sm font-semibold">
+            4.94
+          </span>
+          <svg
+            className="w-3 h-3 text-white/60 group-hover:text-white/90 transition-colors"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
           </svg>
         </a>
         <a
@@ -125,14 +143,28 @@ export function HeroCarousel() {
           className="flex items-center gap-2 mb-1.5 group transition-all hover:bg-white/10 rounded px-1.5 -mx-1.5 py-1 cursor-pointer hover:scale-105"
         >
           <div className="w-5 h-5 md:w-6 md:h-6 rounded bg-[#0066CC] flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-[10px] md:text-xs font-bold">V</span>
+            <span className="text-white text-[10px] md:text-xs font-bold">
+              V
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-yellow-400 text-xs md:text-sm">★★★★★</span>
           </div>
-          <span className="text-white text-xs md:text-sm font-semibold">4.9</span>
-          <svg className="w-3 h-3 text-white/60 group-hover:text-white/90 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          <span className="text-white text-xs md:text-sm font-semibold">
+            4.9
+          </span>
+          <svg
+            className="w-3 h-3 text-white/60 group-hover:text-white/90 transition-colors"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
           </svg>
         </a>
         <div className="text-white/50 text-[9px] md:text-[10px] text-center pt-1 border-t border-white/20">
@@ -147,7 +179,7 @@ export function HeroCarousel() {
           className={cn(
             "flex-1 flex items-end pb-32 md:pb-40 lg:pb-48 pt-24 px-6 md:px-12 lg:px-20",
             "transition-all duration-1000",
-            isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
         >
           <div className="max-w-4xl">
@@ -183,7 +215,11 @@ export function HeroCarousel() {
                   stroke="currentColor"
                   strokeWidth={2}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
                 </svg>
               </a>
             </div>
@@ -198,8 +234,8 @@ export function HeroCarousel() {
               <button
                 key={index}
                 onClick={() => {
-                  setIsAutoPlaying(false)
-                  setCurrentIndex(index)
+                  setIsAutoPlaying(false);
+                  setCurrentIndex(index);
                 }}
                 className="group relative h-8 flex items-center"
                 aria-label={`Go to image ${index + 1}`}
@@ -212,7 +248,7 @@ export function HeroCarousel() {
                         ? "w-full"
                         : currentIndex > index
                           ? "w-full opacity-60"
-                          : "w-0"
+                          : "w-0",
                     )}
                   />
                 </div>
@@ -255,11 +291,13 @@ export function HeroCarousel() {
 
         {/* Image counter */}
         <div className="absolute bottom-6 right-6 md:right-auto md:left-6 md:bottom-20 text-white/50 text-sm font-mono tracking-wider">
-          <span className="text-white">{String(currentIndex + 1).padStart(2, "0")}</span>
+          <span className="text-white">
+            {String(currentIndex + 1).padStart(2, "0")}
+          </span>
           <span className="mx-1">/</span>
           <span>{String(HERO_IMAGES.length).padStart(2, "0")}</span>
         </div>
       </div>
     </section>
-  )
+  );
 }

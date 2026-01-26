@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Calendar, Users, Loader2, ArrowLeft, CheckCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar, Users, Loader2, ArrowLeft, CheckCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function FamilyRequestPage() {
-  const router = useRouter()
-  const [checkIn, setCheckIn] = useState("")
-  const [checkOut, setCheckOut] = useState("")
-  const [guestName, setGuestName] = useState("")
-  const [guestEmail, setGuestEmail] = useState("")
-  const [guestCount, setGuestCount] = useState(2)
-  const [notes, setNotes] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
+  const router = useRouter();
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestCount, setGuestCount] = useState(2);
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
       const response = await fetch("/api/family/bookings", {
@@ -41,32 +41,34 @@ export default function FamilyRequestPage() {
           guestCount,
           notes,
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        setSuccess(true)
+        setSuccess(true);
       } else {
-        setError(data.error || "Failed to submit request")
+        setError(data.error || "Failed to submit request");
       }
     } catch (err) {
-      console.error("Request error:", err)
-      setError("Something went wrong. Please try again.")
+      console.error("Request error:", err);
+      setError("Something went wrong. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const calculateNights = () => {
-    if (!checkIn || !checkOut) return 0
-    const start = new Date(checkIn)
-    const end = new Date(checkOut)
-    const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
-    return nights > 0 ? nights : 0
-  }
+    if (!checkIn || !checkOut) return 0;
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const nights = Math.ceil(
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    return nights > 0 ? nights : 0;
+  };
 
-  const nights = calculateNights()
+  const nights = calculateNights();
 
   // Success screen
   if (success) {
@@ -91,7 +93,9 @@ export default function FamilyRequestPage() {
             </div>
             <div className="text-sm text-muted-foreground space-y-1">
               <div>
-                <span className="font-medium">Dates:</span> {new Date(checkIn).toLocaleDateString()} → {new Date(checkOut).toLocaleDateString()}
+                <span className="font-medium">Dates:</span>{" "}
+                {new Date(checkIn).toLocaleDateString()} →{" "}
+                {new Date(checkOut).toLocaleDateString()}
               </div>
               <div>
                 <span className="font-medium">Nights:</span> {nights}
@@ -118,13 +122,13 @@ export default function FamilyRequestPage() {
               variant="outline"
               className="w-full"
               onClick={() => {
-                setSuccess(false)
-                setCheckIn("")
-                setCheckOut("")
-                setGuestName("")
-                setGuestEmail("")
-                setGuestCount(2)
-                setNotes("")
+                setSuccess(false);
+                setCheckIn("");
+                setCheckOut("");
+                setGuestName("");
+                setGuestEmail("");
+                setGuestCount(2);
+                setNotes("");
               }}
             >
               Request More Dates
@@ -132,7 +136,7 @@ export default function FamilyRequestPage() {
           </div>
         </Card>
       </div>
-    )
+    );
   }
 
   // Request form
@@ -168,7 +172,10 @@ export default function FamilyRequestPage() {
             {/* Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="checkIn" className="flex items-center gap-2 mb-2">
+                <Label
+                  htmlFor="checkIn"
+                  className="flex items-center gap-2 mb-2"
+                >
                   <Calendar className="h-4 w-4 text-primary" />
                   Check-in Date
                 </Label>
@@ -183,7 +190,10 @@ export default function FamilyRequestPage() {
               </div>
 
               <div>
-                <Label htmlFor="checkOut" className="flex items-center gap-2 mb-2">
+                <Label
+                  htmlFor="checkOut"
+                  className="flex items-center gap-2 mb-2"
+                >
                   <Calendar className="h-4 w-4 text-primary" />
                   Check-out Date
                 </Label>
@@ -224,7 +234,10 @@ export default function FamilyRequestPage() {
 
             <div>
               <Label htmlFor="guestEmail" className="mb-2">
-                Email Address <span className="text-muted-foreground text-sm">(optional)</span>
+                Email Address{" "}
+                <span className="text-muted-foreground text-sm">
+                  (optional)
+                </span>
               </Label>
               <Input
                 id="guestEmail"
@@ -237,7 +250,10 @@ export default function FamilyRequestPage() {
 
             {/* Guest Count */}
             <div>
-              <Label htmlFor="guestCount" className="flex items-center gap-2 mb-2">
+              <Label
+                htmlFor="guestCount"
+                className="flex items-center gap-2 mb-2"
+              >
                 <Users className="h-4 w-4 text-primary" />
                 Number of Guests
               </Label>
@@ -258,7 +274,10 @@ export default function FamilyRequestPage() {
             {/* Notes */}
             <div>
               <Label htmlFor="notes" className="mb-2">
-                What are you celebrating? <span className="text-muted-foreground text-sm">(optional, 280 chars max)</span>
+                What are you celebrating?{" "}
+                <span className="text-muted-foreground text-sm">
+                  (optional, 280 chars max)
+                </span>
               </Label>
               <Textarea
                 id="notes"
@@ -276,7 +295,9 @@ export default function FamilyRequestPage() {
             {/* Error Message */}
             {error && (
               <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
-                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                <p className="text-sm text-red-700 dark:text-red-300">
+                  {error}
+                </p>
               </div>
             )}
 
@@ -299,10 +320,11 @@ export default function FamilyRequestPage() {
           </form>
 
           <div className="mt-6 text-center text-xs text-muted-foreground">
-            Your request will be sent to JR for approval. You'll be notified once it's approved.
+            Your request will be sent to JR for approval. You'll be notified
+            once it's approved.
           </div>
         </Card>
       </div>
     </div>
-  )
+  );
 }

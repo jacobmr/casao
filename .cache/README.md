@@ -11,6 +11,7 @@ If you delete this file, the app will try to fetch a new token and may hit the r
 ## Data Cache Files
 
 These can be safely deleted and will regenerate:
+
 - `availability.json` - Availability data for all months
 - `pricing.json` - Pricing quotes for all date ranges
 - `.warmup-in-progress` - Lock file during cache warmup
@@ -18,6 +19,7 @@ These can be safely deleted and will regenerate:
 ## Cache Refresh
 
 Run nightly at 2 AM via cron:
+
 ```bash
 0 2 * * * cd /path/to/CasaVistas && PORT=3000 node scripts/cache-availability.js
 ```

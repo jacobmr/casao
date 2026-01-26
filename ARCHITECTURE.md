@@ -26,19 +26,23 @@
 ## Product Overview
 
 ### Purpose
+
 Casa Vistas is a direct booking website for a luxury vacation rental property in Brasilito, Costa Rica. The site enables guests to:
+
 - View real-time availability and pricing
 - Select dates and see live quotes
 - Add optional experiences (tours, chef services, etc.)
 - Complete bookings through a branded handoff to the property manager's Guesty checkout
 
 ### Business Model
+
 - **Property Owner:** Casa O (brand)
 - **Property Manager:** Blue Zone Experience (manages Guesty, Stripe, contracts)
 - **Booking Flow:** Casa O → Branded Handoff → Blue Zone Guesty Checkout
 - **Revenue:** Direct bookings reduce OTA commissions
 
 ### Key Differentiators
+
 - ✅ White-label branding (Casa Vistas, not Blue Zone)
 - ✅ Real-time availability from Guesty API
 - ✅ Per-day pricing display
@@ -51,6 +55,7 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 ## Technical Stack
 
 ### Frontend
+
 - **Framework:** Next.js 16.0.0 (App Router)
 - **React:** 19.2.0
 - **UI Library:** Radix UI + shadcn/ui components
@@ -60,6 +65,7 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 - **Carousel:** Embla Carousel
 
 ### Backend
+
 - **Runtime:** Node.js (Next.js API Routes)
 - **API Integration:** Guesty Booking Engine API
 - **Authentication:** OAuth 2.0 (client credentials flow)
@@ -67,12 +73,14 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 - **Analytics:** Vercel Analytics
 
 ### Infrastructure
+
 - **Hosting:** Vercel (serverless)
 - **Domain:** casavistas.net (Vercel DNS)
 - **SSL:** Automatic (Vercel)
 - **CDN:** Vercel Edge Network
 
 ### External Services
+
 - **Guesty:** Property management system (availability, pricing, bookings)
 - **Blue Zone Guesty:** Checkout page (payment, contracts, confirmation)
 
@@ -156,6 +164,7 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 **Location:** Home page (modal) and `/booking` page
 
 **Features:**
+
 - Fetches 6 months of availability from Guesty
 - Visual indicators:
   - **Green border:** Available dates
@@ -166,10 +175,12 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 - Past date blocking
 
 **Components:**
+
 - `components/availability-calendar.tsx` (home page modal)
 - `components/booking-calendar.tsx` (booking page)
 
 **API:**
+
 - `GET /api/calendar?listingId={id}&from={date}&to={date}`
 - Returns: Array of `{date, status, minNights}`
 
@@ -180,6 +191,7 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 **Location:** Calendar modals and booking page
 
 **Features:**
+
 - Per-day pricing on calendar dates
 - Total price calculation
 - Breakdown: Accommodation + Taxes & Fees
@@ -187,10 +199,12 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 - Weekly discount (7+ nights)
 
 **Components:**
+
 - `components/availability-calendar.tsx` (pricing display)
 - `components/booking-calendar.tsx` (pricing display)
 
 **API:**
+
 - `POST /api/quotes`
 - Body: `{checkIn, checkOut, guests, coupon?}`
 - Returns: Quote object with pricing breakdown
@@ -202,6 +216,7 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 **Location:** `/enhance` page (between date selection and checkout)
 
 **Features:**
+
 - Curated experiences by category:
   - 🏄 Adventures (surfing, zip-lining, etc.)
   - 🍽️ Dining (private chef, restaurants)
@@ -213,11 +228,13 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 - Price estimates and descriptions
 
 **Components:**
+
 - `app/enhance/page.tsx`
 - `components/experiences/experience-list-item.tsx`
 - `components/experiences/discount-banner.tsx`
 
 **Data:**
+
 - `lib/experiences-data.ts` (static data)
 
 ---
@@ -229,6 +246,7 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 **Purpose:** Seamlessly transition from Casa Vistas branding to Blue Zone checkout
 
 **Flow:**
+
 1. Guest clicks "Continue to Checkout"
 2. Redirects to `/api/handoff?checkIn=...&checkOut=...&adults=...&experiences=...`
 3. Shows branded interstitial page:
@@ -242,12 +260,14 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
    - `https://bluezoneexperience.guestybookings.com/en/properties/{id}/checkout?checkIn=...&checkOut=...&adults=...&utm_source=casao&ref={uuid}`
 
 **Benefits:**
+
 - Maintains Casa Vistas branding throughout journey
 - Tracks bookings with UUID
 - No GuestyPay credentials needed
 - PM keeps existing Stripe + contract workflow
 
 **Implementation:**
+
 - `app/api/handoff/route.js`
 
 ---
@@ -257,21 +277,25 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 **Purpose:** Reduce API calls to Guesty and improve performance
 
 **Strategy:**
+
 - **Availability:** Cached for 6 months, refreshed nightly
 - **Pricing:** Cached for 6 months, refreshed nightly
 - **Tokens:** Cached for 24 hours, auto-refresh
 
 **Cache Keys:**
+
 - `availability:{year}-{month}` → Array of day objects
 - `pricing:{year}-{month}` → Object of `{date: price}`
 - `guesty:token` → OAuth access token
 
 **Warmup:**
+
 - Manual trigger: `GET /api/warmup-cache`
 - Automated: Vercel Cron (nightly at 2 AM UTC)
 - Preloads 6 months of data on first request
 
 **Implementation:**
+
 - `lib/kv-cache.js` (cache utilities)
 - `lib/token-service-kv.js` (token management)
 - `app/api/warmup-cache/route.js` (warmup endpoint)
@@ -284,15 +308,18 @@ Casa Vistas is a direct booking website for a luxury vacation rental property in
 ### Public Endpoints
 
 #### `GET /api/calendar`
+
 Fetch availability for a date range.
 
 **Query Params:**
+
 - `listingId` (optional, defaults to env var)
 - `from` (required, YYYY-MM-DD)
 - `to` (required, YYYY-MM-DD)
 - `skipCache` (optional, boolean)
 
 **Response:**
+
 ```json
 [
   {
@@ -315,9 +342,11 @@ Fetch availability for a date range.
 ---
 
 #### `POST /api/quotes`
+
 Get pricing quote for a date range.
 
 **Body:**
+
 ```json
 {
   "checkIn": "2025-11-03",
@@ -328,18 +357,21 @@ Get pricing quote for a date range.
 ```
 
 **Response:**
+
 ```json
 {
   "rates": {
-    "ratePlans": [{
-      "ratePlan": {
-        "money": {
-          "fareAccommodation": 1800.00,
-          "totalTaxes": 234.00,
-          "hostPayout": 2034.00
+    "ratePlans": [
+      {
+        "ratePlan": {
+          "money": {
+            "fareAccommodation": 1800.0,
+            "totalTaxes": 234.0,
+            "hostPayout": 2034.0
+          }
         }
       }
-    }]
+    ]
   }
 }
 ```
@@ -347,9 +379,11 @@ Get pricing quote for a date range.
 ---
 
 #### `GET /api/handoff`
+
 Branded checkout handoff page.
 
 **Query Params:**
+
 - `checkIn` (required, YYYY-MM-DD)
 - `checkOut` (required, YYYY-MM-DD)
 - `adults` (required, number)
@@ -363,16 +397,28 @@ Branded checkout handoff page.
 ### Internal Endpoints
 
 #### `GET /api/warmup-cache`
+
 Pre-populate cache with 6 months of data.
 
 **Response:**
+
 ```json
 {
   "success": true,
   "message": "Cache warmup completed",
   "results": [
-    {"month": "2025-10", "status": "success", "daysCount": 30, "pricesCount": 0},
-    {"month": "2025-11", "status": "success", "daysCount": 31, "pricesCount": 7}
+    {
+      "month": "2025-10",
+      "status": "success",
+      "daysCount": 30,
+      "pricesCount": 0
+    },
+    {
+      "month": "2025-11",
+      "status": "success",
+      "daysCount": 31,
+      "pricesCount": 7
+    }
   ]
 }
 ```
@@ -380,6 +426,7 @@ Pre-populate cache with 6 months of data.
 ---
 
 #### `GET /api/cron/cache-refresh`
+
 Nightly cache refresh (Vercel Cron).
 
 **Trigger:** Automated at 2 AM UTC  
@@ -452,18 +499,21 @@ Nightly cache refresh (Vercel Cron).
 ### Cache Layers
 
 #### 1. Availability Cache
+
 - **Key:** `availability:{year}-{month}`
 - **TTL:** 24 hours (refreshed nightly)
 - **Data:** Array of day objects with status
 - **Size:** ~30-31 days per month × 6 months = ~180 days
 
 #### 2. Pricing Cache
+
 - **Key:** `pricing:{year}-{month}`
 - **TTL:** 24 hours (refreshed nightly)
 - **Data:** Object mapping dates to prices
 - **Size:** Variable (only available dates have prices)
 
 #### 3. Token Cache
+
 - **Key:** `guesty:token`
 - **TTL:** 24 hours (auto-refresh 5 min before expiry)
 - **Data:** OAuth access token
@@ -472,12 +522,14 @@ Nightly cache refresh (Vercel Cron).
 ### Cache Refresh
 
 **Nightly Cron Job:**
+
 - Runs at 2 AM UTC (Vercel Cron)
 - Fetches fresh data from Guesty
 - Updates Redis cache
 - Logs success/failure
 
 **Manual Warmup:**
+
 ```bash
 curl https://www.casavistas.net/api/warmup-cache
 ```
@@ -520,12 +572,15 @@ npm run dev
 ### Vercel Cron Setup
 
 **File:** `vercel.json`
+
 ```json
 {
-  "crons": [{
-    "path": "/api/cron/cache-refresh",
-    "schedule": "0 2 * * *"
-  }]
+  "crons": [
+    {
+      "path": "/api/cron/cache-refresh",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }
 ```
 
@@ -567,6 +622,7 @@ NEXT_PUBLIC_VERCEL_ANALYTICS_ID=...
 ### Local Development
 
 Create `.env.local`:
+
 ```bash
 GUESTY_CLIENT_ID=...
 GUESTY_CLIENT_SECRET=...
@@ -643,6 +699,7 @@ casa-vistas/
 ### Adding a New Feature
 
 1. **Create a branch:**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -654,12 +711,14 @@ casa-vistas/
    - Add utilities in `lib/`
 
 3. **Test locally:**
+
    ```bash
    npm run dev
    # Visit http://localhost:3000
    ```
 
 4. **Commit and push:**
+
    ```bash
    git add .
    git commit -m "Add: your feature description"
@@ -673,18 +732,22 @@ casa-vistas/
 ### Common Tasks
 
 #### Trigger Cache Warmup
+
 ```bash
 curl https://www.casavistas.net/api/warmup-cache
 ```
 
 #### Clear Redis Cache
+
 ```bash
 # In Vercel dashboard:
 # Storage → KV → Delete keys matching pattern
 ```
 
 #### Update Experiences
+
 Edit `lib/experiences-data.ts`:
+
 ```typescript
 export const experiences: Experience[] = [
   {
@@ -694,15 +757,17 @@ export const experiences: Experience[] = [
     description: "Description here",
     price: "$100",
     duration: "2 hours",
-    highlights: ["Point 1", "Point 2"]
-  }
-]
+    highlights: ["Point 1", "Point 2"],
+  },
+];
 ```
 
 #### Add New API Endpoint
+
 Create `app/api/your-endpoint/route.js`:
+
 ```javascript
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET(request) {
   return NextResponse.json({ message: "Hello" });
@@ -748,11 +813,13 @@ export async function GET(request) {
 **Symptom:** Calendar shows "Loading..." indefinitely
 
 **Causes:**
+
 1. Redis cache empty
 2. Guesty API down
 3. Invalid OAuth token
 
 **Solutions:**
+
 ```bash
 # 1. Trigger cache warmup
 curl https://www.casavistas.net/api/warmup-cache
@@ -769,10 +836,12 @@ curl https://www.casavistas.net/api/warmup-cache
 **Symptom:** Calendar dates show no prices
 
 **Causes:**
+
 1. Monthly pricing cache empty
 2. Pricing fetcher error
 
 **Solutions:**
+
 ```bash
 # Trigger warmup (includes pricing)
 curl https://www.casavistas.net/api/warmup-cache
@@ -785,11 +854,13 @@ curl https://www.casavistas.net/api/warmup-cache
 **Symptom:** "Sorry, an error has occurred" on Guesty page
 
 **Causes:**
+
 1. Wrong Guesty URL
 2. Invalid property ID
 3. Malformed query params
 
 **Solutions:**
+
 - Verify `GUESTY_PROPERTY_ID` in environment variables
 - Check handoff URL format in `app/api/handoff/route.js`
 - Ensure using Blue Zone URL: `https://bluezoneexperience.guestybookings.com/...`
@@ -799,17 +870,20 @@ curl https://www.casavistas.net/api/warmup-cache
 ## Support
 
 ### Documentation
+
 - **README.md:** Quick start guide
 - **ROADMAP.md:** Feature roadmap
 - **CasaO-Booking-API-PRD.md:** Product requirements
 - **This file:** Complete architecture reference
 
 ### Logs
+
 - **Vercel Dashboard:** Real-time logs and errors
 - **Browser Console:** Frontend errors
 - **Server Logs:** API endpoint logs
 
 ### Contact
+
 - **Developer:** [Your contact info]
 - **Property Manager:** Blue Zone Experience
 

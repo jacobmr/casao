@@ -1,18 +1,21 @@
-"use client"
+"use client";
 
-import { Experience } from "@/lib/experiences-data"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Clock, Check } from "lucide-react"
-import Image from "next/image"
+import { Experience } from "@/lib/experiences-data";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Clock, Check } from "lucide-react";
+import Image from "next/image";
 
 interface ExperienceCardProps {
-  experience: Experience
-  onBookClick?: () => void
+  experience: Experience;
+  onBookClick?: () => void;
 }
 
-export function ExperienceCard({ experience, onBookClick }: ExperienceCardProps) {
+export function ExperienceCard({
+  experience,
+  onBookClick,
+}: ExperienceCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
       {/* Image */}
@@ -26,31 +29,31 @@ export function ExperienceCard({ experience, onBookClick }: ExperienceCardProps)
           </Badge>
         )}
       </div>
-      
+
       {/* Content */}
       <CardContent className="p-4 flex-1 flex flex-col">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-2xl">{experience.icon}</span>
           <h3 className="font-semibold text-lg">{experience.name}</h3>
         </div>
-        
+
         <p className="text-muted-foreground text-sm mb-3 flex-1">
           {experience.shortDescription}
         </p>
-        
+
         {experience.duration && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
             <Clock className="h-4 w-4" />
             {experience.duration}
           </div>
         )}
-        
+
         {experience.seasonal && experience.seasonalNote && (
           <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">
             {experience.seasonalNote}
           </p>
         )}
-        
+
         <div className="space-y-1 mb-4">
           {experience.inclusions.slice(0, 3).map((item, i) => (
             <div key={i} className="flex items-center gap-2 text-sm">
@@ -64,15 +67,15 @@ export function ExperienceCard({ experience, onBookClick }: ExperienceCardProps)
             </p>
           )}
         </div>
-        
-        <Button 
-          onClick={onBookClick} 
-          variant="outline" 
+
+        <Button
+          onClick={onBookClick}
+          variant="outline"
           className="w-full mt-auto"
         >
           Book Your Stay
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }

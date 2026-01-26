@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
-import { getCachedToken } from '../../../lib/token-service-kv';
-import { getCachedAvailability, setCachedAvailability, setMonthlyPricing } from '../../../lib/kv-cache';
-import { fetchMonthlyPricing } from '../../../lib/pricing-fetcher';
+import { NextResponse } from "next/server";
+import { getCachedToken } from "../../../lib/token-service-kv";
+import {
+  getCachedAvailability,
+  setCachedAvailability,
+  setMonthlyPricing,
+} from "../../../lib/kv-cache";
+import { fetchMonthlyPricing } from "../../../lib/pricing-fetcher";
 
 /**
  * Send Pushover notification for new bookings (replaced SimplePush Dec 2024)
@@ -13,9 +17,14 @@ async function sendBookingNotification(newBookings) {
 
   try {
     // Group bookings by date range
-    const sortedBookings = newBookings.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const sortedBookings = newBookings.sort(
+      (a, b) => new Date(a.date) - new Date(b.date),
+    );
     const ranges = [];
-    let currentRange = { start: sortedBookings[0].date, end: sortedBookings[0].date };
+    let currentRange = {
+      start: sortedBookings[0].date,
+      end: sortedBookings[0].date,
+    };
 
     for (let i = 1; i < sortedBookings.length; i++) {
       const prevDate = new Date(sortedBookings[i - 1].date);
@@ -28,24 +37,30 @@ async function sendBookingNotification(newBookings) {
       } else {
         // Non-consecutive - save current range and start new one
         ranges.push(currentRange);
-        currentRange = { start: sortedBookings[i].date, end: sortedBookings[i].date };
+        currentRange = {
+          start: sortedBookings[i].date,
+          end: sortedBookings[i].date,
+        };
       }
     }
     ranges.push(currentRange);
 
     // Format notification message
-    const title = '🏠 New Casa Vistas Reservation!';
-    let message = '';
+    const title = "🏠 New Casa Vistas Reservation!";
+    let message = "";
 
     ranges.forEach((range, index) => {
-      const nights = Math.ceil((new Date(range.end) - new Date(range.start)) / (1000 * 60 * 60 * 24)) + 1;
+      const nights =
+        Math.ceil(
+          (new Date(range.end) - new Date(range.start)) / (1000 * 60 * 60 * 24),
+        ) + 1;
       if (range.start === range.end) {
         // Single date detected - could be part of larger booking
         message += `New booking on ${range.start}`;
       } else {
         message += `${range.start} → ${range.end} (${nights} nights)`;
       }
-      if (index < ranges.length - 1) message += ' | ';
+      if (index < ranges.length - 1) message += " | ";
     });
 
     // Send via Pushover API
@@ -55,13 +70,13 @@ async function sendBookingNotification(newBookings) {
       title: title,
       message: message,
     });
-    await fetch('https://api.pushover.net/1/messages.json', {
-      method: 'POST',
+    await fetch("https://api.pushover.net/1/messages.json", {
+      method: "POST",
       body: formData,
     });
-    console.log('📱 Booking notification sent:', message);
+    console.log("📱 Booking notification sent:", message);
   } catch (error) {
-    console.error('Failed to send booking notification:', error);
+    console.error("Failed to send booking notification:", error);
   }
 }
 
@@ -72,7 +87,7 @@ async function sendBookingNotification(newBookings) {
  */
 export async function GET(request) {
   try {
-    console.log('🔥 Cache warmup started');
+    console.log("🔥 Cache warmup started");
 
     const listingId = process.env.GUESTY_PROPERTY_ID;
     const token = await getCachedToken();
@@ -86,8 +101,8 @@ export async function GET(request) {
       const year = date.getFullYear();
       const month = date.getMonth();
 
-      const from = new Date(year, month, 1).toISOString().split('T')[0];
-      const to = new Date(year, month + 1, 0).toISOString().split('T')[0];
+      const from = new Date(year, month, 1).toISOString().split("T")[0];
+      const to = new Date(year, month + 1, 0).toISOString().split("T")[0];
 
       console.log(`📅 Warming up ${year}-${month + 1}...`);
 
@@ -95,8 +110,8 @@ export async function GET(request) {
         const url = `https://booking.guesty.com/api/listings/${listingId}/calendar?from=${from}&to=${to}`;
         const response = await fetch(url, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         });
 
@@ -108,15 +123,23 @@ export async function GET(request) {
           const oldCachedData = await getCachedAvailability(year, month);
 
           // Step 2: Detect new bookings (available → booked)
-          if (oldCachedData && Array.isArray(oldCachedData) && Array.isArray(days)) {
-            const oldAvailabilityMap = new Map(oldCachedData.map(day => [day.date, day.status]));
-            const newBookings = days.filter(day => {
+          if (
+            oldCachedData &&
+            Array.isArray(oldCachedData) &&
+            Array.isArray(days)
+          ) {
+            const oldAvailabilityMap = new Map(
+              oldCachedData.map((day) => [day.date, day.status]),
+            );
+            const newBookings = days.filter((day) => {
               const oldStatus = oldAvailabilityMap.get(day.date);
-              return oldStatus === 'available' && day.status === 'booked';
+              return oldStatus === "available" && day.status === "booked";
             });
 
             if (newBookings.length > 0) {
-              console.log(`  🎉 Found ${newBookings.length} newly booked dates!`);
+              console.log(
+                `  🎉 Found ${newBookings.length} newly booked dates!`,
+              );
               allNewBookings.push(...newBookings);
             }
           }
@@ -136,23 +159,32 @@ export async function GET(request) {
           });
 
           await setMonthlyPricing(year, month, pricingByDate);
-          console.log(`  ✅ Cached pricing for ${year}-${month + 1} (${pricingMap.size} prices)`);
+          console.log(
+            `  ✅ Cached pricing for ${year}-${month + 1} (${pricingMap.size} prices)`,
+          );
 
           results.push({
             month: `${year}-${month}`,
-            status: 'success',
+            status: "success",
             daysCount: Array.isArray(days) ? days.length : 0,
-            pricesCount: pricingMap.size
+            pricesCount: pricingMap.size,
           });
         } else {
-          results.push({ month: `${year}-${month}`, status: 'failed', error: response.status });
+          results.push({
+            month: `${year}-${month}`,
+            status: "failed",
+            error: response.status,
+          });
         }
 
         // Rate limit: wait 1 second between requests
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {
-        results.push({ month: `${year}-${month}`, status: 'error', error: error.message });
+        results.push({
+          month: `${year}-${month}`,
+          status: "error",
+          error: error.message,
+        });
       }
     }
 
@@ -161,23 +193,22 @@ export async function GET(request) {
       await sendBookingNotification(allNewBookings);
     }
 
-    console.log('✅ Cache warmup complete!');
+    console.log("✅ Cache warmup complete!");
 
     return NextResponse.json({
       success: true,
-      message: 'Cache warmup completed',
+      message: "Cache warmup completed",
       results,
-      newBookings: allNewBookings.length
+      newBookings: allNewBookings.length,
     });
-
   } catch (error) {
-    console.error('Cache warmup error:', error);
+    console.error("Cache warmup error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Cache warmup failed'
+        error: error.message || "Cache warmup failed",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

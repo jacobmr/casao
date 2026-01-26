@@ -3,41 +3,41 @@
  * Handles payment intents, checkout sessions, and webhooks
  */
 
-import Stripe from 'stripe'
+import Stripe from "stripe";
 
 // Lazy-initialize Stripe client to avoid build-time errors
-let stripeClient: Stripe | null = null
+let stripeClient: Stripe | null = null;
 
 function getStripe(): Stripe {
   if (!stripeClient) {
-    const secretKey = process.env.STRIPE_SECRET_KEY
+    const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) {
-      throw new Error('STRIPE_SECRET_KEY not configured')
+      throw new Error("STRIPE_SECRET_KEY not configured");
     }
-    stripeClient = new Stripe(secretKey)
+    stripeClient = new Stripe(secretKey);
   }
-  return stripeClient
+  return stripeClient;
 }
 
 export interface CreateCheckoutSessionParams {
-  bookingId: string
-  guestName: string
-  guestEmail: string
-  amount: number          // Amount in dollars
-  paymentType: 'deposit' | 'balance'
-  checkIn: string
-  checkOut: string
-  nights: number
-  successUrl: string
-  cancelUrl: string
+  bookingId: string;
+  guestName: string;
+  guestEmail: string;
+  amount: number; // Amount in dollars
+  paymentType: "deposit" | "balance";
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  successUrl: string;
+  cancelUrl: string;
 }
 
 export interface PaymentMetadata {
-  bookingId: string
-  guestEmail: string
-  paymentType: 'deposit' | 'balance'
-  checkIn: string
-  checkOut: string
+  bookingId: string;
+  guestEmail: string;
+  paymentType: "deposit" | "balance";
+  checkIn: string;
+  checkOut: string;
 }
 
 /**
@@ -45,7 +45,7 @@ export interface PaymentMetadata {
  * Using Checkout Session instead of Payment Intent for simpler integration
  */
 export async function createCheckoutSession(
-  params: CreateCheckoutSessionParams
+  params: CreateCheckoutSessionParams,
 ): Promise<Stripe.Checkout.Session> {
   const {
     bookingId,
@@ -58,26 +58,27 @@ export async function createCheckoutSession(
     nights,
     successUrl,
     cancelUrl,
-  } = params
+  } = params;
 
   const description =
-    paymentType === 'deposit'
+    paymentType === "deposit"
       ? `Deposit for Casa Vistas: ${checkIn} to ${checkOut} (${nights} nights)`
-      : `Balance for Casa Vistas: ${checkIn} to ${checkOut} (${nights} nights)`
+      : `Balance for Casa Vistas: ${checkIn} to ${checkOut} (${nights} nights)`;
 
   const session = await getStripe().checkout.sessions.create({
-    payment_method_types: ['card'],
-    mode: 'payment',
+    payment_method_types: ["card"],
+    mode: "payment",
     customer_email: guestEmail,
     client_reference_id: bookingId,
     line_items: [
       {
         price_data: {
-          currency: 'usd',
+          currency: "usd",
           product_data: {
-            name: paymentType === 'deposit' ? 'Booking Deposit' : 'Booking Balance',
+            name:
+              paymentType === "deposit" ? "Booking Deposit" : "Booking Balance",
             description,
-            images: ['https://www.casavistas.net/images/hero.jpg'],
+            images: ["https://www.casavistas.net/images/hero.jpg"],
           },
           unit_amount: Math.round(amount * 100), // Convert to cents
         },
@@ -94,18 +95,18 @@ export async function createCheckoutSession(
     success_url: successUrl,
     cancel_url: cancelUrl,
     expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes
-  })
+  });
 
-  return session
+  return session;
 }
 
 /**
  * Retrieve a checkout session by ID
  */
 export async function getCheckoutSession(
-  sessionId: string
+  sessionId: string,
 ): Promise<Stripe.Checkout.Session> {
-  return getStripe().checkout.sessions.retrieve(sessionId)
+  return getStripe().checkout.sessions.retrieve(sessionId);
 }
 
 /**
@@ -114,18 +115,18 @@ export async function getCheckoutSession(
 export function constructWebhookEvent(
   payload: string | Buffer,
   signature: string,
-  webhookSecret: string
+  webhookSecret: string,
 ): Stripe.Event {
-  return getStripe().webhooks.constructEvent(payload, signature, webhookSecret)
+  return getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
 }
 
 /**
  * Get payment intent details
  */
 export async function getPaymentIntent(
-  paymentIntentId: string
+  paymentIntentId: string,
 ): Promise<Stripe.PaymentIntent> {
-  return getStripe().paymentIntents.retrieve(paymentIntentId)
+  return getStripe().paymentIntents.retrieve(paymentIntentId);
 }
 
 /**
@@ -133,27 +134,27 @@ export async function getPaymentIntent(
  */
 export async function createRefund(
   paymentIntentId: string,
-  amount?: number // Optional partial refund in cents
+  amount?: number, // Optional partial refund in cents
 ): Promise<Stripe.Refund> {
   return getStripe().refunds.create({
     payment_intent: paymentIntentId,
     amount, // If undefined, full refund
-  })
+  });
 }
 
 /**
  * List all payments for a booking (by metadata)
  */
 export async function listPaymentsForBooking(
-  bookingId: string
+  bookingId: string,
 ): Promise<Stripe.Checkout.Session[]> {
   const sessions = await getStripe().checkout.sessions.list({
     limit: 100,
-  })
+  });
 
   return sessions.data.filter(
-    (session) => session.metadata?.bookingId === bookingId
-  )
+    (session) => session.metadata?.bookingId === bookingId,
+  );
 }
 
 /**
@@ -163,12 +164,12 @@ export function isStripeConfigured(): boolean {
   return !!(
     process.env.STRIPE_SECRET_KEY &&
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  )
+  );
 }
 
 /**
  * Get Stripe publishable key for client-side
  */
 export function getPublishableKey(): string {
-  return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+  return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
 }
