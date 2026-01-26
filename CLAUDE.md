@@ -103,6 +103,7 @@ Vercel KV variables are auto-configured on Vercel deployment.
 Ubuntu server running ancillary services for Casa Vistas.
 
 **Guesty → Google Calendar Scraper:**
+
 - **Purpose:** Syncs commercial Guesty bookings to Google Calendar as `[GUEST]` events
 - **Tech:** Puppeteer inside n8n Docker container
 - **Schedule:** Daily at 6:00 AM CST (`0 6 * * *`)
@@ -111,18 +112,50 @@ Ubuntu server running ancillary services for Casa Vistas.
 - **Logs:** `/home/jacob/guesty-scraper.log`
 
 **How it works:**
+
 1. Logs into Guesty Owners portal (bluezoneexperience.guestyowners.com)
 2. Scrapes reservation report for Casa Vistas bookings
 3. Creates/updates `[GUEST] Guest Name` events in Google Calendar
 4. Family Portal reads these events via `lib/google-calendar.ts`
 
 **SSH access:**
+
 ```bash
 ssh jacob@172.30.30.196
 tail -f ~/guesty-scraper.log          # Check logs
 ~/run-guesty-scraper.sh               # Run manually
 docker exec -it n8n node /home/node/scrape-to-gcal.js  # Run in container
 ```
+
+**Kindred → Guesty Owner Block Sync:**
+
+- **Purpose:** Creates Guesty owner reservations from Kindred home exchange calendar events to prevent double-bookings
+- **Tech:** Puppeteer inside n8n Docker container (same as Guesty scraper)
+- **Schedule:** Daily at 6:30 AM CST (`30 6 * * *`) - runs after Guesty scraper
+- **Script:** `/home/node/kindred-to-guesty.js` (inside n8n container)
+- **Runner:** `/home/jacob/run-kindred-sync.sh`
+- **Logs:** `/home/jacob/kindred-sync.log`
+- **Notifications:** SimplePush (key: `casaVi`)
+
+**How it works:**
+
+1. Reads future `[KINDRED]` events from Google Calendar
+2. Filters out already-synced events (checks for `[SYNCED-TO-GUESTY]` in description)
+3. Logs into Guesty Owners portal
+4. Creates owner reservation for each unsynced Kindred event
+5. Marks Google Calendar event with `[SYNCED-TO-GUESTY]` timestamp
+6. Sends SimplePush notification on success/failure
+
+**Manual run:**
+
+```bash
+ssh jacob@172.30.30.196
+~/run-kindred-sync.sh                                    # Via runner
+docker exec n8n node /home/node/kindred-to-guesty.js    # Direct in container
+tail -f ~/kindred-sync.log                               # Check logs
+```
+
+**Source code:** `scripts/kindred-to-guesty.js` (this repo)
 
 ### Google Calendar Integration
 
@@ -137,18 +170,23 @@ docker exec -it n8n node /home/node/scrape-to-gcal.js  # Run in container
 | (none) | Confirmed family bookings | `getConfirmedBookings()` |
 
 **Scripts in this repo:**
+
 - `scripts/kindred-calendar-sync.gs` - Apps Script for Kindred invite sync
+- `scripts/kindred-to-guesty.js` - Puppeteer script for Kindred → Guesty owner block sync
+- `scripts/run-kindred-sync.sh` - Runner script for Kindred sync
 - `scripts/KINDRED-SETUP.md` - Setup instructions
 - `lib/google-calendar.ts` - TypeScript client for reading calendar events
 
 ### Family Portal
 
 **Routes:**
+
 - `/family` - Main portal (password: see Redis `family:password`)
 - `/family/admin` - Admin view for pending approvals
 - `/friends` - Friends & Family booking with promo codes
 
 **Key files:**
+
 - `app/family/` - Portal pages
 - `app/api/family/` - API routes
 - `lib/google-calendar.ts` - Calendar read/write operations

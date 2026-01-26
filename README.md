@@ -113,12 +113,14 @@ A Puppeteer-based scraper runs on the CASAO Server to sync commercial bookings t
 **Script:** `/home/node/scrape-to-gcal.js`
 
 **What it does:**
+
 1. Logs into Guesty Owners portal (bluezoneexperience.guestyowners.com)
 2. Scrapes the reservation report for Casa Vistas bookings
 3. Creates/updates `[GUEST] Guest Name` events in Google Calendar
 4. Runs daily at 6:00 AM CST via cron
 
 **Files on server:**
+
 ```
 /home/jacob/
 ├── run-guesty-scraper.sh      # Runner script (loads env, runs in Docker)
@@ -135,6 +137,7 @@ A Puppeteer-based scraper runs on the CASAO Server to sync commercial bookings t
 ```
 
 **Cron schedule:**
+
 ```
 0 6 * * * /home/jacob/run-guesty-scraper.sh
 ```
@@ -148,6 +151,7 @@ Kindred home exchange bookings are synced via Google Apps Script.
 **Script:** `scripts/kindred-calendar-sync.gs` (deployed to Google Apps Script)
 
 **What it does:**
+
 1. Monitors personal calendar for Kindred invites (from livekindred.com)
 2. Auto-accepts invitations
 3. Creates `[KINDRED] Guest Name` events in Casa O Guests calendar
@@ -157,11 +161,11 @@ Kindred home exchange bookings are synced via Google Apps Script.
 
 ### Calendar Event Prefixes
 
-| Prefix | Source | Example |
-|--------|--------|---------|
-| `[GUEST]` | Guesty scraper | `[GUEST] Kara Hamilton` |
-| `[KINDRED]` | Kindred sync script | `[KINDRED] Tiffany` |
-| `Pending:` | Family Portal requests | `Pending: Sarah M (4 guests)` |
+| Prefix      | Source                 | Example                       |
+| ----------- | ---------------------- | ----------------------------- |
+| `[GUEST]`   | Guesty scraper         | `[GUEST] Kara Hamilton`       |
+| `[KINDRED]` | Kindred sync script    | `[KINDRED] Tiffany`           |
+| `Pending:`  | Family Portal requests | `Pending: Sarah M (4 guests)` |
 
 ### Server Access
 
