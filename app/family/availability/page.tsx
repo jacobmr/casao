@@ -53,6 +53,8 @@ export default function FamilyAvailabilityPage() {
   const [selectedBooking, setSelectedBooking] = useState<FamilyBooking | null>(
     null,
   );
+  const [bookingCheckIn, setBookingCheckIn] = useState<Date | null>(null);
+  const [bookingCheckOut, setBookingCheckOut] = useState<Date | null>(null);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -263,6 +265,7 @@ export default function FamilyAvailabilityPage() {
     const dateStr = formatDate(date);
     const dayInfo = availability.get(dateStr);
 
+    // If clicking an occupied day, show booking details
     if (
       (dayInfo?.status === "family" ||
         dayInfo?.status === "kindred" ||
@@ -270,11 +273,67 @@ export default function FamilyAvailabilityPage() {
       dayInfo.booking
     ) {
       setSelectedBooking(dayInfo.booking);
-    } else {
-      setSelectedBooking(null);
+      setSelectedDate(date);
+      // Clear booking selection mode
+      setBookingCheckIn(null);
+      setBookingCheckOut(null);
+      return;
     }
 
-    setSelectedDate(date);
+    // If clicking an available day, start booking flow
+    if (dayInfo?.status === "available" && !isDateInPast(date)) {
+      // First click sets check-in
+      if (!bookingCheckIn) {
+        setBookingCheckIn(date);
+        setBookingCheckOut(null);
+        setSelectedBooking(null);
+        setSelectedDate(date);
+      }
+      // Second click sets check-out (must be after check-in)
+      else if (!bookingCheckOut && date > bookingCheckIn) {
+        // Verify all days in range are available
+        const checkInStr = formatDate(bookingCheckIn);
+        const checkOutStr = formatDate(date);
+        const rangeIsAvailable = isRangeAvailable(checkInStr, checkOutStr);
+
+        if (rangeIsAvailable) {
+          setBookingCheckOut(date);
+          setSelectedDate(date);
+        } else {
+          // Range has unavailable days - reset and show error
+          alert(
+            "Some dates in this range are not available. Please select a different range.",
+          );
+          setBookingCheckIn(null);
+          setBookingCheckOut(null);
+        }
+      }
+      // Third click resets selection
+      else {
+        setBookingCheckIn(null);
+        setBookingCheckOut(null);
+        setSelectedDate(null);
+      }
+    } else {
+      setSelectedDate(date);
+      setSelectedBooking(null);
+    }
+  };
+
+  const isRangeAvailable = (checkIn: string, checkOut: string): boolean => {
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const current = new Date(start);
+
+    while (current < end) {
+      const dateStr = formatDate(current);
+      const dayInfo = availability.get(dateStr);
+      if (dayInfo?.status !== "available") {
+        return false;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return true;
   };
 
   const renderCalendar = () => {
@@ -294,6 +353,17 @@ export default function FamilyAvailabilityPage() {
       const dayInfo = availability.get(dateStr);
       const isPast = isDateInPast(date);
 
+      // Check if this date is in the selected booking range
+      const isInSelectedRange =
+        bookingCheckIn &&
+        bookingCheckOut &&
+        date >= bookingCheckIn &&
+        date < bookingCheckOut;
+      const isSelectedCheckIn =
+        bookingCheckIn && formatDate(bookingCheckIn) === dateStr;
+      const isSelectedCheckOut =
+        bookingCheckOut && formatDate(bookingCheckOut) === dateStr;
+
       let bgColor = "bg-muted";
       let textColor = "text-muted-foreground";
       let borderColor = "border-transparent";
@@ -307,9 +377,25 @@ export default function FamilyAvailabilityPage() {
 
         switch (dayInfo.status) {
           case "available":
-            bgColor = "bg-green-100 dark:bg-green-950";
-            borderColor = "border-green-500";
-            textColor = "text-green-900 dark:text-green-100";
+            // Highlight selected booking range
+            if (isInSelectedRange || isSelectedCheckIn || isSelectedCheckOut) {
+              bgColor = "bg-emerald-200 dark:bg-emerald-900";
+              borderColor = "border-emerald-600";
+              textColor = "text-emerald-950 dark:text-emerald-50";
+              if (isSelectedCheckIn) {
+                content = (
+                  <span className="text-[8px] font-bold mt-0.5">CHECK-IN</span>
+                );
+              } else if (isSelectedCheckOut) {
+                content = (
+                  <span className="text-[8px] font-bold mt-0.5">CHECK-OUT</span>
+                );
+              }
+            } else {
+              bgColor = "bg-green-100 dark:bg-green-950";
+              borderColor = "border-green-500";
+              textColor = "text-green-900 dark:text-green-100";
+            }
             break;
           case "family":
             textColor = "text-blue-900 dark:text-blue-100";
@@ -486,6 +572,52 @@ export default function FamilyAvailabilityPage() {
                   renderCalendar()
                 )}
               </div>
+
+              {/* Booking Request Button */}
+              {bookingCheckIn && bookingCheckOut && (
+                <div className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-950 border-2 border-emerald-600 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-emerald-900 dark:text-emerald-100">
+                        Selected Dates
+                      </p>
+                      <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                        {formatDate(bookingCheckIn)} →{" "}
+                        {formatDate(bookingCheckOut)} (
+                        {Math.ceil(
+                          (bookingCheckOut.getTime() -
+                            bookingCheckIn.getTime()) /
+                            (1000 * 60 * 60 * 24),
+                        )}{" "}
+                        nights)
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setBookingCheckIn(null);
+                          setBookingCheckOut(null);
+                        }}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          // Navigate to booking page with dates
+                          router.push(
+                            `/family/request?checkIn=${formatDate(bookingCheckIn)}&checkOut=${formatDate(bookingCheckOut)}`,
+                          );
+                        }}
+                      >
+                        Request Booking
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Legend */}
               <div className="flex flex-wrap gap-4 mt-6 pt-6 border-t text-sm">

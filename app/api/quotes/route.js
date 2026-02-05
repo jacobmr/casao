@@ -58,6 +58,52 @@ export async function POST(request) {
     if (!response.ok) {
       const error = await response.text();
       console.error("Guesty quotes API error:", error);
+
+      // Send Pushover notification for API failures
+      try {
+        const pushoverUserKey = process.env.PUSHOVER_USER_KEY;
+        const pushoverApiToken = process.env.PUSHOVER_API_TOKEN;
+
+        if (pushoverUserKey && pushoverApiToken) {
+          // Parse error to check for specific issues
+          let errorDetail = error;
+          let isHardBlocked = false;
+
+          try {
+            const errorJson = JSON.parse(error);
+            if (errorJson.error?.code === "LISTING_IS_NOT_AVAILABLE") {
+              const notApplicable =
+                errorJson.error?.data?.moreDetails?.notApplicableRatePlans?.[0]
+                  ?.notApplicable;
+              isHardBlocked = notApplicable?.hardBlocked === true;
+              errorDetail = `${errorJson.error.code}: ${errorJson.error.message}`;
+            }
+          } catch (e) {
+            // Error parsing failed, use raw error
+          }
+
+          const message = `Guesty Quotes API Failed\n\nDates: ${checkIn} → ${checkOut}\nGuests: ${guests}\n\nError: ${errorDetail}\n\n${isHardBlocked ? "⚠️ Property shows as HARD BLOCKED in Guesty. Check calendar for conflicts or allotment settings." : "Check Guesty API configuration."}`;
+
+          const formData = new URLSearchParams({
+            token: pushoverApiToken,
+            user: pushoverUserKey,
+            title: "🚨 Guesty API Error",
+            message: message,
+            priority: "1", // High priority
+          });
+
+          await fetch("https://api.pushover.net/1/messages.json", {
+            method: "POST",
+            body: formData,
+          });
+
+          console.log("📱 Pushover notification sent for API error");
+        }
+      } catch (notifError) {
+        console.error("Failed to send notification:", notifError);
+        // Don't fail the request if notification fails
+      }
+
       return NextResponse.json(
         { error: `Guesty API error: ${error}` },
         { status: response.status },
