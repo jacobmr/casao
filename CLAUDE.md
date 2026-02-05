@@ -127,6 +127,9 @@ tail -f ~/guesty-scraper.log          # Check logs
 docker exec -it n8n node /home/node/scrape-to-gcal.js  # Run in container
 ```
 
+**⚠️ Scraper Maintenance Note (Updated Feb 2026):**
+This scraper is fragile and depends on Guesty's exact reservation report page structure. If Guesty changes their layout, the text parsing will break. Monitor for "0 upcoming" in logs despite bookings existing in dashboard. Last fix: Feb 2026 - Guesty added "CREATION DATE" column.
+
 **Kindred → Guesty Owner Block Sync:**
 
 - **Purpose:** Creates Guesty owner reservations from Kindred home exchange calendar events to prevent double-bookings
