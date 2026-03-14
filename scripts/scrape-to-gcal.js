@@ -1,31 +1,13 @@
 const puppeteer = require("/usr/local/lib/node_modules/n8n/node_modules/puppeteer");
-const { google } = require("/usr/local/lib/node_modules/n8n/node_modules/googleapis");
-const fs = require("fs");
+const { CALENDAR_ID, getCalendarClient, sendPushover, loginToGuesty } = require("./shared");
 
-// Configuration - sensitive values from environment variables
-const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "c_3d8960421a7c6f85186c09691337e19aea403d7636c58fd36fb7c0278768680f@group.calendar.google.com";
-const CREDENTIALS_PATH = process.env.GOOGLE_CREDENTIALS_PATH || "/home/node/google-sa-credentials.json";
+// Configuration
 const GUESTY_EMAIL = process.env.GUESTY_EMAIL;
 const GUESTY_PASSWORD = process.env.GUESTY_PASSWORD;
 
-// Validate required credentials
 if (!GUESTY_EMAIL || !GUESTY_PASSWORD) {
   console.error("ERROR: Missing required environment variables GUESTY_EMAIL and GUESTY_PASSWORD");
   process.exit(1);
-}
-
-async function getCalendarClient() {
-  const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, "utf8"));
-  const privateKey = credentials.private_key.replace(/\\n/g, '\n');
-
-  const auth = new google.auth.JWT({
-    email: credentials.client_email,
-    key: privateKey,
-    scopes: ["https://www.googleapis.com/auth/calendar"]
-  });
-
-  await auth.authorize();
-  return google.calendar({ version: "v3", auth });
 }
 
 async function syncToGoogleCalendar(reservations) {
@@ -86,7 +68,6 @@ async function syncToGoogleCalendar(reservations) {
       let bestMatch = guestEvents.find(e => e.checkIn === res.checkIn);
 
       if (!bestMatch) {
-        // Find closest by check-in date (within 7 days = likely a date change)
         bestMatch = guestEvents
           .map(e => ({
             ...e,
@@ -116,7 +97,6 @@ async function syncToGoogleCalendar(reservations) {
           skipped++;
         }
       } else {
-        // No close match found - create new (guest has new separate reservation)
         await calendar.events.insert({
           calendarId: CALENDAR_ID,
           requestBody: {
@@ -134,20 +114,28 @@ async function syncToGoogleCalendar(reservations) {
 
   // Delete unmatched future events (cancelled reservations)
   const today = new Date().toISOString().split('T')[0];
-  let deleted = 0;
+  const unmatchedFuture = existingEvents.filter(e => !e.matched && e.checkIn >= today);
 
-  for (const evt of existingEvents) {
-    if (!evt.matched && evt.checkIn >= today) {
-      await calendar.events.delete({
-        calendarId: CALENDAR_ID,
-        eventId: evt.id
-      });
-      deleted++;
-      console.log("Deleted (cancelled): [GUEST] " + evt.guest + " (" + evt.checkIn + ")");
-    }
+  // Safety check: if we'd delete many events but found no reservations, the scraper likely broke
+  if (unmatchedFuture.length > 2 && reservations.length === 0) {
+    const msg = `Aborting: would delete ${unmatchedFuture.length} events but 0 reservations found — scraper may be broken`;
+    console.error(msg);
+    await sendPushover("Guesty Scraper ABORT", msg);
+    throw new Error(msg);
+  }
+
+  let deleted = 0;
+  for (const evt of unmatchedFuture) {
+    await calendar.events.delete({
+      calendarId: CALENDAR_ID,
+      eventId: evt.id
+    });
+    deleted++;
+    console.log("Deleted (cancelled): [GUEST] " + evt.guest + " (" + evt.checkIn + ")");
   }
 
   console.log("\nSync complete: " + created + " created, " + updated + " updated, " + skipped + " unchanged, " + deleted + " deleted");
+  return { created, updated, skipped, deleted };
 }
 
 async function scrapeGuesty() {
@@ -161,13 +149,7 @@ async function scrapeGuesty() {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
 
-    console.log("Logging in to Guesty...");
-    await page.goto("https://bluezoneexperience.guestyowners.com/", { waitUntil: "networkidle0", timeout: 30000 });
-    await page.waitForSelector("input[type=email]", { timeout: 15000 });
-    await page.type("input[type=email]", GUESTY_EMAIL, { delay: 50 });
-    await page.type("input[type=password]", GUESTY_PASSWORD, { delay: 50 });
-    await page.click("button[type=submit]");
-    await page.waitForNavigation({ waitUntil: "networkidle0", timeout: 30000 });
+    await loginToGuesty(page, GUESTY_EMAIL, GUESTY_PASSWORD);
 
     console.log("Loading reservations...");
     await page.goto("https://bluezoneexperience.guestyowners.com/reservation-report?viewId=6901358070cda2b4e288cc4b", { waitUntil: "networkidle0", timeout: 30000 });
@@ -238,10 +220,22 @@ async function scrapeGuesty() {
 (async () => {
   try {
     const reservations = await scrapeGuesty();
-    await syncToGoogleCalendar(reservations);
+
+    if (reservations.length === 0) {
+      const msg = "0 upcoming reservations found — possible scraper breakage";
+      console.warn(msg);
+      await sendPushover("Guesty Scraper Warning", msg);
+    }
+
+    const result = await syncToGoogleCalendar(reservations);
+    await sendPushover(
+      "Guesty Scraper Complete",
+      `${result.created} created, ${result.updated} updated, ${result.deleted} deleted`
+    );
     console.log("\nDone!");
   } catch (error) {
     console.error("Failed:", error.message);
+    await sendPushover("Guesty Scraper FAILED", error.message.substring(0, 200));
     process.exit(1);
   }
 })();

@@ -288,18 +288,21 @@ export async function GET(request: Request) {
           }
         }
 
+        // Check if scraper has a guest name for this date
+        const guestData = guestyGuestsByDate.get(dateStr);
+
         // Map Guesty status to our color codes
+        // If we have a [GUEST] event from the scraper, treat as "booked" regardless
+        // of Guesty cache status (cache may lag behind owner block changes)
         let status: "available" | "family" | "owner" | "booked" | "kindred";
         if (guestyStatus === "available") {
           status = "available";
-        } else if (guestyStatus === "booked") {
-          status = "booked"; // Paying guest
+        } else if (guestyStatus === "booked" || guestData) {
+          status = "booked"; // Paying guest (or cache stale but scraper confirms guest)
         } else {
           status = "owner"; // Blocked by owner
         }
 
-        // Add guest name for booked dates if we have it from scraper
-        const guestData = guestyGuestsByDate.get(dateStr);
         if (status === "booked" && guestData) {
           calendarDays.push({
             date: dateStr,
