@@ -680,8 +680,9 @@ export default function FamilyAvailabilityPage() {
                 ) : (
                   <div className="space-y-3">
                     {upcomingStays.map((stay) => {
-                      const checkIn = new Date(stay.checkIn);
-                      const checkOut = new Date(stay.checkOut);
+                      // Parse as noon local to avoid UTC date-only shift
+                      const checkIn = new Date(stay.checkIn + "T12:00:00");
+                      const checkOut = new Date(stay.checkOut + "T12:00:00");
                       const nights = Math.ceil(
                         (checkOut.getTime() - checkIn.getTime()) /
                           (1000 * 60 * 60 * 24),
@@ -761,10 +762,12 @@ export default function FamilyAvailabilityPage() {
                         Dates
                       </div>
                       <div className="text-base">
-                        {new Date(selectedBooking.checkIn).toLocaleDateString()}{" "}
+                        {new Date(
+                          selectedBooking.checkIn + "T12:00:00",
+                        ).toLocaleDateString()}{" "}
                         →{" "}
                         {new Date(
-                          selectedBooking.checkOut,
+                          selectedBooking.checkOut + "T12:00:00",
                         ).toLocaleDateString()}
                       </div>
                     </div>
