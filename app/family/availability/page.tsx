@@ -10,6 +10,7 @@ import {
   Calendar as CalendarIcon,
   Loader2,
   LogOut,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CalendarDay, FamilyBooking } from "@/lib/family-types";
@@ -55,6 +56,9 @@ export default function FamilyAvailabilityPage() {
   );
   const [bookingCheckIn, setBookingCheckIn] = useState<Date | null>(null);
   const [bookingCheckOut, setBookingCheckOut] = useState<Date | null>(null);
+  const [scraperPending, setScraperPending] = useState(false);
+  const [scraperLastRun, setScraperLastRun] = useState<string | null>(null);
+  const [scraperResult, setScraperResult] = useState<string | null>(null);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -232,6 +236,49 @@ export default function FamilyAvailabilityPage() {
 
     fetchUpcomingStays();
   }, []);
+
+  // Fetch scraper status on load + poll while pending
+  useEffect(() => {
+    const fetchScraperStatus = async () => {
+      try {
+        const res = await fetch("/api/family/admin/scraper");
+        if (res.ok) {
+          const data = await res.json();
+          setScraperPending(data.pending);
+          setScraperLastRun(data.lastRun);
+          setScraperResult(data.result);
+        }
+      } catch {
+        // Silently ignore — non-critical
+      }
+    };
+
+    fetchScraperStatus();
+
+    // Poll every 15s while pending
+    if (scraperPending) {
+      const interval = setInterval(fetchScraperStatus, 15000);
+      return () => clearInterval(interval);
+    }
+  }, [scraperPending]);
+
+  const handleRefreshBookings = async () => {
+    try {
+      setScraperPending(true);
+      const res = await fetch("/api/family/admin/scraper", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "trigger" }),
+      });
+      if (!res.ok) {
+        setScraperPending(false);
+        alert("Failed to trigger refresh");
+      }
+    } catch {
+      setScraperPending(false);
+      alert("Failed to trigger refresh");
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -651,9 +698,52 @@ export default function FamilyAvailabilityPage() {
                 </div>
               </div>
 
+              {/* Refresh Bookings */}
+              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                <div className="text-xs text-muted-foreground">
+                  {scraperPending ? (
+                    <span className="flex items-center gap-1.5">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Refreshing bookings...
+                    </span>
+                  ) : scraperLastRun ? (
+                    <>
+                      Last refreshed:{" "}
+                      {(() => {
+                        const mins = Math.round(
+                          (Date.now() - new Date(scraperLastRun).getTime()) /
+                            60000,
+                        );
+                        if (mins < 1) return "just now";
+                        if (mins < 60) return `${mins}m ago`;
+                        const hrs = Math.round(mins / 60);
+                        if (hrs < 24) return `${hrs}h ago`;
+                        return `${Math.round(hrs / 24)}d ago`;
+                      })()}
+                    </>
+                  ) : (
+                    "Booking data from daily sync"
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefreshBookings}
+                  disabled={scraperPending}
+                >
+                  <RefreshCw
+                    className={cn(
+                      "h-3.5 w-3.5 mr-1.5",
+                      scraperPending && "animate-spin",
+                    )}
+                  />
+                  Refresh Bookings
+                </Button>
+              </div>
+
               {/* Request Dates Button */}
               <Button
-                className="w-full mt-6"
+                className="w-full mt-4"
                 size="lg"
                 onClick={() => router.push("/family/request")}
               >
