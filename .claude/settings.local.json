@@ -10,7 +10,9 @@
       "WebFetch(domain:open-api-docs.guesty.com)",
       "WebFetch(domain:booking-api-docs.guesty.com)",
       "Bash(pnpm build:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(npx next:*)",
+      "Bash(pnpm install:*)"
     ]
   }
 }
