@@ -256,14 +256,25 @@ async function tryDomFallback() {
           const checkOut = lines[i + 1].split(" ")[0];
           const listing = lines[i + offset.listing];
           const guest = lines[i + offset.guest];
+          const durationDays = Math.round(
+            (new Date(checkOut + "T00:00:00Z") -
+              new Date(checkIn + "T00:00:00Z")) /
+              (1000 * 60 * 60 * 24),
+          );
           if (
             guest &&
             !guest.startsWith("$") &&
             !/^\d/.test(guest) &&
             listing &&
-            listing.includes("Casa Vistas")
+            listing.includes("Casa Vistas") &&
+            durationDays > 0 &&
+            durationDays <= 90
           ) {
             found.push({ checkIn, checkOut, guest, source: "dom-fallback" });
+          } else if (durationDays > 90) {
+            console.warn(
+              `  Skipped suspicious DOM reservation: ${guest} (${checkIn} → ${checkOut}, ${durationDays} days)`,
+            );
           }
         }
       }
@@ -345,6 +356,18 @@ function parseReportRows(rows) {
     // Keep inquiries for awareness but flag them
     const isInquiry = status === "inquiry";
     if (isInquiry) skippedInquiry++;
+
+    // Sanity check: skip reservations longer than 90 days (likely parsing errors)
+    const durationDays = Math.round(
+      (new Date(checkOut + "T00:00:00Z") - new Date(checkIn + "T00:00:00Z")) /
+        (1000 * 60 * 60 * 24),
+    );
+    if (durationDays <= 0 || durationDays > 90) {
+      console.warn(
+        `  Skipped suspicious reservation: ${guest} (${checkIn} → ${checkOut}, ${durationDays} days)`,
+      );
+      continue;
+    }
 
     reservations.push({
       checkIn,
