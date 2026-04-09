@@ -57,6 +57,13 @@ lib/
 ├── token-service-kv.js    # OAuth token management with KV
 ├── pricing-fetcher.js     # Pricing utilities
 └── experiences-data.ts    # Static experience definitions
+
+scraper/                       # Runs on 636desk (NOT on any remote server)
+├── scrape-to-gcal.js          # Guesty → Google Calendar sync
+├── kindred-to-guesty.js       # Kindred → Guesty owner block sync
+├── shared.js                  # SOPS decrypt, Google Calendar, Pushover
+├── cancel-reservation.js      # Cancel Guesty reservations
+└── secrets.env.enc            # SOPS-encrypted secrets
 ```
 
 ### Booking Flow
@@ -96,69 +103,68 @@ Vercel KV variables are auto-configured on Vercel deployment.
 - **Build Config:** ESLint and TypeScript errors are ignored during builds (`next.config.mjs`)
 - **Images:** Unoptimized in Next.js config; property photos in `public/images/`
 
-## External Infrastructure
+## Scraper Scripts (636desk)
 
-### CASAO Server (172.30.30.196)
+All scraper scripts run locally on 636desk from the `scraper/` directory in this repo. Secrets are SOPS-encrypted and decrypted at runtime — no plaintext on disk.
 
-Ubuntu server running ancillary services for Casa Vistas.
-
-**Guesty → Google Calendar Scraper:**
+### Guesty → Google Calendar Scraper
 
 - **Purpose:** Syncs commercial Guesty bookings to Google Calendar as `[GUEST]` events
-- **Tech:** Puppeteer inside n8n Docker container
-- **Schedule:** Daily at 6:00 AM CST (`0 6 * * *`)
-- **Script:** `/home/node/scrape-to-gcal.js` (inside n8n container)
-- **Runner:** `/home/jacob/run-guesty-scraper.sh`
-- **Logs:** `/home/jacob/guesty-scraper.log`
+- **Script:** `scraper/scrape-to-gcal.js`
+- **Tech:** Direct Guesty Owners Portal API (v2 rewrite), with DOM fallback via Puppeteer
+- **Schedule:** Daily at 6:00 AM CST via cron on 636desk
+- **Runner:** `scraper/run-scraper.sh`
+- **Notifications:** Pushover on success/failure
+- **Guard:** 90-day max duration filter rejects bogus reservations from parsing errors
 
 **How it works:**
 
-1. Logs into Guesty Owners portal (bluezoneexperience.guestyowners.com)
-2. Scrapes reservation report for Casa Vistas bookings
-3. Creates/updates `[GUEST] Guest Name` events in Google Calendar
+1. Calls Guesty Owners Portal API for reservation data (no browser needed)
+2. Falls back to Puppeteer DOM scraping if API fails
+3. Creates/updates/deletes `[GUEST] Guest Name` events in Google Calendar
 4. Family Portal reads these events via `lib/google-calendar.ts`
 
-**SSH access:**
+**Manual run:**
 
 ```bash
-ssh jacob@172.30.30.196
-tail -f ~/guesty-scraper.log          # Check logs
-~/run-guesty-scraper.sh               # Run manually
-docker exec -it n8n node /home/node/scrape-to-gcal.js  # Run in container
+cd /data/dev/CasaVistas/scraper && node scrape-to-gcal.js
 ```
 
-**⚠️ Scraper Maintenance Note (Updated Feb 2026):**
-This scraper is fragile and depends on Guesty's exact reservation report page structure. If Guesty changes their layout, the text parsing will break. Monitor for "0 upcoming" in logs despite bookings existing in dashboard. Last fix: Feb 2026 - Guesty added "CREATION DATE" column.
-
-**Kindred → Guesty Owner Block Sync:**
+### Kindred → Guesty Owner Block Sync
 
 - **Purpose:** Creates Guesty owner reservations from Kindred home exchange calendar events to prevent double-bookings
-- **Tech:** Puppeteer inside n8n Docker container (same as Guesty scraper)
-- **Schedule:** Daily at 6:30 AM CST (`30 6 * * *`) - runs after Guesty scraper
-- **Script:** `/home/node/kindred-to-guesty.js` (inside n8n container)
-- **Runner:** `/home/jacob/run-kindred-sync.sh`
-- **Logs:** `/home/jacob/kindred-sync.log`
-- **Notifications:** SimplePush (key: `casaVi`)
+- **Script:** `scraper/kindred-to-guesty.js`
+- **Tech:** Guesty Owners Portal API (direct, no Puppeteer)
+- **Schedule:** Daily at 6:30 AM CST via cron on 636desk
+- **Runner:** `scraper/run-kindred-sync.sh`
+- **Notifications:** Pushover on success/failure
 
 **How it works:**
 
 1. Reads future `[KINDRED]` events from Google Calendar
 2. Filters out already-synced events (checks for `[SYNCED-TO-GUESTY]` in description)
-3. Logs into Guesty Owners portal
-4. Creates owner reservation for each unsynced Kindred event
-5. Marks Google Calendar event with `[SYNCED-TO-GUESTY]` timestamp
-6. Sends SimplePush notification on success/failure
+3. Creates owner reservation via Guesty API for each unsynced Kindred event
+4. Marks Google Calendar event with `[SYNCED-TO-GUESTY]` timestamp
 
 **Manual run:**
 
 ```bash
-ssh jacob@172.30.30.196
-~/run-kindred-sync.sh                                    # Via runner
-docker exec n8n node /home/node/kindred-to-guesty.js    # Direct in container
-tail -f ~/kindred-sync.log                               # Check logs
+cd /data/dev/CasaVistas/scraper && node kindred-to-guesty.js
 ```
 
-**Source code:** `scripts/kindred-to-guesty.js` (this repo)
+### Scraper Secrets
+
+```bash
+# Decrypt and view secrets
+cd scraper && sops decrypt --input-type dotenv --output-type dotenv secrets.env.enc
+
+# Check Google SA credentials
+sops decrypt google-sa-credentials.enc.json | jq .client_email
+```
+
+### Legacy Scripts (deprecated)
+
+The `scripts/` directory contains old versions that previously ran on CASAO Server (172.30.30.196) inside an n8n Docker container. These are **not deployed anywhere** and should not be edited. All active code is in `scraper/`.
 
 ### Google Calendar Integration
 
@@ -167,18 +173,22 @@ tail -f ~/kindred-sync.log                               # Check logs
 **Event Prefixes:**
 | Prefix | Source | Reader |
 |--------|--------|--------|
-| `[GUEST]` | Guesty scraper on CASAO Server | `getGuestBookings()` |
+| `[GUEST]` | Guesty scraper on 636desk (`scraper/scrape-to-gcal.js`) | `getGuestBookings()` |
 | `[KINDRED]` | Google Apps Script (`scripts/kindred-calendar-sync.gs`) | `getKindredBookings()` |
 | `Pending:` | Family Portal booking requests | `getPendingBookings()` |
 | (none) | Confirmed family bookings | `getConfirmedBookings()` |
 
-**Scripts in this repo:**
+**Active scripts (in `scraper/`):**
 
-- `scripts/kindred-calendar-sync.gs` - Apps Script for Kindred invite sync
-- `scripts/kindred-to-guesty.js` - Puppeteer script for Kindred → Guesty owner block sync
-- `scripts/run-kindred-sync.sh` - Runner script for Kindred sync
-- `scripts/KINDRED-SETUP.md` - Setup instructions
+- `scraper/scrape-to-gcal.js` - Guesty reservation scraper (v2, API-first)
+- `scraper/kindred-to-guesty.js` - Kindred → Guesty owner block sync
+- `scraper/shared.js` - Shared utilities (SOPS decrypt, Google Calendar, Pushover)
+- `scraper/cancel-reservation.js` - Cancel a Guesty reservation
 - `lib/google-calendar.ts` - TypeScript client for reading calendar events
+
+**Google Apps Scripts:**
+
+- `scripts/kindred-calendar-sync.gs` - Apps Script for Kindred invite sync (deployed in Google)
 
 ### Family Portal
 
