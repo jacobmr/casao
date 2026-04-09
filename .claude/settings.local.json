@@ -12,7 +12,19 @@
       "Bash(pnpm build:*)",
       "Bash(git stash:*)",
       "Bash(npx next:*)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "Bash(scp:*)",
+      "Bash(ping:*)",
+      "Bash(npx puppeteer:*)",
+      "Bash(nslookup bluezoneexperience.guestyowners.com)",
+      "Bash(node:*)",
+      "Bash(chmod +x:*)",
+      "Bash(sops encrypt:*)",
+      "Bash(sops decrypt:*)",
+      "Bash(grep -rn 'ZcgJPkDp5Tg3L4\\\\|u9b3evhp7d\\\\|au63m1n9hfd\\\\|private_key' /data/dev/CasaVistas/scraper/*.js)",
+      "Bash(grep -rn 'KdDnXIZcVp0HBF2pzzVDHvNqE0CwxVnp' /data/dev/CasaVistas/scraper/*.js)",
+      "Bash(sops edit:*)",
+      "Bash(grep -rn 'KdDnXIZcVp0\\\\|ZcgJPkDp5\\\\|u9b3evhp7d\\\\|au63m1n9hfd' /data/dev/CasaVistas/scraper/*.js)"
     ]
   }
 }

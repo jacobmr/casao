@@ -40,3 +40,9 @@ FRIENDS_FAMILY_*.md
 QUICK_REFERENCE.md
 ANALYSIS_COMPLETE.txt
 docs/
+
+# Scraper (plaintext secrets + runtime files)
+scraper/.env
+scraper/google-sa-credentials.json
+scraper/node_modules/
+scraper/*.log

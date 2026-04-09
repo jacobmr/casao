@@ -1,0 +1,16 @@
+{
+  "name": "casavistas-scraper",
+  "version": "2.0.0",
+  "description": "Guesty Owners Portal scraper — network interception approach",
+  "private": true,
+  "scripts": {
+    "scrape": "node scrape-to-gcal.js",
+    "probe": "node probe-guesty-api.js",
+    "kindred": "node kindred-to-guesty.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.1",
+    "googleapis": "^144.0.0",
+    "puppeteer": "^24.0.0"
+  }
+}
