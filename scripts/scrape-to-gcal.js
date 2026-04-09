@@ -254,14 +254,31 @@ async function scrapeGuesty() {
           // Skip creation date at i+2
           const listing = lines[i + 3]; // Changed from i+2 to i+3
           const guest = lines[i + 4]; // Changed from i+3 to i+4
+          const durationDays = Math.round(
+            (new Date(checkOut + "T00:00:00Z") - new Date(checkIn + "T00:00:00Z")) / (1000 * 60 * 60 * 24),
+          );
           if (
             guest &&
             !guest.startsWith("$") &&
             !/^\d/.test(guest) &&
             listing &&
-            listing.includes("Casa Vistas")
+            listing.includes("Casa Vistas") &&
+            durationDays > 0 &&
+            durationDays <= 90
           ) {
             reservations.push({ checkIn, checkOut, guest });
+          } else if (durationDays > 90) {
+            console.warn(
+              "Skipped suspicious reservation: " +
+                guest +
+                " (" +
+                checkIn +
+                " → " +
+                checkOut +
+                ", " +
+                durationDays +
+                " days)",
+            );
           }
         }
       }
