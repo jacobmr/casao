@@ -9,6 +9,17 @@ Casa Vistas is a direct booking website for a luxury vacation rental in Costa Ri
 **Production:** https://www.casavistas.net
 **Staging:** https://casao.vercel.app
 
+### Repo Structure
+
+This is a single repo with two components:
+
+| Component | Directory | Runs on | Deployed via |
+|-----------|-----------|---------|--------------|
+| **Next.js app** | `app/`, `components/`, `lib/` | Vercel | Git push → Vercel auto-deploy |
+| **Scraper scripts** | `scraper/` | 636desk (local cron) | Git pull on 636desk (manual) |
+
+Both live in the same repo for convenience. The `scraper/` directory has its own `package.json` and `node_modules`. Vercel ignores it — it just builds the Next.js app from the root. The `scripts/` directory is legacy (gitignored, not deployed anywhere).
+
 ## Commands
 
 ```bash
