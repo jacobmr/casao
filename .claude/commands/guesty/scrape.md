@@ -9,6 +9,7 @@ The scraper (`scrape-to-gcal.js`) logs into the Guesty Owners Portal API, fetche
 ## Steps
 
 1. **Run the scraper**:
+
    ```bash
    cd /data/dev/CasaVistas/scraper && node scrape-to-gcal.js
    ```

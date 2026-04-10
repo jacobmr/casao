@@ -9,6 +9,7 @@ The sync script (`kindred-to-guesty.js`) reads future `[KINDRED]` events from Go
 ## Steps
 
 1. **Run the sync**:
+
    ```bash
    cd /data/dev/CasaVistas/scraper && node kindred-to-guesty.js
    ```

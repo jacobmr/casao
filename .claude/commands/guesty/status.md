@@ -7,7 +7,11 @@ Show all upcoming reservations for Casa Vistas from the Guesty Owners Portal API
 1. **Login** — Run this Node.js snippet from `/data/dev/CasaVistas/scraper/`:
 
 ```javascript
-const { GUESTY_EMAIL, GUESTY_PASSWORD, GUESTY_PORTAL_API_KEY } = require("./shared");
+const {
+  GUESTY_EMAIL,
+  GUESTY_PASSWORD,
+  GUESTY_PORTAL_API_KEY,
+} = require("./shared");
 const loginRes = await fetch("https://app.guesty.com/api/owners/auth/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
