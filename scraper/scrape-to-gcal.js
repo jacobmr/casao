@@ -353,9 +353,13 @@ function parseReportRows(rows) {
     const isOwnerBlock = source === "owner";
     if (isOwnerBlock) skippedOwner++;
 
-    // Keep inquiries for awareness but flag them
-    const isInquiry = status === "inquiry";
-    if (isInquiry) skippedInquiry++;
+    // Skip inquiries — they aren't confirmed bookings and Guesty doesn't hold
+    // the dates, so writing them to the calendar creates phantom "booked"
+    // blocks that can conflict with real incoming reservations.
+    if (status === "inquiry") {
+      skippedInquiry++;
+      continue;
+    }
 
     // Sanity check: skip reservations longer than 90 days (likely parsing errors)
     const durationDays = Math.round(
@@ -375,14 +379,13 @@ function parseReportRows(rows) {
       guest,
       status,
       source: "api",
-      isInquiry,
       isOwnerBlock,
     });
   }
 
   console.log(
     `  Parsed ${reservations.length} reservations from ${rows.length} total rows` +
-      ` (skipped: ${skippedCanceled} canceled; includes ${skippedOwner} owner blocks, ${skippedInquiry} inquiries)`,
+      ` (skipped: ${skippedCanceled} canceled, ${skippedInquiry} inquiries; includes ${skippedOwner} owner blocks)`,
   );
   return reservations.length > 0 ? reservations : null;
 }
