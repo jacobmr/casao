@@ -40,6 +40,9 @@ const REPORT_COLUMNS = [
   "guest",
   "status",
   "source",
+  "confirmationCode",
+  "guest.email",
+  "guest.phone",
 ].join("+");
 
 // === Strategy 1: Direct API (no browser) ===
@@ -331,6 +334,8 @@ function parseReportRows(rows) {
     const guest = val(row.guest) || "Unknown Guest";
     const status = val(row.status) || "";
     const source = val(row.source) || "";
+    const reservationId = row._id || "";
+    const confirmationCode = val(row.confirmationCode) || "";
 
     if (!checkInRaw || !checkOutRaw) continue;
 
@@ -378,7 +383,9 @@ function parseReportRows(rows) {
       checkOut,
       guest,
       status,
-      source: "api",
+      source,
+      reservationId,
+      confirmationCode,
       isOwnerBlock,
     });
   }
@@ -390,7 +397,45 @@ function parseReportRows(rows) {
   return reservations.length > 0 ? reservations : null;
 }
 
-// === Calendar Sync (unchanged from v1) ===
+// === Calendar Sync ===
+//
+// Events are keyed by Guesty reservation ID via a machine-readable marker
+// embedded in the event description:
+//
+//   [GUEST] Jane Doe
+//   ├── description:
+//   │   Source: Direct
+//   │   Confirmation: GY-abc123
+//   │   Status: confirmed
+//   │   Synced: 2026-04-12T22:48:27Z
+//   │   ─────
+//   │   guesty_reservation_id: 68e87294b25f11d7aad2c728
+//
+// The last line is the source of truth for matching. Events without the
+// marker (legacy events from earlier versions of the scraper, or events
+// created by other tools) fall back to name+date fuzzy matching exactly
+// once — on their next sync, they get re-stamped with the marker and
+// become id-matched thereafter.
+
+const MARKER_PREFIX = "guesty_reservation_id: ";
+
+function buildEventDescription(res) {
+  const lines = [
+    `Source: ${res.source || "(unknown)"}`,
+    `Confirmation: ${res.confirmationCode || "(none)"}`,
+    `Status: ${res.status || "(unknown)"}`,
+    `Synced: ${new Date().toISOString()}`,
+    "─────",
+    `${MARKER_PREFIX}${res.reservationId || "(unknown)"}`,
+  ];
+  return lines.join("\n");
+}
+
+function extractReservationId(description) {
+  if (!description) return null;
+  const match = description.match(/guesty_reservation_id:\s*([a-f0-9]+)/i);
+  return match ? match[1] : null;
+}
 
 async function syncToGoogleCalendar(reservations) {
   console.log("Syncing to Google Calendar...");
@@ -405,20 +450,34 @@ async function syncToGoogleCalendar(reservations) {
     maxResults: 500,
   });
 
-  const existingEvents = [];
+  // Split existing [GUEST] events into two buckets: stamped (have a
+  // reservationId marker we can match against) and legacy (fall back to
+  // name+date).
+  const byReservationId = new Map();
+  const legacyEvents = [];
   (existing.data.items || []).forEach((evt) => {
-    if (evt.summary?.startsWith("[GUEST]")) {
-      existingEvents.push({
-        id: evt.id,
-        guest: evt.summary.replace("[GUEST]", "").trim(),
-        checkIn: evt.start?.date,
-        checkOut: evt.end?.date,
-        matched: false,
-      });
+    if (!evt.summary?.startsWith("[GUEST]")) return;
+    const reservationId = extractReservationId(evt.description);
+    const entry = {
+      id: evt.id,
+      guest: evt.summary.replace("[GUEST]", "").trim(),
+      checkIn: evt.start?.date,
+      checkOut: evt.end?.date,
+      description: evt.description || "",
+      reservationId,
+      matched: false,
+    };
+    if (reservationId) {
+      byReservationId.set(reservationId, entry);
+    } else {
+      legacyEvents.push(entry);
     }
   });
 
-  console.log("Found " + existingEvents.length + " existing [GUEST] events");
+  console.log(
+    `Found ${byReservationId.size + legacyEvents.length} existing [GUEST] events ` +
+      `(${byReservationId.size} stamped, ${legacyEvents.length} legacy)`,
+  );
 
   let created = 0,
     updated = 0,
@@ -426,86 +485,96 @@ async function syncToGoogleCalendar(reservations) {
 
   for (const res of reservations) {
     const eventTitle = "[GUEST] " + res.guest;
-    const guestEvents = existingEvents.filter(
-      (e) => e.guest === res.guest && !e.matched,
-    );
+    const newDescription = buildEventDescription(res);
+    const requestBody = {
+      summary: eventTitle,
+      start: { date: res.checkIn },
+      end: { date: res.checkOut },
+      description: newDescription,
+    };
 
-    if (guestEvents.length === 0) {
+    // Step 1: id match (stamped events)
+    let match = null;
+    if (res.reservationId && byReservationId.has(res.reservationId)) {
+      match = byReservationId.get(res.reservationId);
+    }
+
+    // Step 2: legacy fallback by name (exact check-in, then ±7 days).
+    // Keep references to the original legacyEvents entries so .matched flags
+    // flow back to the right object.
+    if (!match) {
+      const candidates = legacyEvents.filter(
+        (e) => e.guest === res.guest && !e.matched,
+      );
+      match = candidates.find((e) => e.checkIn === res.checkIn);
+      if (!match) {
+        const DAY_MS = 1000 * 60 * 60 * 24;
+        const targetTs = new Date(res.checkIn).getTime();
+        let best = null;
+        let bestDiff = Infinity;
+        for (const e of candidates) {
+          const diff =
+            Math.abs(new Date(e.checkIn).getTime() - targetTs) / DAY_MS;
+          if (diff <= 7 && diff < bestDiff) {
+            best = e;
+            bestDiff = diff;
+          }
+        }
+        match = best;
+      }
+    }
+
+    if (!match) {
       await calendar.events.insert({
         calendarId: CALENDAR_ID,
-        requestBody: {
-          summary: eventTitle,
-          start: { date: res.checkIn },
-          end: { date: res.checkOut },
-          description: "Guesty guest booking",
-        },
+        requestBody,
       });
       created++;
-      console.log("Created: " + eventTitle + " (" + res.checkIn + ")");
-    } else {
-      let bestMatch = guestEvents.find((e) => e.checkIn === res.checkIn);
-      if (!bestMatch) {
-        bestMatch = guestEvents
-          .map((e) => ({
-            ...e,
-            daysDiff:
-              Math.abs(new Date(e.checkIn) - new Date(res.checkIn)) /
-              (1000 * 60 * 60 * 24),
-          }))
-          .filter((e) => e.daysDiff <= 7)
-          .sort((a, b) => a.daysDiff - b.daysDiff)[0];
-      }
+      console.log(`Created: ${eventTitle} (${res.checkIn})`);
+      continue;
+    }
 
-      if (bestMatch) {
-        bestMatch.matched = true;
-        if (
-          bestMatch.checkIn !== res.checkIn ||
-          bestMatch.checkOut !== res.checkOut
-        ) {
-          await calendar.events.update({
-            calendarId: CALENDAR_ID,
-            eventId: bestMatch.id,
-            requestBody: {
-              summary: eventTitle,
-              start: { date: res.checkIn },
-              end: { date: res.checkOut },
-              description: "Guesty guest booking",
-            },
-          });
-          updated++;
-          console.log(
-            "Updated: " +
-              eventTitle +
-              " (" +
-              bestMatch.checkIn +
-              " → " +
-              res.checkIn +
-              ")",
-          );
-        } else {
-          skipped++;
-        }
-      } else {
-        await calendar.events.insert({
-          calendarId: CALENDAR_ID,
-          requestBody: {
-            summary: eventTitle,
-            start: { date: res.checkIn },
-            end: { date: res.checkOut },
-            description: "Guesty guest booking",
-          },
-        });
-        created++;
-        console.log("Created: " + eventTitle + " (" + res.checkIn + ")");
-      }
+    match.matched = true;
+
+    // Update if dates changed OR description needs stamping/refreshing.
+    // We always refresh the description so `Synced:` timestamp updates,
+    // but only log it as "updated" when something user-visible changed.
+    const datesChanged =
+      match.checkIn !== res.checkIn || match.checkOut !== res.checkOut;
+    const needsStamping = !match.reservationId && res.reservationId;
+
+    if (datesChanged || needsStamping) {
+      await calendar.events.update({
+        calendarId: CALENDAR_ID,
+        eventId: match.id,
+        requestBody,
+      });
+      updated++;
+      const reason = datesChanged
+        ? `${match.checkIn} → ${res.checkIn}`
+        : "stamped with reservation id";
+      console.log(`Updated: ${eventTitle} (${reason})`);
+    } else {
+      // Still refresh description so Synced: timestamp stays current.
+      // Cheap no-op from the user's perspective.
+      await calendar.events.patch({
+        calendarId: CALENDAR_ID,
+        eventId: match.id,
+        requestBody: { description: newDescription },
+      });
+      skipped++;
     }
   }
 
-  // Delete unmatched future events (cancelled reservations)
+  // Delete unmatched future events (cancelled reservations). An event is
+  // unmatched if no reservation in this run claimed it — either it was
+  // canceled in Guesty, or it's a stale [GUEST] event from a prior sync
+  // that no longer maps to any current reservation.
   const today = new Date().toISOString().split("T")[0];
-  const unmatchedFuture = existingEvents.filter(
-    (e) => !e.matched && e.checkIn >= today,
-  );
+  const unmatchedFuture = [
+    ...legacyEvents.filter((e) => !e.matched),
+    ...Array.from(byReservationId.values()).filter((e) => !e.matched),
+  ].filter((e) => e.checkIn >= today);
 
   // Safety: don't mass-delete if scraper found nothing
   if (unmatchedFuture.length > 2 && reservations.length === 0) {

@@ -77,13 +77,43 @@ scraper/                       # Runs on 636desk (NOT on any remote server)
 └── secrets.env.enc            # SOPS-encrypted secrets
 ```
 
-### Booking Flow
+### Booking Flow — Casa Vistas → Guesty Handoff
 
-1. Guest selects dates on home page or `/booking`
-2. Optional: Add experiences on `/enhance` page
-3. Click "Continue to Checkout" → `/api/handoff`
-4. Handoff shows branded interstitial with booking summary
-5. Redirect to Blue Zone Guesty checkout with UTM tracking
+This is the direct-booking flow and is the **most valuable channel** because it captures guest contact info (name + email + phone via Guesty's side) before Blue Zone ever sees the lead. All other channels either anonymize contact (Airbnb) or give us only partial info after the fact.
+
+**The handoff endpoint** (`app/api/handoff/route.js`) is a three-stage flow behind a single URL:
+
+1. **Guest picks dates on casavistas.net** (home page modal, `/booking` page, or `/enhance` page with experiences).
+2. **Client redirects to `/api/handoff?checkIn=&checkOut=&adults=[&experiences=&promo=]`** (no `name`/`email` yet).
+3. **Stage A — Lead capture form.** Endpoint detects missing `name`/`email` and serves `renderLeadCaptureForm()`: a branded HTML page asking for full name + email. Form submission re-hits `/api/handoff` with `name`/`email` appended.
+4. **Stage B — Branded interstitial + Pushover.** With `name`/`email` now present, the endpoint:
+   - Generates a UUID booking reference (for user display, not persisted).
+   - Sends a Pushover notification to the owner with `name (email)`, dates, nights, guest count, and any promo code.
+   - Console-logs the full handoff payload.
+   - Renders the branded "You're Almost There!" interstitial. If a promo code is set, shows a copy-to-clipboard box and a screenshot hint of where to paste it on the Guesty side. If experiences are selected with 2+ count, shows a 5% discount badge.
+5. **Stage C — Redirect to Blue Zone Guesty.** The interstitial's "Continue to Secure Checkout →" button links to `https://bluezoneexperience.guestybookings.com/en/properties/{GUESTY_PROPERTY_ID}?minOccupancy={adults}&checkIn={checkIn}&checkOut={checkOut}`. Guest completes payment and contract on Blue Zone's Guesty.
+6. **Scraper picks up the confirmed booking** next morning (6 AM CST cron on 636desk) as a Guesty reservation with `source: "website"` or `source: "BE-API"`, and writes it to Google Calendar as `[GUEST] {name}`.
+
+**Validation / constraints:**
+- 3-night minimum enforced in handoff before rendering interstitial.
+- `GUESTY_PROPERTY_ID` must be set in env (`688a8aae483ff0001243e891`).
+- `PUSHOVER_USER_KEY` / `PUSHOVER_API_TOKEN` optional — handoff still completes if Pushover fails.
+
+**Known gaps (non-blocking but worth fixing):**
+- **Lead info is not persisted anywhere.** Stage B only writes to Pushover + console.log. If the guest bails between the interstitial and completing payment on Blue Zone's Guesty page, the lead is lost — there's no queryable record for follow-up email. A future fix should KV-store lead captures keyed by UUID with a TTL so we can surface abandoned-cart leads in the admin UI.
+- **Name/email are NOT passed through to the Blue Zone Guesty URL.** The guest has to re-enter them on Guesty's side. In practice Guesty still captures them (100% on `source: "website"` reservations have email and phone per the 2026-04 audit), but we're asking the guest to type their name/email twice. Investigate whether Guesty's booking page accepts `guestFirstName=`/`guestLastName=`/`guestEmail=` query params to pre-fill.
+
+**Source attribution in Guesty (useful for understanding where leads come from):**
+
+| Guesty `source` | Meaning | Contact info |
+|---|---|---|
+| `Direct` | Blue Zone direct website | 100% email, rare phone |
+| `website` / `BE-API` | Casa Vistas handoff (this flow) | 100% email AND phone |
+| `manual` | PM hand-entered (phone/email/walkup) | ~90% email, partial phone |
+| `Booking.com` | Booking.com | 100% email |
+| `VRBO` | VRBO | ~95% email, ~55% phone |
+| `airbnb2` | Airbnb | ~22% email (masked forwarding), ~39% phone |
+| `owner` / `owner-guest` | Owner stays or owner-invited guests | Owner's own contact |
 
 ### Caching Strategy
 
@@ -126,7 +156,9 @@ All scraper scripts run locally on 636desk from the `scraper/` directory in this
 - **Schedule:** Daily at 6:00 AM CST via cron on 636desk
 - **Runner:** `scraper/run-scraper.sh`
 - **Notifications:** Pushover on success/failure
-- **Guard:** 90-day max duration filter rejects bogus reservations from parsing errors
+- **Guards:**
+  - 90-day max duration filter rejects bogus reservations from parsing errors
+  - **Inquiries are skipped** (status: "inquiry") — Guesty doesn't hold dates for inquiries so writing them would create phantom blocks. Prior to 2026-04-12 the scraper wrote inquiries as `[GUEST]` events, which caused 37.5% phantom-rate in the calendar.
 
 **How it works:**
 
@@ -134,6 +166,19 @@ All scraper scripts run locally on 636desk from the `scraper/` directory in this
 2. Falls back to Puppeteer DOM scraping if API fails
 3. Creates/updates/deletes `[GUEST] Guest Name` events in Google Calendar
 4. Family Portal reads these events via `lib/google-calendar.ts`
+
+**Event descriptions are machine-readable.** Every `[GUEST]` event the scraper writes carries a structured description with the source, confirmation code, status, last-synced timestamp, and Guesty reservation ID:
+
+```
+Source: Direct
+Confirmation: 87892073
+Status: confirmed
+Synced: 2026-04-12T23:07:14.460Z
+─────
+guesty_reservation_id: 68e8724db25f11d7aad2b609
+```
+
+The `guesty_reservation_id:` line is the matching key — the scraper uses it to update/delete events on subsequent runs, so name collisions and ±7-day fuzzy matches no longer cause ghost duplicates. Events created before this marker existed are handled by a legacy fallback path (name + ±7-day window) that re-stamps them on their next sync.
 
 **Manual run:**
 
