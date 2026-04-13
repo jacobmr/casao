@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
+import { saveLead } from "@/lib/lead-kv";
 
 /**
  * Render lead capture form
@@ -369,7 +370,7 @@ export async function GET(request) {
       );
     }
 
-    // User has completed lead capture - log and notify
+    // User has completed lead capture - log, persist, and notify
     console.log(`🔄 Handoff created: ${uuid}`, {
       checkIn,
       checkOut,
@@ -383,6 +384,26 @@ export async function GET(request) {
       guestEmail: guestEmail,
       timestamp: new Date().toISOString(),
     });
+
+    // Persist the lead to Redis keyed by UUID (30-day TTL). This is the
+    // recoverable record — if the guest bails before completing payment on
+    // Blue Zone's Guesty page, the lead is still in `lead:{uuid}` and shows
+    // up in listLeads() for follow-up.
+    const leadSaved = await saveLead({
+      uuid,
+      name: guestName,
+      email: guestEmail,
+      checkIn,
+      checkOut,
+      adults,
+      experiences: selectedExperiences,
+      promoCode: promoCode || null,
+    });
+    if (!leadSaved) {
+      console.warn(
+        `⚠️ Lead not persisted for ${uuid} — Redis unavailable or REDIS_URL unset`,
+      );
+    }
 
     // Send push notification via Pushover (only after lead capture completed)
     const pushoverUserKey = process.env.PUSHOVER_USER_KEY;
