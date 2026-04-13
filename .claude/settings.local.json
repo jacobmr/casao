@@ -24,7 +24,18 @@
       "Bash(grep -rn 'ZcgJPkDp5Tg3L4\\\\|u9b3evhp7d\\\\|au63m1n9hfd\\\\|private_key' /data/dev/CasaVistas/scraper/*.js)",
       "Bash(grep -rn 'KdDnXIZcVp0HBF2pzzVDHvNqE0CwxVnp' /data/dev/CasaVistas/scraper/*.js)",
       "Bash(sops edit:*)",
-      "Bash(grep -rn 'KdDnXIZcVp0\\\\|ZcgJPkDp5\\\\|u9b3evhp7d\\\\|au63m1n9hfd' /data/dev/CasaVistas/scraper/*.js)"
+      "Bash(grep -rn 'KdDnXIZcVp0\\\\|ZcgJPkDp5\\\\|u9b3evhp7d\\\\|au63m1n9hfd' /data/dev/CasaVistas/scraper/*.js)",
+      "mcp__claude_ai_Vercel__get_runtime_logs",
+      "Bash(vercel logs:*)",
+      "Bash(vercel env:*)",
+      "Read(//tmp/**)",
+      "Bash(grep:*)",
+      "Bash(ls /tmp/c-*.js)",
+      "Bash(xargs -I{} sh -c 'grep -oE \"properties[^\\\\\"}]{0,60}\" {} | head -5')",
+      "mcp__context7__query-docs",
+      "Bash(RESEND_API_KEY=re_dummy_key_for_local_build_only pnpm build)",
+      "Bash(ls /tmp/co-*.js /tmp/c-*.js)",
+      "Bash(TMPDIR=/var/tmp npx prettier --version)"
     ]
   }
 }

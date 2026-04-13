@@ -120,12 +120,28 @@ function renderLeadCaptureForm({
       margin-bottom: 1.5rem;
     }
 
+    .form-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .form-col {
+      flex: 1;
+      min-width: 0;
+    }
+
     label {
       display: block;
       font-size: 0.875rem;
       font-weight: 600;
       color: #374151;
       margin-bottom: 0.5rem;
+    }
+
+    label .optional {
+      font-weight: 400;
+      color: #9ca3af;
+      font-size: 0.75rem;
     }
 
     input {
@@ -211,17 +227,30 @@ function renderLeadCaptureForm({
       <div class="details">${nights} nights • ${adults} guests</div>
     </div>
 
-    <form id="leadForm" onsubmit="submitForm(event)">
-      <div class="form-group">
-        <label for="name">Full Name *</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          required
-          placeholder="John Doe"
-          autocomplete="name"
-        />
+    <form id="leadForm" onsubmit="submitForm(event)" autocomplete="on">
+      <div class="form-group form-row">
+        <div class="form-col">
+          <label for="firstName">First Name *</label>
+          <input
+            type="text"
+            id="firstName"
+            name="given-name"
+            required
+            placeholder="Jane"
+            autocomplete="given-name"
+          />
+        </div>
+        <div class="form-col">
+          <label for="lastName">Last Name *</label>
+          <input
+            type="text"
+            id="lastName"
+            name="family-name"
+            required
+            placeholder="Doe"
+            autocomplete="family-name"
+          />
+        </div>
       </div>
 
       <div class="form-group">
@@ -231,8 +260,19 @@ function renderLeadCaptureForm({
           id="email"
           name="email"
           required
-          placeholder="john@example.com"
+          placeholder="jane@example.com"
           autocomplete="email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number <span class="optional">(optional)</span></label>
+        <input
+          type="tel"
+          id="phone"
+          name="tel"
+          placeholder="+1 555 123 4567"
+          autocomplete="tel"
         />
       </div>
 
@@ -242,8 +282,8 @@ function renderLeadCaptureForm({
     </form>
 
     <div class="privacy">
-      We'll only use this to send booking confirmations and stay details.
-      <br>We never share your info with third parties.
+      Your browser may offer to fill these in automatically on the next page.
+      <br>We'll only use this to send booking confirmations and stay details.
     </div>
   </div>
 
@@ -255,17 +295,25 @@ function renderLeadCaptureForm({
       submitBtn.disabled = true;
       submitBtn.textContent = 'Processing...';
 
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
 
-      // Redirect to handoff with name and email
+      // Redirect to handoff with guest details. We pass the combined 'name'
+      // for backwards compatibility + the split fields for the KV lead
+      // record and for the abandoned-cart recovery email.
       const params = new URLSearchParams({
         checkIn: '${checkIn}',
         checkOut: '${checkOut}',
         adults: '${adults}',
-        name: name,
+        name: (firstName + ' ' + lastName).trim(),
+        firstName: firstName,
+        lastName: lastName,
         email: email
       });
+
+      if (phone) params.set('phone', phone);
 
       ${experiences ? `params.set('experiences', '${experiences}');` : ""}
       ${promoCode ? `params.set('promo', '${promoCode}');` : ""}
@@ -310,6 +358,9 @@ export async function GET(request) {
     const promoCode = searchParams.get("promo"); // Promo/discount code
     const guestName = searchParams.get("name");
     const guestEmail = searchParams.get("email");
+    const guestFirstName = searchParams.get("firstName");
+    const guestLastName = searchParams.get("lastName");
+    const guestPhone = searchParams.get("phone");
 
     // Validate required parameters
     if (!checkIn || !checkOut) {
@@ -349,9 +400,13 @@ export async function GET(request) {
       : [];
     const hasDiscount = selectedExperiences.length >= 2;
 
-    // Build Blue Zone Guesty property URL (not /checkout - that doesn't exist)
+    // Build Blue Zone Guesty checkout URL. The /checkout subroute is where
+    // the actual contact form lives — landing here directly skips one click
+    // vs. the property landing page which makes the user click "Book Now".
+    // (Earlier research erroneously concluded this route didn't exist; it's
+    // under /properties/{id}/checkout, not /checkout at the site root.)
     const blueZoneURL =
-      `https://bluezoneexperience.guestybookings.com/en/properties/${encodeURIComponent(propertyId)}` +
+      `https://bluezoneexperience.guestybookings.com/en/properties/${encodeURIComponent(propertyId)}/checkout` +
       `?minOccupancy=${adults}&checkIn=${checkIn}&checkOut=${checkOut}`;
 
     // If name/email not provided, show lead capture form first (no notification yet)

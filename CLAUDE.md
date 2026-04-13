@@ -13,10 +13,10 @@ Casa Vistas is a direct booking website for a luxury vacation rental in Costa Ri
 
 This is a single repo with two components:
 
-| Component | Directory | Runs on | Deployed via |
-|-----------|-----------|---------|--------------|
-| **Next.js app** | `app/`, `components/`, `lib/` | Vercel | Git push → Vercel auto-deploy |
-| **Scraper scripts** | `scraper/` | 636desk (local cron) | Git pull on 636desk (manual) |
+| Component           | Directory                     | Runs on              | Deployed via                  |
+| ------------------- | ----------------------------- | -------------------- | ----------------------------- |
+| **Next.js app**     | `app/`, `components/`, `lib/` | Vercel               | Git push → Vercel auto-deploy |
+| **Scraper scripts** | `scraper/`                    | 636desk (local cron) | Git pull on 636desk (manual)  |
 
 Both live in the same repo for convenience. The `scraper/` directory has its own `package.json` and `node_modules`. Vercel ignores it — it just builds the Next.js app from the root. The `scripts/` directory is legacy (gitignored, not deployed anywhere).
 
@@ -95,25 +95,27 @@ This is the direct-booking flow and is the **most valuable channel** because it 
 6. **Scraper picks up the confirmed booking** next morning (6 AM CST cron on 636desk) as a Guesty reservation with `source: "website"` or `source: "BE-API"`, and writes it to Google Calendar as `[GUEST] {name}`.
 
 **Validation / constraints:**
+
 - 3-night minimum enforced in handoff before rendering interstitial.
 - `GUESTY_PROPERTY_ID` must be set in env (`688a8aae483ff0001243e891`).
 - `PUSHOVER_USER_KEY` / `PUSHOVER_API_TOKEN` optional — handoff still completes if Pushover fails.
 
 **Known gaps (non-blocking but worth fixing):**
+
 - **Lead info is not persisted anywhere.** Stage B only writes to Pushover + console.log. If the guest bails between the interstitial and completing payment on Blue Zone's Guesty page, the lead is lost — there's no queryable record for follow-up email. A future fix should KV-store lead captures keyed by UUID with a TTL so we can surface abandoned-cart leads in the admin UI.
 - **Name/email are NOT passed through to the Blue Zone Guesty URL.** The guest has to re-enter them on Guesty's side. In practice Guesty still captures them (100% on `source: "website"` reservations have email and phone per the 2026-04 audit), but we're asking the guest to type their name/email twice. Investigate whether Guesty's booking page accepts `guestFirstName=`/`guestLastName=`/`guestEmail=` query params to pre-fill.
 
 **Source attribution in Guesty (useful for understanding where leads come from):**
 
-| Guesty `source` | Meaning | Contact info |
-|---|---|---|
-| `Direct` | Blue Zone direct website | 100% email, rare phone |
-| `website` / `BE-API` | Casa Vistas handoff (this flow) | 100% email AND phone |
-| `manual` | PM hand-entered (phone/email/walkup) | ~90% email, partial phone |
-| `Booking.com` | Booking.com | 100% email |
-| `VRBO` | VRBO | ~95% email, ~55% phone |
-| `airbnb2` | Airbnb | ~22% email (masked forwarding), ~39% phone |
-| `owner` / `owner-guest` | Owner stays or owner-invited guests | Owner's own contact |
+| Guesty `source`         | Meaning                              | Contact info                               |
+| ----------------------- | ------------------------------------ | ------------------------------------------ |
+| `Direct`                | Blue Zone direct website             | 100% email, rare phone                     |
+| `website` / `BE-API`    | Casa Vistas handoff (this flow)      | 100% email AND phone                       |
+| `manual`                | PM hand-entered (phone/email/walkup) | ~90% email, partial phone                  |
+| `Booking.com`           | Booking.com                          | 100% email                                 |
+| `VRBO`                  | VRBO                                 | ~95% email, ~55% phone                     |
+| `airbnb2`               | Airbnb                               | ~22% email (masked forwarding), ~39% phone |
+| `owner` / `owner-guest` | Owner stays or owner-invited guests  | Owner's own contact                        |
 
 ### Caching Strategy
 
