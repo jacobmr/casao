@@ -425,7 +425,15 @@ export async function GET(request) {
       );
     }
 
-    // User has completed lead capture - log, persist, and notify
+    // User has completed lead capture - log, persist, and notify.
+    // PII is intentionally redacted from the console log so it doesn't leak
+    // into Vercel/Datadog/centralized logging — the full record is safely
+    // stored in Redis via saveLead() and can be recovered by UUID from the
+    // admin UI / CLI. The log here is just enough to correlate a request
+    // without exposing the guest's name, email, or phone.
+    const maskEmail = (e) => (e ? e.replace(/^(.).*?(@.*)$/, "$1***$2") : null);
+    const maskPhone = (p) => (p ? p.replace(/.(?=.{4})/g, "*") : null);
+
     console.log(`🔄 Handoff created: ${uuid}`, {
       checkIn,
       checkOut,
@@ -435,58 +443,75 @@ export async function GET(request) {
       experienceCount: selectedExperiences.length,
       discountApplied: hasDiscount,
       promoCode: promoCode || null,
-      guestName: guestName,
-      guestEmail: guestEmail,
+      hasGuestName: Boolean(guestName),
+      hasFirstName: Boolean(guestFirstName),
+      hasLastName: Boolean(guestLastName),
+      guestEmailMasked: maskEmail(guestEmail),
+      guestPhoneMasked: maskPhone(guestPhone),
       timestamp: new Date().toISOString(),
     });
 
-    // Persist the lead to Redis keyed by UUID (30-day TTL). This is the
-    // recoverable record — if the guest bails before completing payment on
-    // Blue Zone's Guesty page, the lead is still in `lead:{uuid}` and shows
-    // up in listLeads() for follow-up.
-    const leadSaved = await saveLead({
+    // Fire the two side-effects in parallel so neither blocks the other:
+    //   1. Persist the lead to Redis keyed by UUID (30-day TTL). This is the
+    //      recoverable record — if the guest bails before completing payment
+    //      on Blue Zone's Guesty page, the lead is still in `lead:{uuid}`
+    //      and shows up in listLeads() for follow-up.
+    //   2. Send a Pushover notification to the owner.
+    // Both are best-effort — failures are logged but don't block the
+    // interstitial response.
+    const pushoverUserKey = process.env.PUSHOVER_USER_KEY;
+    const pushoverApiToken = process.env.PUSHOVER_API_TOKEN;
+    const hasPushover = Boolean(pushoverUserKey && pushoverApiToken);
+
+    const leadPromise = saveLead({
       uuid,
       name: guestName,
+      firstName: guestFirstName || null,
+      lastName: guestLastName || null,
       email: guestEmail,
+      phone: guestPhone || null,
       checkIn,
       checkOut,
       adults,
       experiences: selectedExperiences,
       promoCode: promoCode || null,
+    }).catch((error) => {
+      console.error("saveLead threw:", error);
+      return false;
     });
+
+    const pushoverPromise = hasPushover
+      ? (async () => {
+          try {
+            const nights = Math.ceil(
+              (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24),
+            );
+            const title = "🏠 Casa Vistas Booking";
+            const guestInfo = `\n${guestName} (${guestEmail})${guestPhone ? ` ${guestPhone}` : ""}`;
+            const message = `${checkIn} → ${checkOut} (${nights} nights, ${adults} guests)${promoCode ? ` [${promoCode}]` : ""}${guestInfo}`;
+
+            const formData = new URLSearchParams({
+              token: pushoverApiToken,
+              user: pushoverUserKey,
+              title: title,
+              message: message,
+            });
+            await fetch("https://api.pushover.net/1/messages.json", {
+              method: "POST",
+              body: formData,
+            });
+            console.log("📱 Push notification sent");
+          } catch (pushError) {
+            console.error("Push notification failed:", pushError);
+          }
+        })()
+      : Promise.resolve();
+
+    const [leadSaved] = await Promise.all([leadPromise, pushoverPromise]);
     if (!leadSaved) {
       console.warn(
         `⚠️ Lead not persisted for ${uuid} — Redis unavailable or REDIS_URL unset`,
       );
-    }
-
-    // Send push notification via Pushover (only after lead capture completed)
-    const pushoverUserKey = process.env.PUSHOVER_USER_KEY;
-    const pushoverApiToken = process.env.PUSHOVER_API_TOKEN;
-    if (pushoverUserKey && pushoverApiToken) {
-      try {
-        const nights = Math.ceil(
-          (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24),
-        );
-        const title = "🏠 Casa Vistas Booking";
-        const guestInfo = `\n${guestName} (${guestEmail})`;
-        const message = `${checkIn} → ${checkOut} (${nights} nights, ${adults} guests)${promoCode ? ` [${promoCode}]` : ""}${guestInfo}`;
-
-        const formData = new URLSearchParams({
-          token: pushoverApiToken,
-          user: pushoverUserKey,
-          title: title,
-          message: message,
-        });
-        await fetch("https://api.pushover.net/1/messages.json", {
-          method: "POST",
-          body: formData,
-        });
-        console.log("📱 Push notification sent");
-      } catch (pushError) {
-        console.error("Push notification failed:", pushError);
-        // Don't block the handoff if push fails
-      }
     }
 
     // TODO: Store in database/Redis for tracking
