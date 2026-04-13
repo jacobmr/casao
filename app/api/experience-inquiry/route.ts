@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
+import { getResendClient } from "@/lib/resend-client";
 import { experiences } from "@/lib/experiences-data";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface InquiryData {
   name: string;
@@ -93,7 +91,7 @@ export async function POST(request: NextRequest) {
     `;
 
     // Send email via Resend
-    const { error: emailError } = await resend.emails.send({
+    const { error: emailError } = await getResendClient().emails.send({
       from: "Casa Vistas <noreply@salundo.com>",
       to: process.env.INQUIRY_EMAIL || "jacob@reider.us",
       replyTo: data.email,

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
+import { getResendClient } from "@/lib/resend-client";
 import { getSeasonalCode, setSeasonalCode } from "@/lib/kv-cache";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // HTML escape function to prevent XSS
 function escapeHtml(str: string): string {
@@ -139,7 +137,7 @@ export async function GET(request: Request) {
     `;
 
     console.log(`📧 Sending approval email to ${inquiry.email}...`);
-    const emailResult = await resend.emails.send({
+    const emailResult = await getResendClient().emails.send({
       from: "Casa Vistas <noreply@salundo.com>",
       to: inquiry.email,
       replyTo: "jacob@reider.us",
